@@ -45,5 +45,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>logs-bugs-dto</module>
+		<module>logs-bugs-mongo-document</module>
 	</modules>
 </project>

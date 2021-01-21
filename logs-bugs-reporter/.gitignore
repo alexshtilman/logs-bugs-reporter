@@ -4,7 +4,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 mvnw*
+<<<<<<< HEAD
 
+=======
+>>>>>>> branch 'classwork' of https://github.com/Tel-Ran/logs-bugs-reporter.git
 ### STS ###
 .apt_generated
 .classpath
