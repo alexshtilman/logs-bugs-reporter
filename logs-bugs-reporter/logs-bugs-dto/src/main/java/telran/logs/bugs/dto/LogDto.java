@@ -26,9 +26,6 @@ public class LogDto {
 	super();
 	this.dateTime = dateTime;
 	this.logType = logType;
-	if (artifact.equals("")) {
-	    throw new IllegalArgumentException();
-	}
 	this.artifact = artifact;
 	this.responseTime = responseTime;
 	this.result = result;
@@ -43,13 +40,13 @@ public class LogDto {
 	final int prime = 31;
 	int result = 1;
 	result = prime * result + ((artifact == null) ? 0 : artifact.hashCode());
-
 	result = prime * result + ((dateTime == null) ? 0 : dateTime.hashCode());
 	result = prime * result + ((logType == null) ? 0 : logType.hashCode());
 	result = prime * result + responseTime;
 	result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
 	return result;
     }
+
     @Override
     public boolean equals(Object obj) {
 	if (this == obj)
@@ -80,4 +77,5 @@ public class LogDto {
 	    return false;
 	return true;
     }
+   
 }

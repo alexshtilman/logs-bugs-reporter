@@ -71,9 +71,9 @@ public class RandomLogs implements IRandomLogs {
 	    if (security <= 30) {
 		int prob = getRandomInt(1, 100);
 		if (prob <= 30) {
-		    return LogType.AUTHENTIATION_EXCEPTION;
+		    return LogType.ATHORIZATION_EXCEPTION;
 		}
-		return LogType.ATHORIZATION_EXCEPTION;
+		return LogType.AUTHENTIATION_EXCEPTION;
 	    }
 	    int nonSecurity = getRandomInt(1, 100);
 	    if (nonSecurity <= 25) {
