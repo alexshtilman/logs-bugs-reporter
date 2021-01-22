@@ -14,15 +14,12 @@ import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 import telran.logs.bugs.mongo.doc.LogDoc;
 import telran.logs.interfaces.IRandomLogs;
-import telran.logs.interfaces.LogTypeAndCountDto;
 
 @Component
 public class RandomLogs implements IRandomLogs {
 
     @Autowired
     RandomLogsRepo logs;
-
-    static List<LogDoc> docs = new ArrayList<LogDoc>();
 
     static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
     {
@@ -49,14 +46,23 @@ public class RandomLogs implements IRandomLogs {
     }
 
     @Override
-    public void generateLogs(int count) {
+    public List<LogDto> generateLogs(int count) {
+	logs.deleteAll();
+	List<LogDto> docs = new ArrayList<LogDto>();
+	List<LogDoc> newDocs = new ArrayList<LogDoc>();
 	for (int i = 0; i < count; i++) {
-	    docs.add(new LogDoc(createRandomLog()));
+	    LogDto dto = createRandomLog();
+	    docs.add(dto);
+	    newDocs.add(new LogDoc(dto));
 	}
-	logs.saveAll(docs);
-	//List<LogTypeAndCountDto> doc = logs.getStatisticsAggregate();
-	List<LogTypeAndCountDto> doc = logs.getStatistics();
-	System.out.println(doc.size());
+
+	logs.saveAll(newDocs);
+	return docs;
+    }
+
+    @Override
+    public void getStatisticsAggregate() {
+	logs.getStatisticsAggregate().forEach(System.out::println);
     }
     private LogType generateLogType() {
 	int exception = getRandomInt(1, 100);

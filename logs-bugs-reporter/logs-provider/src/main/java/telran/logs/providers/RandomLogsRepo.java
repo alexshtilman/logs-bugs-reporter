@@ -11,7 +11,7 @@ import telran.logs.interfaces.LogTypeAndCountDto;
 
 public interface RandomLogsRepo extends MongoRepository<LogDoc, ObjectId>, RandomLogsRepoCustom {
 
-    @Aggregation(pipeline = { "[{'$group': {'_id': '$logType','count': { '$sum': 1}}},{'$sort': {'count':-1}}, "
-	    + "{ '$project': { '_id': 0, 'logType': '$_id', 'count': 1 } }]" })
+    @Aggregation(pipeline = { "{$group: {_id: $logType,count: { $sum: 1}}}", "{$sort: {count:-1}}",
+	    "{ $project: { _id: 0, logType: $_id, count: 1 } }" })
     List<LogTypeAndCountDto> getStatisticsAggregate();
 }

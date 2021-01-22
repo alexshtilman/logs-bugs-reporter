@@ -46,9 +46,7 @@ class RandomLogsTest {
 
     @BeforeAll
     void setup() {
-	for (int i = 0; i < COUNT_OF_LOGS; i++) {
-	    randomLogs.add(myLogs.createRandomLog());
-	}
+	randomLogs = myLogs.generateLogs(COUNT_OF_LOGS);
     }
 
     @DisplayName("Depedency artifact from logType")
@@ -105,7 +103,9 @@ class RandomLogsTest {
 	for (LogDto dto : randomLogs) {
 	    assertEquals("", dto.result);
 	}
+
     }
+
 
     @AfterAll
     void printStat() {
@@ -115,8 +115,10 @@ class RandomLogsTest {
 		.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
 		    throw new IllegalStateException();
 		}, LinkedHashMap::new));
-
+	System.out.println("Statistics using stream");
 	counted.forEach((key, value) -> System.out.printf("%s:%d\n", key, value));
+	System.out.println("Statistics using mongo");
+	myLogs.getStatisticsAggregate();
     }
 
 }
