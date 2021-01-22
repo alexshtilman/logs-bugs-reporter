@@ -3,21 +3,25 @@ package telran.logs.bugs.dto;
 import java.util.Date;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
+import lombok.Builder;
+import lombok.NonNull;
+
+@Builder
 public class LogDto {
-    @NotNull
+    @NonNull
     public Date dateTime;
-    @NotNull
+    @NonNull
     public LogType logType;
-    @NotEmpty
 
+    @NotEmpty(message = "`artifact` field is can't be empty")
     public String artifact;
 
     public int responseTime;
     public String result;
 
-    public LogDto(@NotNull Date dateTime, @NotNull LogType logType, @NotEmpty String artifact, int responseTime,
+    public LogDto(@NonNull Date dateTime, @NonNull LogType logType, @NotEmpty String artifact,
+	    int responseTime,
 	    String result) {
 	super();
 	this.dateTime = dateTime;
@@ -27,18 +31,22 @@ public class LogDto {
 	this.result = result;
     }
 
+    public LogType getLogType() {
+	return logType;
+    }
+
     @Override
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
 	result = prime * result + ((artifact == null) ? 0 : artifact.hashCode());
-
 	result = prime * result + ((dateTime == null) ? 0 : dateTime.hashCode());
 	result = prime * result + ((logType == null) ? 0 : logType.hashCode());
 	result = prime * result + responseTime;
 	result = prime * result + ((this.result == null) ? 0 : this.result.hashCode());
 	return result;
     }
+
     @Override
     public boolean equals(Object obj) {
 	if (this == obj)
@@ -69,5 +77,5 @@ public class LogDto {
 	    return false;
 	return true;
     }
-
+   
 }
