@@ -5,18 +5,22 @@ import java.util.Date;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-public class LogDto {
-    @NotNull
-    public Date dateTime;
-    @NotNull
-    public LogType logType;
-    @NotEmpty
+import telran.logs.bugs.validations.ValidLogDto;
 
+
+public class LogDto {
+    @NotNull(message = "`dateTime` field is mandatory")
+    public Date dateTime;
+    @NotNull(message = "`logType` field is mandatory")
+    public LogType logType;
+
+    @NotEmpty(message = "`artifact` field is can't be empty")
     public String artifact;
 
     public int responseTime;
     public String result;
 
+    @ValidLogDto
     public LogDto(@NotNull Date dateTime, @NotNull LogType logType, @NotEmpty String artifact, int responseTime,
 	    String result) {
 	super();
@@ -25,6 +29,10 @@ public class LogDto {
 	this.artifact = artifact;
 	this.responseTime = responseTime;
 	this.result = result;
+    }
+
+    public LogType getLogType() {
+	return logType;
     }
 
     @Override
@@ -69,5 +77,4 @@ public class LogDto {
 	    return false;
 	return true;
     }
-
 }
