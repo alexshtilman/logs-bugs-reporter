@@ -40,7 +40,6 @@ public class RandomLogs implements IRandomLogs {
 	int responseTime = 0;
 	if (exception == LogType.NO_EXCEPTION)
 	    responseTime = getRandomInt(1, 100);
-
 	return new LogDto(dateTime, exception, artifact, responseTime, "");
 
     }
@@ -63,6 +62,7 @@ public class RandomLogs implements IRandomLogs {
     @Override
     public void getStatisticsAggregate() {
 	logs.getStatisticsAggregate().forEach(System.out::println);
+	logs.getStatistics().forEach(System.out::println);
     }
     private LogType generateLogType() {
 	int exception = getRandomInt(1, 100);

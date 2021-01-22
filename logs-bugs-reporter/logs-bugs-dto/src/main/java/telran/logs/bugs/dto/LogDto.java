@@ -3,15 +3,15 @@ package telran.logs.bugs.dto;
 import java.util.Date;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
-import telran.logs.bugs.validations.ValidLogDto;
+import lombok.Builder;
+import lombok.NonNull;
 
-
+@Builder
 public class LogDto {
-    @NotNull(message = "`dateTime` field is mandatory")
+    @NonNull
     public Date dateTime;
-    @NotNull(message = "`logType` field is mandatory")
+    @NonNull
     public LogType logType;
 
     @NotEmpty(message = "`artifact` field is can't be empty")
@@ -20,12 +20,15 @@ public class LogDto {
     public int responseTime;
     public String result;
 
-    @ValidLogDto
-    public LogDto(@NotNull Date dateTime, @NotNull LogType logType, @NotEmpty String artifact, int responseTime,
+    public LogDto(@NonNull Date dateTime, @NonNull LogType logType, @NotEmpty String artifact,
+	    int responseTime,
 	    String result) {
 	super();
 	this.dateTime = dateTime;
 	this.logType = logType;
+	if (artifact.equals("")) {
+	    throw new IllegalArgumentException();
+	}
 	this.artifact = artifact;
 	this.responseTime = responseTime;
 	this.result = result;
