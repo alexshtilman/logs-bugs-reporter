@@ -90,6 +90,6 @@ public class RandomLogs implements IRandomLogs {
     }
 
     private int getRandomInt(int min, int max) {
-	return ThreadLocalRandom.current().nextInt(max - min) + min;
+	return ThreadLocalRandom.current().nextInt(max - min) + min + 1;
     }
 }
