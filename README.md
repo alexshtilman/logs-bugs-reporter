@@ -9,6 +9,7 @@
       - artifact: if the type is NO_EXCEPTION, or BAD_REQUEST_EXCEPTION, or NOT_FOUND_EXCEPTION, or DUPLICATED_KEY_EXCEPTION an artifact contains concatenation “class” word and random number in range ; if the type is AUTHENTICATION_EXCEPTION an artifact contains “authentication” ; if the type is AUTHORIZATION_EXCEPTION an artifact contains “authorization”
       - responseTime: if the type is NO_EXCEPTION – number greater than 0 for other cases 0
       - result: empty string
+      - ![image](https://github.com/alexshtilman/logs-bugs-reporter/blob/homework/picture.png?raw=true)
    1. Write and run Unit test (think of the annotations for creating a test application contexts with the bean of the class RandomLogs)
       1. One test method performing the following
          - Creates 100000 random logs
