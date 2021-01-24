@@ -6,7 +6,8 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import telran.logs.bugs.dto.*;
+import telran.logs.bugs.dto.LogDto;
+import telran.logs.bugs.dto.LogType;
 
 @Document(collection="logs")
 public class LogDoc {
@@ -15,6 +16,7 @@ public class LogDoc {
 	public ObjectId getId() {
 		return id;
 	}
+
 	private Date dateTime;
 	private LogType logType;
 	private String artifact;
@@ -31,6 +33,7 @@ public class LogDoc {
 		LogDto res = new LogDto(dateTime, logType, artifact, responseTime, result);
 		return res;
 	}
+
 	public LogDoc(Date dateTime, LogType logType, String artifact, int responseTime, String result) {
 		super();
 		this.dateTime = dateTime;
