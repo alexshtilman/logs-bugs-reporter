@@ -1,17 +1,20 @@
 package telran.logs.bugs.dto;
 
 import java.util.Date;
+import java.util.Set;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-import lombok.Builder;
-import lombok.NonNull;
-
-@Builder
 public class LogDto {
-    @NonNull
+    @NotNull
     public Date dateTime;
-    @NonNull
+    @NotNull
     public LogType logType;
 
     @NotEmpty(message = "`artifact` field is can't be empty")
@@ -20,7 +23,7 @@ public class LogDto {
     public int responseTime;
     public String result;
 
-    public LogDto(@NonNull Date dateTime, @NonNull LogType logType, @NotEmpty String artifact,
+    public LogDto(@NotNull Date dateTime, @NotNull LogType logType, @NotEmpty String artifact,
 	    int responseTime,
 	    String result) {
 	super();
@@ -29,12 +32,21 @@ public class LogDto {
 	this.artifact = artifact;
 	this.responseTime = responseTime;
 	this.result = result;
+	validateInput();
     }
 
     public LogType getLogType() {
 	return logType;
     }
 
+    private void validateInput() {
+	ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+	Validator validator = factory.getValidator();
+	Set<ConstraintViolation<LogDto>> violations = validator.validate(this);
+	if (!violations.isEmpty()) {
+	    throw new ConstraintViolationException(violations);
+	}
+    }
     @Override
     public int hashCode() {
 	final int prime = 31;
