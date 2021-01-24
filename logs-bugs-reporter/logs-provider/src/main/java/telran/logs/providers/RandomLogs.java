@@ -46,7 +46,6 @@ public class RandomLogs implements IRandomLogs {
 
     @Override
     public List<LogDto> generateLogs(int count) {
-	logs.deleteAll();
 	List<LogDto> docs = new ArrayList<LogDto>();
 	List<LogDoc> newDocs = new ArrayList<LogDoc>();
 	for (int i = 0; i < count; i++) {
@@ -64,30 +63,29 @@ public class RandomLogs implements IRandomLogs {
 	logs.getStatisticsAggregate().forEach(System.out::println);
 	logs.getStatistics().forEach(System.out::println);
     }
-    private LogType generateLogType() {
-	int exception = getRandomInt(1, 100);
-	if (exception <= 10) {
-	    int security = getRandomInt(1, 100);
-	    if (security <= 30) {
-		int prob = getRandomInt(1, 100);
-		if (prob <= 30) {
-		    return LogType.ATHORIZATION_EXCEPTION;
-		}
-		return LogType.AUTHENTIATION_EXCEPTION;
-	    }
-	    int nonSecurity = getRandomInt(1, 100);
-	    if (nonSecurity <= 25) {
-		return LogType.BAD_REQUEST_EXCEPTION;
-	    } else if (nonSecurity > 25 && nonSecurity <= 50) {
-		return LogType.NOT_FOUND_EXCEPTION;
-	    } else if (nonSecurity > 50 && nonSecurity <= 75) {
-		return LogType.DUPLICATED_KEY_EXCEPTION;
-	    }
-	    return LogType.SERVER_EXCEPTION;
-	}
-	return LogType.NO_EXCEPTION;
 
-    }
+    private LogType generateLogType() {
+	if (getRandomInt(1, 100) > 10) {
+	    return LogType.NO_EXCEPTION;
+	}
+	if (getRandomInt(1, 100) <= 30) {
+	    if (getRandomInt(1, 100) <= 30) {
+		return LogType.ATHORIZATION_EXCEPTION;
+	    }
+	    return LogType.AUTHENTIATION_EXCEPTION;
+	}
+	int nonSecurity = getRandomInt(1, 100);
+	if (nonSecurity <= 25) {
+	    return LogType.BAD_REQUEST_EXCEPTION;
+	}
+	if (nonSecurity <= 50) {
+	    return LogType.NOT_FOUND_EXCEPTION;
+	}
+	if (nonSecurity <= 75) {
+	    return LogType.DUPLICATED_KEY_EXCEPTION;
+		}
+	return LogType.SERVER_EXCEPTION;
+	}
 
     private int getRandomInt(int min, int max) {
 	return ThreadLocalRandom.current().nextInt(max - min) + min + 1;

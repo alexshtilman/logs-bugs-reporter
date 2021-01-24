@@ -20,7 +20,6 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -33,7 +32,6 @@ import telran.logs.interfaces.IRandomLogs;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RandomLogs.class)
 @EnableAutoConfiguration
-@AutoConfigureDataMongo
 @TestInstance(Lifecycle.PER_CLASS)
 class RandomLogsTest {
 
