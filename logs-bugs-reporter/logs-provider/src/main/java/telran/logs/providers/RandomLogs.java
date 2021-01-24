@@ -23,14 +23,17 @@ public class RandomLogs implements IRandomLogs {
 
     static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
     {
-	artifacts.put(LogType.AUTHENTIATION_EXCEPTION, "authentication");
-	artifacts.put(LogType.ATHORIZATION_EXCEPTION, "authorization");
+	artifacts.put(LogType.AUTHENTICATION_EXCEPTION, "authentication");
+	artifacts.put(LogType.AUTHORIZATION_EXCEPTION, "authorization");
 	LogType[] typesClass = { LogType.NO_EXCEPTION, LogType.BAD_REQUEST_EXCEPTION, LogType.NOT_FOUND_EXCEPTION,
-		LogType.DUPLICATED_KEY_EXCEPTION };
+		LogType.DUPLICATED_KEY_EXCEPTION, LogType.SERVER_EXCEPTION };
 	for (LogType type : typesClass) {
-	    artifacts.put(type, String.format("class %d", getRandomInt(1, 100)));
+	    artifacts.put(type, String.format("class %d", getChance()));
 	}
     }
+    int secExceptionProb = 30;
+    int exceptionProb = 10;
+    int authenticationProb = 70;
 
     @Override
     public LogDto createRandomLog() {
@@ -39,7 +42,7 @@ public class RandomLogs implements IRandomLogs {
 	String artifact = artifacts.get(exception);
 	int responseTime = 0;
 	if (exception == LogType.NO_EXCEPTION)
-	    responseTime = getRandomInt(1, 100);
+	    responseTime = getChance();
 	return new LogDto(dateTime, exception, artifact, responseTime, "");
 
     }
@@ -65,29 +68,28 @@ public class RandomLogs implements IRandomLogs {
     }
 
     private LogType generateLogType() {
-	if (getRandomInt(1, 100) > 10) {
-	    return LogType.NO_EXCEPTION;
-	}
-	if (getRandomInt(1, 100) <= 30) {
-	    if (getRandomInt(1, 100) <= 30) {
-		return LogType.ATHORIZATION_EXCEPTION;
-	    }
-	    return LogType.AUTHENTIATION_EXCEPTION;
-	}
-	int nonSecurity = getRandomInt(1, 100);
-	if (nonSecurity <= 25) {
-	    return LogType.BAD_REQUEST_EXCEPTION;
-	}
-	if (nonSecurity <= 50) {
-	    return LogType.NOT_FOUND_EXCEPTION;
-	}
-	if (nonSecurity <= 75) {
-	    return LogType.DUPLICATED_KEY_EXCEPTION;
-		}
-	return LogType.SERVER_EXCEPTION;
-	}
+	int chance = getChance();
 
-    private int getRandomInt(int min, int max) {
-	return ThreadLocalRandom.current().nextInt(max - min) + min + 1;
+	return chance <= exceptionProb ? getExceptionLog() : LogType.NO_EXCEPTION;
+    }
+
+    private LogType getExceptionLog() {
+
+	return getChance() <= secExceptionProb ? getSecurityExceptionLog() : getNonSecurityExceptionLog();
+    }
+
+    private LogType getNonSecurityExceptionLog() {
+	LogType nonSecExceptions[] = { LogType.BAD_REQUEST_EXCEPTION, LogType.DUPLICATED_KEY_EXCEPTION,
+		LogType.NOT_FOUND_EXCEPTION, LogType.SERVER_EXCEPTION };
+	int ind = ThreadLocalRandom.current().nextInt(0, nonSecExceptions.length);
+	return nonSecExceptions[ind];
+    }
+
+    private LogType getSecurityExceptionLog() {
+	return getChance() <= authenticationProb ? LogType.AUTHENTICATION_EXCEPTION : LogType.AUTHORIZATION_EXCEPTION;
+    }
+
+    private int getChance() {
+	return ThreadLocalRandom.current().nextInt(1, 101);
     }
 }

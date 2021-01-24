@@ -14,6 +14,13 @@ import javax.validation.constraints.NotNull;
 public class LogDto {
     @NotNull
     public Date dateTime;
+
+    @Override
+    public String toString() {
+	return "LogDto [dateTime=" + dateTime + ", logType=" + logType + ", artifact=" + artifact + ", responseTime="
+		+ responseTime + ", result=" + result + "]";
+    }
+
     @NotNull
     public LogType logType;
 
