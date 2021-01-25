@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 import telran.logs.bugs.mongo.doc.LogDoc;
-import telran.logs.interfaces.IRandomLogs;
 
 @Component
 public class RandomLogs implements IRandomLogs {

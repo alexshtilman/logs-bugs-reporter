@@ -11,7 +11,8 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 
 import telran.logs.bugs.mongo.doc.LogDoc;
-import telran.logs.interfaces.LogTypeAndCountDto;
+import telran.logs.providers.LogTypeAndCountDto;
+import telran.logs.providers.RandomLogsRepoCustom;
 
 public class RandomLogsRepoImpl implements RandomLogsRepoCustom {
 
