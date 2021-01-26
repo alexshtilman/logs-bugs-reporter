@@ -23,6 +23,7 @@ public class LogDoc {
 	private int responseTime;
 	private String result;
 	public LogDoc(LogDto logDto) {
+	    logDto.validateInput();
 		dateTime = logDto.dateTime;
 		logType = logDto.logType;
 		artifact = logDto.artifact;
