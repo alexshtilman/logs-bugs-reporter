@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,7 +43,7 @@ class RandomLogsTest {
     private static final String AUTHENTICATION_ARTIFACT = "authentication";
     private static final String AUTHORIZATION_ARTIFACT = "authorization";
 
-
+    @Disabled
     @Test
     void testLogGeneration() {
 
@@ -90,11 +93,15 @@ class RandomLogsTest {
 
     @Test
     void sendRandomLogs() throws InterruptedException {
-	for (int i = 0; i < 10; i++) {
+
+	Set<String> data = new HashSet<>();
+	int countOfMessages = 10;
+	for (int i = 0; i < countOfMessages; i++) {
 	    byte[] messageBytes = output.receive().getPayload();
 	    String messageString = new String(messageBytes);
-	    System.out.println(messageString);
+	    data.add(messageString);
 	    Thread.sleep(1500);
 	}
+	assertEquals(countOfMessages, data.size());
     }
 }

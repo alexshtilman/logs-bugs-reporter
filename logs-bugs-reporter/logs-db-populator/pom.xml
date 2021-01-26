@@ -14,11 +14,6 @@
 			<version>0.0.1</version>
 	</dependency>
 	<dependency>
-		<groupId>telran.logs.bugs</groupId>
-			<artifactId>logs-bugs-mongo-document</artifactId>
-			<version>0.0.1</version>
-	</dependency>
-	<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
 			<scope>test</scope>

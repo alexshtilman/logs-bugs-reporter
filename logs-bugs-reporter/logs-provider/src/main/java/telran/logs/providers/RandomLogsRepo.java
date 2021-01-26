@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import telran.logs.bugs.mongo.doc.LogDoc;
-import telran.logs.interfaces.LogTypeAndCountDto;
 
 public interface RandomLogsRepo extends MongoRepository<LogDoc, ObjectId>, RandomLogsRepoCustom {
 

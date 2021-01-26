@@ -1,4 +1,4 @@
-package telran.logs.interfaces;
+package telran.logs.providers;
 
 public class LogTypeAndCountDto {
 
