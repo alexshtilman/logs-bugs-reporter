@@ -28,6 +28,10 @@ public class LogsDbPopulatorAppl {
     }
 
     public void takeLogDto(LogDto logDto) {
-	consumerLogs.save(new LogDoc(logDto));
+	try {
+	    consumerLogs.save(new LogDoc(logDto));
+	} catch (Exception e) {
+	    System.out.println(e.getMessage());
+	}
     }
 }
