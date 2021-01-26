@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,26 +29,5 @@ class LogDocTest {
 	logs.save(new LogDoc(logDto));
 	LogDoc actualDoc = logs.findAll().get(0);
 	assertEquals(logDto, actualDoc.getLogDto());
-    }
-
-    @Test
-    void testNullDate() {
-	Assertions.assertThrows(Exception.class,() -> {
-	    new LogDto(null, LogType.NO_EXCEPTION, "artifact", 20, "result");
-	});
-    }
-
-    @Test
-    void testNullLogType() {
-	Assertions.assertThrows(Exception.class, () -> {
-	    new LogDto(new Date(), null, "artifact", 20, "result");
-	});
-    }
-
-    @Test
-    void testEmptyArtifact() {
-	Assertions.assertThrows(Exception.class, () -> {
-	    new LogDto(new Date(), LogType.NO_EXCEPTION, "", 20, "result");
-	});
     }
 }

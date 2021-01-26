@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,7 +42,6 @@ class RandomLogsTest {
     private static final String AUTHENTICATION_ARTIFACT = "authentication";
     private static final String AUTHORIZATION_ARTIFACT = "authorization";
 
-    @Disabled
     @Test
     void testLogGeneration() {
 
@@ -97,10 +95,13 @@ class RandomLogsTest {
 	Set<String> data = new HashSet<>();
 	int countOfMessages = 10;
 	for (int i = 0; i < countOfMessages; i++) {
-	    byte[] messageBytes = output.receive().getPayload();
-	    String messageString = new String(messageBytes);
-	    data.add(messageString);
-	    Thread.sleep(1500);
+	    try {
+		byte[] messageBytes = output.receive(1000).getPayload();
+		String messageString = new String(messageBytes);
+		data.add(messageString);
+	    } catch (Exception e) {
+		i--;
+	    }
 	}
 	assertEquals(countOfMessages, data.size());
     }
