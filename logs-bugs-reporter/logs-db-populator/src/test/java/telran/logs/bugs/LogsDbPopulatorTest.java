@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +27,10 @@ class LogsDbPopulatorTest {
     @Autowired
     LogsDbRepo consumerLogs;
 
+    @BeforeEach
+    void setup() {
+	consumerLogs.deleteAll();
+    }
 
     @Test
     void sendNullDate() {

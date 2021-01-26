@@ -39,7 +39,6 @@ public class LogDto {
 	this.artifact = artifact;
 	this.responseTime = responseTime;
 	this.result = result;
-	validateInput();
     }
 
     public LogType getLogType() {
