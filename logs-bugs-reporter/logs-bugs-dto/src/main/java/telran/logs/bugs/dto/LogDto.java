@@ -46,7 +46,7 @@ public class LogDto {
 	return logType;
     }
 
-    private void validateInput() {
+    public void validateInput() {
 	ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 	Validator validator = factory.getValidator();
 	Set<ConstraintViolation<LogDto>> violations = validator.validate(this);

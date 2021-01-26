@@ -1,4 +1,4 @@
-package telran.logs.providers;
+package telran.logs.bugs;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
