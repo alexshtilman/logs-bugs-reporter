@@ -31,7 +31,7 @@ public class LogsDbPopulatorAppl {
 	try {
 	    consumerLogs.save(new LogDoc(logDto));
 	} catch (Exception e) {
-	    System.out.println(e.getMessage());
+	    System.out.println(logDto + " cased by: " + e.getMessage());
 	}
     }
 }
