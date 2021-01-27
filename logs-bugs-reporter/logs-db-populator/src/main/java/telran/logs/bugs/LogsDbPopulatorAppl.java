@@ -14,34 +14,32 @@ import org.springframework.context.annotation.Bean;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.mongo.doc.LogDoc;
 
-
 @SpringBootApplication
 public class LogsDbPopulatorAppl {
 
+	@Autowired
+	LogsDbRepo consumerLogs;
 
-    @Autowired
-    LogsDbRepo consumerLogs;
-
-    public static void main(String[] args) {
-	SpringApplication.run(LogsDbPopulatorAppl.class, args);
-    }
-
-    @Bean
-    Consumer<LogDto> getLogDtoCounsumer() {
-	return this::takeLogDto;
-    }
-
-    @Autowired
-    Validator validator;
-
-    public void takeLogDto(LogDto logDto) {
-	Set<ConstraintViolation<LogDto>> validations = validator.validate(logDto);
-
-	if (!validations.isEmpty()) {
-	    System.out.println(validations.iterator().next().getMessage());
-	} else {
-	    consumerLogs.save(new LogDoc(logDto));
+	public static void main(String[] args) {
+		SpringApplication.run(LogsDbPopulatorAppl.class, args);
 	}
 
-    }
+	@Bean
+	Consumer<LogDto> getLogDtoCounsumer() {
+		return this::takeLogDto;
+	}
+
+	@Autowired
+	Validator validator;
+
+	public void takeLogDto(LogDto logDto) {
+		Set<ConstraintViolation<LogDto>> validations = validator.validate(logDto);
+
+		if (!validations.isEmpty()) {
+			System.out.println(validations.iterator().next().getMessage());
+		} else {
+			consumerLogs.save(new LogDoc(logDto));
+		}
+
+	}
 }

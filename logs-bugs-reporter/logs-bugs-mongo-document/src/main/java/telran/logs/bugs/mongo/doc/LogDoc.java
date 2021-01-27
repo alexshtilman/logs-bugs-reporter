@@ -9,10 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
-@Document(collection="logs")
+@Document(collection = "logs")
 public class LogDoc {
 	@Id
 	ObjectId id;
+
 	public ObjectId getId() {
 		return id;
 	}
@@ -22,6 +23,7 @@ public class LogDoc {
 	private String artifact;
 	private int responseTime;
 	private String result;
+
 	public LogDoc(LogDto logDto) {
 		dateTime = logDto.dateTime;
 		logType = logDto.logType;
@@ -29,7 +31,8 @@ public class LogDoc {
 		responseTime = logDto.responseTime;
 		result = logDto.result;
 	}
-	public LogDto getLogDto () {
+
+	public LogDto getLogDto() {
 		LogDto res = new LogDto(dateTime, logType, artifact, responseTime, result);
 		return res;
 	}
@@ -42,9 +45,8 @@ public class LogDoc {
 		this.responseTime = responseTime;
 		this.result = result;
 	}
+
 	public LogDoc() {
 	}
-	
-	
 
 }

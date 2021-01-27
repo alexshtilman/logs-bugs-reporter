@@ -16,18 +16,18 @@ import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes=LogsRepo.class)
-@EnableAutoConfiguration 
+@ContextConfiguration(classes = LogsRepo.class)
+@EnableAutoConfiguration
 @AutoConfigureDataMongo
 class LogDocTest {
-    @Autowired
-    LogsRepo logs;
+	@Autowired
+	LogsRepo logs;
 
-    @Test
-    void docStoreTest() {
-	LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 20, "result");
-	logs.save(new LogDoc(logDto));
-	LogDoc actualDoc = logs.findAll().get(0);
-	assertEquals(logDto, actualDoc.getLogDto());
-    }
+	@Test
+	void docStoreTest() {
+		LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 20, "result");
+		logs.save(new LogDoc(logDto));
+		LogDoc actualDoc = logs.findAll().get(0);
+		assertEquals(logDto, actualDoc.getLogDto());
+	}
 }

@@ -30,63 +30,61 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(LogDtoTest.TestController.class)
 @ContextConfiguration(classes = LogDtoTest.TestController.class)
 class LogDtoTest {
-    public static @RestController class TestController {
-	static LogDto logDtoExp = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 0, "");
+	public static @RestController class TestController {
+		static LogDto logDtoExp = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 0, "");
 
-	@PostMapping("/")
-	void testPost(@RequestBody @Valid LogDto logDto) {
-	    assertEquals(logDtoExp, logDto);
+		@PostMapping("/")
+		void testPost(@RequestBody @Valid LogDto logDto) {
+			assertEquals(logDtoExp, logDto);
+		}
 	}
-    }
 
-    ObjectMapper mapper = new ObjectMapper();
-    @Autowired
-    MockMvc mock;
+	ObjectMapper mapper = new ObjectMapper();
+	@Autowired
+	MockMvc mock;
 
-    @BeforeEach
-    public void setup() {
-	TestController.logDtoExp.dateTime = new Date();
-	TestController.logDtoExp.logType = LogType.NO_EXCEPTION;
-	TestController.logDtoExp.artifact = "artifact";
-	TestController.logDtoExp.responseTime = 0;
-	TestController.logDtoExp.result = "";
-    }
+	@BeforeEach
+	public void setup() {
+		TestController.logDtoExp.dateTime = new Date();
+		TestController.logDtoExp.logType = LogType.NO_EXCEPTION;
+		TestController.logDtoExp.artifact = "artifact";
+		TestController.logDtoExp.responseTime = 0;
+		TestController.logDtoExp.result = "";
+	}
 
-    public void postDtoWithResponceCode(int responceCode) throws Exception {
-	assertEquals(responceCode,
-		mock.perform(post("/").contentType(MediaType.APPLICATION_JSON)
-			.content(mapper.writeValueAsString(TestController.logDtoExp))).andReturn().getResponse()
-			.getStatus());
-    }
+	public void postDtoWithResponceCode(int responceCode) throws Exception {
+		assertEquals(responceCode,
+				mock.perform(post("/").contentType(MediaType.APPLICATION_JSON)
+						.content(mapper.writeValueAsString(TestController.logDtoExp))).andReturn().getResponse()
+						.getStatus());
+	}
 
-    @Test
-    void testNormal() throws Exception {
-	postDtoWithResponceCode(200);
-    }
-    @Nested
-    class faildTests {
-	@DisplayName("dateTime = null")
 	@Test
-	void testArifactDateNull() throws Exception {
-	    TestController.logDtoExp.dateTime = null;
-	    postDtoWithResponceCode(400);
+	void testNormal() throws Exception {
+		postDtoWithResponceCode(200);
 	}
 
+	@Nested
+	class faildTests {
+		@DisplayName("dateTime = null")
+		@Test
+		void testArifactDateNull() throws Exception {
+			TestController.logDtoExp.dateTime = null;
+			postDtoWithResponceCode(400);
+		}
 
+		@DisplayName("logType = null")
+		@Test
+		void testLogType() throws Exception {
+			TestController.logDtoExp.logType = null;
+			postDtoWithResponceCode(400);
+		}
 
-	@DisplayName("logType = null")
-	@Test
-	void testLogType() throws Exception {
-	    TestController.logDtoExp.logType = null;
-	    postDtoWithResponceCode(400);
+		@DisplayName("artifact = ''")
+		@Test
+		void testArifactEmpty() throws Exception {
+			TestController.logDtoExp.artifact = "";
+			postDtoWithResponceCode(400);
+		}
 	}
-
-	@DisplayName("artifact = ''")
-	@Test
-	void testArifactEmpty() throws Exception {
-	    TestController.logDtoExp.artifact = "";
-	    postDtoWithResponceCode(400);
-	}
-    }
 }
-
