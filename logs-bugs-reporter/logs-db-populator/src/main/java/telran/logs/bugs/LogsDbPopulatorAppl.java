@@ -36,6 +36,7 @@ public class LogsDbPopulatorAppl {
 		Set<ConstraintViolation<LogDto>> validations = validator.validate(logDto);
 
 		if (!validations.isEmpty()) {
+			//TODO Auto-generated method stub
 			System.out.println(validations.iterator().next().getMessage());
 		} else {
 			consumerLogs.save(new LogDoc(logDto));

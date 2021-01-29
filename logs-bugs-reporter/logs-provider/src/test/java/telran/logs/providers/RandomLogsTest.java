@@ -82,7 +82,7 @@ class RandomLogsTest {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
 					throw new IllegalStateException();
 				}, LinkedHashMap::new));
-
+				//TODO Auto-generated method stub
 		counted.forEach((key, value) -> System.out.printf("%s:%d\n", key, value));
 	}
 

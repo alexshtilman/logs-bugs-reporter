@@ -62,6 +62,7 @@ public class RandomLogs implements IRandomLogs {
 
 	@Override
 	public void getStatisticsAggregate() {
+		//TODO Auto-generated method stub
 		logs.getStatisticsAggregate().forEach(System.out::println);
 		logs.getStatistics().forEach(System.out::println);
 	}
