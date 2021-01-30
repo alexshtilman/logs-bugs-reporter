@@ -2,8 +2,8 @@ package telran.logs.providers;
 
 public class LogTypeAndCountDto {
 
-	public String logType;
-	public int count;
+	public final String logType;
+	public final int count;
 
 	public LogTypeAndCountDto(String logType, int count) {
 		super();
@@ -12,7 +12,8 @@ public class LogTypeAndCountDto {
 	}
 
 	public LogTypeAndCountDto() {
-
+		this.logType = "";
+		this.count = 0;
 	}
 
 	public String getLogType() {

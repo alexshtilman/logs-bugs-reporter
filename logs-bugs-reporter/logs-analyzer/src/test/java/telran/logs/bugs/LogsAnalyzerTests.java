@@ -24,7 +24,7 @@ import telran.logs.bugs.dto.LogType;
 
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
-public class LogsAnalyzerTests {
+class LogsAnalyzerTests {
 	@Autowired
 	InputDestination producer;
 
