@@ -15,10 +15,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Import;
 
 import telran.logs.bugs.dto.LogDto;
@@ -34,7 +38,16 @@ class RandomLogsTest {
 	@Autowired
 	OutputDestination output;
 
-	static int COUNT_OF_LOGS = 100000;
+	@Value("${count-of-logs:100000}")
+	int COUNT_OF_LOGS;
+	@Autowired
+	StreamBridge streamBridge;
+
+	@Value("${app-binding-name:exceptions-out-0}")
+	String bindingName;
+
+	static Logger LOG = LoggerFactory.getLogger(RandomLogsTest.class);
+
 	static List<LogDto> randomLogs = new ArrayList<>();
 
 	private static final String AUTHENTICATION_ARTIFACT = "authentication";
@@ -82,8 +95,7 @@ class RandomLogsTest {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
 					throw new IllegalStateException();
 				}, LinkedHashMap::new));
-				//TODO Auto-generated method stub
-		counted.forEach((key, value) -> System.out.printf("%s:%d\n", key, value));
+		counted.forEach((key, value) -> LOG.info("{}:{}", key, value));
 	}
 
 	@Test
@@ -96,7 +108,9 @@ class RandomLogsTest {
 				byte[] messageBytes = output.receive(1000).getPayload();
 				String messageString = new String(messageBytes);
 				data.add(messageString);
+				LOG.info("recived message: {}", messageString);
 			} catch (Exception e) {
+				LOG.warn("error on reciving message because: {}", e.getMessage());
 				i--;
 			}
 		}

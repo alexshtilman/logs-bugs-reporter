@@ -6,7 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class LogDto {
-	@NotNull(message = "`dateTime` field is can't be null")
+	@NotNull
 	public Date dateTime;
 
 	@Override
@@ -15,10 +15,10 @@ public class LogDto {
 				+ responseTime + ", result=" + result + "]";
 	}
 
-	@NotNull(message = "`LogType` field is can't be null")
+	@NotNull
 	public LogType logType;
 
-	@NotEmpty(message = "`artifact` field is can't be empty")
+	@NotEmpty
 	public String artifact;
 
 	public int responseTime;

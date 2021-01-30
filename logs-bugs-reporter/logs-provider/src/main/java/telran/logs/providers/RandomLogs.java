@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
 
 import telran.logs.bugs.dto.LogDto;
@@ -20,6 +24,14 @@ public class RandomLogs implements IRandomLogs {
 	@Autowired
 	RandomLogsRepo logs;
 
+	@Autowired
+	StreamBridge streamBridge;
+
+	@Value("${app-binding-name:exceptions-out-0}")
+	String bindingName;
+
+	static Logger LOG = LoggerFactory.getLogger(RandomLogs.class);
+
 	static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
 	{
 		artifacts.put(LogType.AUTHENTICATION_EXCEPTION, "authentication");
@@ -30,9 +42,14 @@ public class RandomLogs implements IRandomLogs {
 			artifacts.put(type, String.format("class %d", getChance()));
 		}
 	}
-	int secExceptionProb = 30;
-	int exceptionProb = 10;
-	int authenticationProb = 70;
+	@Value("${sec-exception-prob:30}")
+	int secExceptionProb;
+
+	@Value("${exception-prob:10}")
+	int exceptionProb;
+
+	@Value("${auth=exception-prob:70}")
+	int authenticationProb;
 
 	@Override
 	public LogDto createRandomLog() {
@@ -48,8 +65,8 @@ public class RandomLogs implements IRandomLogs {
 
 	@Override
 	public List<LogDto> generateLogs(int count) {
-		List<LogDto> docs = new ArrayList<LogDto>();
-		List<LogDoc> newDocs = new ArrayList<LogDoc>();
+		List<LogDto> docs = new ArrayList<>();
+		List<LogDoc> newDocs = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
 			LogDto dto = createRandomLog();
 			docs.add(dto);
@@ -62,9 +79,10 @@ public class RandomLogs implements IRandomLogs {
 
 	@Override
 	public void getStatisticsAggregate() {
-		//TODO Auto-generated method stub
-		logs.getStatisticsAggregate().forEach(System.out::println);
-		logs.getStatistics().forEach(System.out::println);
+		LOG.info("Performing aggregation by annotation");
+		logs.getStatisticsAggregate().forEach(log -> LOG.info("{}", log));
+		LOG.info("Performing aggregation by custom repor");
+		logs.getStatistics().forEach(log -> LOG.info("{}", log));
 	}
 
 	private LogType generateLogType() {
@@ -79,7 +97,7 @@ public class RandomLogs implements IRandomLogs {
 	}
 
 	private LogType getNonSecurityExceptionLog() {
-		LogType nonSecExceptions[] = { LogType.BAD_REQUEST_EXCEPTION, LogType.DUPLICATED_KEY_EXCEPTION,
+		LogType[] nonSecExceptions = { LogType.BAD_REQUEST_EXCEPTION, LogType.DUPLICATED_KEY_EXCEPTION,
 				LogType.NOT_FOUND_EXCEPTION, LogType.SERVER_EXCEPTION };
 		int ind = ThreadLocalRandom.current().nextInt(0, nonSecExceptions.length);
 		return nonSecExceptions[ind];

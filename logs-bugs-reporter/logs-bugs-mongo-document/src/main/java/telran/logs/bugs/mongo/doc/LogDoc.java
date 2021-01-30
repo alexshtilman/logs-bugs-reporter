@@ -33,8 +33,7 @@ public class LogDoc {
 	}
 
 	public LogDto getLogDto() {
-		LogDto res = new LogDto(dateTime, logType, artifact, responseTime, result);
-		return res;
+		return new LogDto(dateTime, logType, artifact, responseTime, result);
 	}
 
 	public LogDoc(Date dateTime, LogType logType, String artifact, int responseTime, String result) {
