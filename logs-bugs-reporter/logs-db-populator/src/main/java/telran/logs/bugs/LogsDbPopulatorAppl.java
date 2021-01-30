@@ -1,6 +1,8 @@
 package telran.logs.bugs;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -58,12 +60,16 @@ public class LogsDbPopulatorAppl {
 		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
 
 		if (!violations.isEmpty()) {
-			StringBuilder b = new StringBuilder();
-			violations.forEach(b::append);
+			List<ApiError> erorrs = new ArrayList<>();
+
+			violations.forEach(cv -> {
+				erorrs.add(new ApiError(cv.getPropertyPath().toString(), cv.getMessage(),
+						cv.getInvalidValue() == null ? "null" : cv.getInvalidValue().toString()));
+			});
 			logDto = new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, LogsDbPopulatorAppl.class.toString(), 0,
-					b.toString());
+					erorrs.toString());
 			consumerLogs.save(new LogDoc(logDto));
-			LOG.debug("saved with exception because: {}", b);
+			LOG.debug("saved with exception because: {}", erorrs);
 		} else {
 
 			consumerLogs.save(new LogDoc(logDto));
