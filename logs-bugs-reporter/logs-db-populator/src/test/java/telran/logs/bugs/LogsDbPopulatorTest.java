@@ -8,11 +8,16 @@ import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.InputDestination;
+import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
 import telran.logs.bugs.dto.LogDto;
@@ -28,6 +33,14 @@ class LogsDbPopulatorTest {
 
 	@Autowired
 	LogsDbRepo consumerLogs;
+
+	@Autowired
+	OutputDestination consumer;
+
+	@Value("${app-binding-name:exceptions-out-0}")
+	String bindingName;
+
+	static Logger LOG = LoggerFactory.getLogger(LogsDbPopulatorTest.class);
 
 	@BeforeEach
 	void setup() {
@@ -76,6 +89,9 @@ class LogsDbPopulatorTest {
 		assertTrue(doc.getLogDto().artifact.contains("telran.logs.bugs.LogsDbPopulatorAppl"));
 		assertEquals(0, doc.getLogDto().responseTime);
 		assertTrue(!doc.getLogDto().result.isEmpty());
+		Message<byte[]> message = consumer.receive(0, bindingName);
+		assertNotNull(message);
+		LOG.debug("Recived from streamBrige {}, message {}", bindingName, new String(message.getPayload()));
 	}
 
 	@Test

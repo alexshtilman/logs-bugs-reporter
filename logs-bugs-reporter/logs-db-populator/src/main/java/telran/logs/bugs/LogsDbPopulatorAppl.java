@@ -70,10 +70,12 @@ public class LogsDbPopulatorAppl {
 					erorrs.toString());
 			consumerLogs.save(new LogDoc(logDto));
 			LOG.debug("saved with exception because: {}", erorrs);
+			streamBridge.send(bindingName, logDto);
 		} else {
 
 			consumerLogs.save(new LogDoc(logDto));
 			LOG.info("saved new log {}", logDto);
+
 		}
 
 	}

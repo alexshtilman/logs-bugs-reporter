@@ -105,7 +105,7 @@ class RandomLogsTest {
 		int countOfMessages = 10;
 		for (int i = 0; i < countOfMessages; i++) {
 			try {
-				byte[] messageBytes = output.receive(1000).getPayload();
+				byte[] messageBytes = output.receive(Long.MAX_VALUE).getPayload();
 				String messageString = new String(messageBytes);
 				data.add(messageString);
 				LOG.info("recived message: {}", messageString);
