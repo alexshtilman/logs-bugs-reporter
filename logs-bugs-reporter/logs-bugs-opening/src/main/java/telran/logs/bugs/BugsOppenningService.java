@@ -57,15 +57,13 @@ public class BugsOppenningService {
 		log.debug("recived log {}", logDto);
 
 		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
-
+		List<String> erorrs = new ArrayList<>();
 		if (!violations.isEmpty()) {
-			List<String> erorrs = new ArrayList<>();
 
-			violations.forEach(cv -> erorrs.add("{\"" + cv.getPropertyPath() + "\": \"" + cv.getMessage() + "\"}"));
+			violations.forEach(cv -> erorrs.add("{" + cv.getPropertyPath() + ": '" + cv.getMessage() + "'}"));
 			logDto = new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, BugsOppenningService.class.toString(), 0,
 					erorrs.toString());
-			log.debug("saved with exception because: {}", erorrs);
-			streamBridge.send(bindingName, logDto);
+
 		}
 		if (logDto.logType != null && logDto.logType != LogType.NO_EXCEPTION) {
 			LocalDate dateOppen = LocalDate.now(); // 1.2.1
@@ -91,9 +89,7 @@ public class BugsOppenningService {
 			} else {
 				// 1.2.4.2
 				log.warn("the programmer related to the artifact {} doesn’t exist", logDto.artifact);
-				Programmer defaultProgrammer = new Programmer(-1, "DefaultProgrammer");
-				programmersRepo.save(defaultProgrammer);
-				programmer = defaultProgrammer;
+				programmer = null;
 				bugStatus = BugStatus.OPEND;
 			}
 
@@ -102,7 +98,10 @@ public class BugsOppenningService {
 
 			bugsRepo.save(
 					new Bug(description, dateOppen, dateClose, bugStatus, seriosness, oppeningMethod, programmer));
-
+			if (!erorrs.isEmpty()) {
+				log.debug("saved with exception because: {}", erorrs);
+				streamBridge.send(bindingName, logDto);
+			}
 		} else {
 			log.debug("log is ignored");
 		}

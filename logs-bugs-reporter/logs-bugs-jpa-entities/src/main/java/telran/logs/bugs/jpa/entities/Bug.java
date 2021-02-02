@@ -50,7 +50,7 @@ public class Bug {
 	OppeningMethod oppeningMethod;
 
 	@ManyToOne
-	@JoinColumn(name = "programmer_id", nullable = false)
+	@JoinColumn(name = "programmer_id", nullable = true)
 	Programmer programmer;
 
 	public Bug(String description, LocalDate dateOppen, LocalDate dateClose, BugStatus status, Seriosness seriosness,

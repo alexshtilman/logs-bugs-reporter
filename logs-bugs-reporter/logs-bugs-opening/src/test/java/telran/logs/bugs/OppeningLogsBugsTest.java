@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Date;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +16,6 @@ import org.springframework.cloud.stream.binder.test.InputDestination;
 import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -35,8 +33,6 @@ import telran.logs.bugs.jpa.entities.Seriosness;
 @Log4j2
 class OppeningLogsBugsTest {
 
-	private static final String NO_PROGRAMMER = "NO PROGRAMMER";
-
 	@Autowired
 	BugsRepo bugsRepo;
 
@@ -51,72 +47,68 @@ class OppeningLogsBugsTest {
 
 	private static final String FILL_TABELS_SQL = "fillTabels.sql";
 
-	@BeforeEach
-	void setup() {
-		consumer.clear();
-	}
-
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testNonExistingArtifact() {
-		LogDto logDto = new LogDto(new Date(), LogType.SERVER_EXCEPTION, "OppeningLogsBugsTest.class", 0,
-				NO_PROGRAMMER);
-		testNewBugExists(logDto, LogType.SERVER_EXCEPTION + ", " + NO_PROGRAMMER, BugStatus.OPEND, Seriosness.CRITICAL,
-				-1);
+		LogDto logDto = new LogDto(new Date(), LogType.SERVER_EXCEPTION, "OppeningLogsBugsTest.class", 0, "data 1");
+		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.CRITICAL, null);
 		assertThrows(Exception.class, consumer::receive);
-	}
-
-	public void testNewBugExists(LogDto logDto, String description, BugStatus bugstatus, Seriosness seriosness,
-			int id) {
-		producer.send(new GenericMessage<LogDto>(logDto));
-		assertEquals(1, bugsRepo.count());
-		Bug bug = bugsRepo.findAll().get(0);
-		assertEquals(description, bug.getDescription());
-		assertNotNull(bug.getDateOppen());
-		assertNull(bug.getDateClose());
-		assertEquals(bugstatus, bug.getStatus());
-		assertEquals(seriosness, bug.getSeriosness());
-		assertEquals(OppeningMethod.AUTOMATIC, bug.getOppeningMethod());
-		assertEquals(id, bug.getProgrammer().getId());
 	}
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testExistingArtifactBlocking() {
-		LogDto logDto = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "LogsAnalyzer.class", 0,
-				NO_PROGRAMMER);
-		testNewBugExists(logDto, LogType.AUTHENTICATION_EXCEPTION + ", " + NO_PROGRAMMER, BugStatus.ASSIGNED,
-				Seriosness.BLOCKING, 4);
-		assertThrows(Exception.class, consumer::receive);
+		LogDto logDto = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "LogsAnalyzer.class", 0, "data 2");
+		testNewBugExists(logDto, BugStatus.ASSIGNED, Seriosness.BLOCKING, 4L);
 	}
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testExistingArtifactCriticalAuthorization() {
-		LogDto logDto = new LogDto(new Date(), LogType.AUTHORIZATION_EXCEPTION, "LogDto.class", 0, NO_PROGRAMMER);
-		testNewBugExists(logDto, LogType.AUTHORIZATION_EXCEPTION + ", " + NO_PROGRAMMER, BugStatus.ASSIGNED,
-				Seriosness.CRITICAL, 2);
-		assertThrows(Exception.class, consumer::receive);
+		LogDto logDto = new LogDto(new Date(), LogType.AUTHORIZATION_EXCEPTION, "LogDto.class", 0, "data 3");
+		testNewBugExists(logDto, BugStatus.ASSIGNED, Seriosness.CRITICAL, 2L);
 	}
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testExistingArtifactCriticalServer() {
-		LogDto logDto = new LogDto(new Date(), LogType.SERVER_EXCEPTION, "LogDto.class", 0, NO_PROGRAMMER);
-		testNewBugExists(logDto, LogType.SERVER_EXCEPTION + ", " + NO_PROGRAMMER, BugStatus.ASSIGNED,
-				Seriosness.CRITICAL, 2);
-		assertThrows(Exception.class, consumer::receive);
+		LogDto logDto = new LogDto(new Date(), LogType.SERVER_EXCEPTION, "LogDto.class", 0, "data 4");
+		testNewBugExists(logDto, BugStatus.ASSIGNED, Seriosness.CRITICAL, 2L);
 	}
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testNullDate() {
-		LogDto logDto = new LogDto(null, LogType.NOT_FOUND_EXCEPTION, "LogsAnalyzer.class", 0, NO_PROGRAMMER);
-		testNewBugExists(logDto, LogType.BAD_REQUEST_EXCEPTION + ", [{\"dateTime\": \"must not be null\"}]",
-				BugStatus.OPEND, Seriosness.MINOR, -1);
+		LogDto logDto = new LogDto(null, LogType.NOT_FOUND_EXCEPTION, "LogsAnalyzer.class", 0, "data 5");
+		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.MINOR, null);
+	}
 
-		Message<byte[]> message = consumer.receive(Long.MAX_VALUE, bindingName);
-		assertNotNull(message);
-		log.debug("recived in consumer {}", new String(message.getPayload()));
+	@Test
+	@Sql(FILL_TABELS_SQL)
+	void testNullDateLogTypeEmptyArtifact() {
+		LogDto logDto = new LogDto(null, null, "", 0, "");
+		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.MINOR, null);
+		consumer.clear();
+	}
+
+	public void testNewBugExists(LogDto logDto, BugStatus bugstatus, Seriosness seriosness, Long id) {
+		producer.send(new GenericMessage<LogDto>(logDto));
+
+		assertEquals(1, bugsRepo.count());
+		Bug bug = bugsRepo.findAll().get(0);
+		assertNotNull(bug.getDateOppen());
+		assertNotNull(bug.getDescription());
+		log.debug(bug.getDescription());
+		assertNull(bug.getDateClose());
+		assertEquals(bugstatus, bug.getStatus());
+		assertEquals(seriosness, bug.getSeriosness());
+		assertEquals(OppeningMethod.AUTOMATIC, bug.getOppeningMethod());
+		if (id == null) {
+			assertNull(bug.getProgrammer());
+		} else {
+			assertEquals(id, bug.getProgrammer().getId());
+			assertThrows(Exception.class, consumer::receive);
+		}
+
 	}
 }
