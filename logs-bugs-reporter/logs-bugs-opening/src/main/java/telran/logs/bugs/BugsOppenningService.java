@@ -52,33 +52,26 @@ public class BugsOppenningService {
 		return this::oppenBugMethod;
 	}
 
+	EnumMap<LogType, Seriosness> logType = new EnumMap<>(LogType.class);
+
+	public BugsOppenningService() {
+		logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriosness.BLOCKING);
+		logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriosness.CRITICAL);
+		logType.put(LogType.SERVER_EXCEPTION, Seriosness.CRITICAL);
+	}
+
 	void oppenBugMethod(LogDto logDto) {
-
 		log.debug("recived log {}", logDto);
-
-		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
-		List<String> erorrs = new ArrayList<>();
-		if (!violations.isEmpty()) {
-
-			violations.forEach(cv -> erorrs.add("{" + cv.getPropertyPath() + ": '" + cv.getMessage() + "'}"));
-			logDto = new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, BugsOppenningService.class.toString(), 0,
-					erorrs.toString());
-
-		}
+		logDto = validateDto(logDto);
 		if (logDto.logType != null && logDto.logType != LogType.NO_EXCEPTION) {
 			LocalDate dateOppen = LocalDate.now(); // 1.2.1
 			LocalDate dateClose = null;// 1.2.2
-			EnumMap<LogType, Seriosness> logType = new EnumMap<>(LogType.class);
-			logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriosness.BLOCKING);
-			logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriosness.CRITICAL);
-			logType.put(LogType.SERVER_EXCEPTION, Seriosness.CRITICAL);
-
+			OppeningMethod oppeningMethod = OppeningMethod.AUTOMATIC;// 1.2.5
 			Seriosness seriosness;// 1.2.3
 			if (logType.get(logDto.logType) != null)
 				seriosness = logType.get(logDto.logType);
 			else
 				seriosness = Seriosness.MINOR;
-
 			BugStatus bugStatus;// 1.2.4
 			Programmer programmer;
 			Artifact artifact = artifactRepo.findById(logDto.artifact).orElse(null);
@@ -92,19 +85,24 @@ public class BugsOppenningService {
 				programmer = null;
 				bugStatus = BugStatus.OPEND;
 			}
-
-			OppeningMethod oppeningMethod = OppeningMethod.AUTOMATIC;// 1.2.5
 			String description = String.format("%s, %s", logDto.logType, logDto.result);// 1.2.6
-
 			bugsRepo.save(
 					new Bug(description, dateOppen, dateClose, bugStatus, seriosness, oppeningMethod, programmer));
-			if (!erorrs.isEmpty()) {
-				log.debug("saved with exception because: {}", erorrs);
-				streamBridge.send(bindingName, logDto);
-			}
 		} else {
 			log.debug("log is ignored");
 		}
+	}
 
+	LogDto validateDto(LogDto logDto) {
+		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
+		List<String> erorrs = new ArrayList<>();
+		if (!violations.isEmpty()) {
+			violations.forEach(cv -> erorrs.add("{" + cv.getPropertyPath() + ": '" + cv.getMessage() + "'}"));
+			log.debug("saved with exception because: {}", erorrs);
+			streamBridge.send(bindingName, logDto);
+			return new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, BugsOppenningService.class.toString(), 0,
+					erorrs.toString());
+		}
+		return logDto;
 	}
 }
