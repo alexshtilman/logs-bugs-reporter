@@ -22,7 +22,7 @@ import telran.logs.bugs.jpa.entities.Seriosness;
 @ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
 @ContextConfiguration(classes = { ArtifactRepo.class, BugsRepo.class, ProgrammersRepo.class })
-public class EntitiesTest {
+class EntitiesTest {
 
 	@Autowired
 	ArtifactRepo artifactRepo;
@@ -40,7 +40,7 @@ public class EntitiesTest {
 		programmersRepo.save(programmer);
 		artifactRepo.save(artifact);
 		Bug bug = new Bug("descri", LocalDate.now(), null, BugStatus.ASSIGNED, Seriosness.MINOR,
-				OppeningMethod.AUTOMATICK, programmer);
+				OppeningMethod.AUTOMATIC, programmer);
 		bugsRepo.save(bug);
 		List<Bug> bugs = bugsRepo.findAll();
 		assertEquals(1, bugs.size());

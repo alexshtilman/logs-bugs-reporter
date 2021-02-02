@@ -6,10 +6,11 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 @SpringBootApplication
 @EntityScan("telran.logs.bugs.jpa.entities")
-public class BugsOppeningAppll {
+
+public class BugsOppeningAppl {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BugsOppeningAppll.class, args);
+		SpringApplication.run(BugsOppeningAppl.class, args);
 	}
 
 }

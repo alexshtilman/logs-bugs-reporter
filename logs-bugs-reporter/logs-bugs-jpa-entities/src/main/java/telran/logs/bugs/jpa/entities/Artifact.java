@@ -7,9 +7,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Entity
 @Table(name = "artifacts")
-//TODO lombock
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class Artifact {
 	@Id
 	@Column(name = "artifact_id")
@@ -18,23 +24,5 @@ public class Artifact {
 	@ManyToOne
 	@JoinColumn(name = "programmer_id", nullable = false)
 	Programmer programmer;
-
-	public Artifact() {
-
-	}
-
-	public Artifact(String artifatId, Programmer programmer) {
-		super();
-		this.artifatId = artifatId;
-		this.programmer = programmer;
-	}
-
-	public String getArtifatId() {
-		return artifatId;
-	}
-
-	public Programmer getProgrammer() {
-		return programmer;
-	}
 
 }
