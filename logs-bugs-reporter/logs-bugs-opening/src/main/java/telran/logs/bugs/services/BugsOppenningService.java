@@ -1,4 +1,4 @@
-package telran.logs.bugs;
+package telran.logs.bugs.services;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,6 +26,9 @@ import telran.logs.bugs.jpa.entities.BugStatus;
 import telran.logs.bugs.jpa.entities.OppeningMethod;
 import telran.logs.bugs.jpa.entities.Programmer;
 import telran.logs.bugs.jpa.entities.Seriosness;
+import telran.logs.bugs.repositories.ArtifactRepo;
+import telran.logs.bugs.repositories.BugsRepo;
+import telran.logs.bugs.repositories.ProgrammersRepo;
 
 @Service
 @Log4j2

@@ -26,6 +26,7 @@ import telran.logs.bugs.jpa.entities.Bug;
 import telran.logs.bugs.jpa.entities.BugStatus;
 import telran.logs.bugs.jpa.entities.OppeningMethod;
 import telran.logs.bugs.jpa.entities.Seriosness;
+import telran.logs.bugs.repositories.BugsRepo;
 
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)

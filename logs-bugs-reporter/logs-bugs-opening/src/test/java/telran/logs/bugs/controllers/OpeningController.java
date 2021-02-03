@@ -1,4 +1,4 @@
-package telran.logs.bugs;
+package telran.logs.bugs.controllers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Programmer;
+import telran.logs.bugs.repositories.ArtifactRepo;
+import telran.logs.bugs.repositories.ProgrammersRepo;
 
 @Component
 @Log4j2
