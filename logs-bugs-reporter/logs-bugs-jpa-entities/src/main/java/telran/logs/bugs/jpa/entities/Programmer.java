@@ -23,4 +23,6 @@ public class Programmer {
 	long id;
 	@Column(unique = true, nullable = false)
 	String name;
+	@Column(unique = true, nullable = false)
+	String email;
 }

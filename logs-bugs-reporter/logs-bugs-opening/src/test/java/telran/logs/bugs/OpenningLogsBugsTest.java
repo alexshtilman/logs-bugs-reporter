@@ -3,7 +3,6 @@ package telran.logs.bugs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Date;
 
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.InputDestination;
-import org.springframework.cloud.stream.binder.test.OutputDestination;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.messaging.support.GenericMessage;
@@ -32,16 +30,13 @@ import telran.logs.bugs.repositories.BugsRepo;
 @Import(TestChannelBinderConfiguration.class)
 @AutoConfigureTestDatabase
 @Log4j2
-class OppeningLogsBugsTest {
+class OpenningLogsBugsTest {
 
 	@Autowired
 	BugsRepo bugsRepo;
 
 	@Autowired
 	InputDestination producer;
-
-	@Autowired
-	OutputDestination consumer;
 
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;
@@ -53,7 +48,6 @@ class OppeningLogsBugsTest {
 	void testNonExistingArtifact() {
 		LogDto logDto = new LogDto(new Date(), LogType.SERVER_EXCEPTION, "OppeningLogsBugsTest.class", 0, "data 1");
 		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.CRITICAL, null);
-		assertThrows(Exception.class, consumer::receive);
 	}
 
 	@Test
@@ -81,20 +75,18 @@ class OppeningLogsBugsTest {
 	@Sql(FILL_TABELS_SQL)
 	void testNullDate() {
 		LogDto logDto = new LogDto(null, LogType.NOT_FOUND_EXCEPTION, "LogsAnalyzer.class", 0, "data 5");
-		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.MINOR, null);
+		testNewBugExists(logDto, BugStatus.ASSIGNED, Seriosness.MINOR, 4L);
 	}
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
 	void testNullDateLogTypeEmptyArtifact() {
-		LogDto logDto = new LogDto(null, null, "", 0, "");
+		LogDto logDto = new LogDto(null, null, "", 0, "ALL WRONG DATA");
 		testNewBugExists(logDto, BugStatus.OPEND, Seriosness.MINOR, null);
-		consumer.clear();
 	}
 
 	public void testNewBugExists(LogDto logDto, BugStatus bugstatus, Seriosness seriosness, Long id) {
 		producer.send(new GenericMessage<LogDto>(logDto));
-
 		assertEquals(1, bugsRepo.count());
 		Bug bug = bugsRepo.findAll().get(0);
 		assertNotNull(bug.getDateOppen());
@@ -108,7 +100,6 @@ class OppeningLogsBugsTest {
 			assertNull(bug.getProgrammer());
 		} else {
 			assertEquals(id, bug.getProgrammer().getId());
-			assertThrows(Exception.class, consumer::receive);
 		}
 
 	}

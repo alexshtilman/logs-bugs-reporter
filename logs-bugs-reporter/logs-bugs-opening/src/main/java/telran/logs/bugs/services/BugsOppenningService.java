@@ -1,14 +1,9 @@
 package telran.logs.bugs.services;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,48 +59,34 @@ public class BugsOppenningService {
 	}
 
 	void oppenBugMethod(LogDto logDto) {
-		log.debug("recived log {}", logDto);
-		logDto = validateDto(logDto);
-		if (logDto.logType != null && logDto.logType != LogType.NO_EXCEPTION) {
-			LocalDate dateOppen = LocalDate.now(); // 1.2.1
-			LocalDate dateClose = null;// 1.2.2
-			OppeningMethod oppeningMethod = OppeningMethod.AUTOMATIC;// 1.2.5
-			Seriosness seriosness;// 1.2.3
-			if (logType.get(logDto.logType) != null)
-				seriosness = logType.get(logDto.logType);
-			else
-				seriosness = Seriosness.MINOR;
-			BugStatus bugStatus;// 1.2.4
-			Programmer programmer;
-			Artifact artifact = artifactRepo.findById(logDto.artifact).orElse(null);
-			if (artifact != null) {
-				// 1.2.4.1
-				programmer = artifact.getProgrammer();
-				bugStatus = BugStatus.ASSIGNED;
-			} else {
-				// 1.2.4.2
-				log.warn("the programmer related to the artifact {} doesn’t exist", logDto.artifact);
-				programmer = null;
-				bugStatus = BugStatus.OPEND;
-			}
-			String description = String.format("%s, %s", logDto.logType, logDto.result);// 1.2.6
-			bugsRepo.save(
-					new Bug(description, dateOppen, dateClose, bugStatus, seriosness, oppeningMethod, programmer));
+		log.debug("BugsOppenningService recived log {}", logDto);
+		LocalDate dateOppen = LocalDate.now(); // 1.2.1
+		LocalDate dateClose = null;// 1.2.2
+		OppeningMethod oppeningMethod = OppeningMethod.AUTOMATIC;// 1.2.5
+		Seriosness seriosness;// 1.2.3
+		if (logType.get(logDto.logType) != null)
+			seriosness = logType.get(logDto.logType);
+		else
+			seriosness = Seriosness.MINOR;
+		BugStatus bugStatus;// 1.2.4
+		Programmer programmer;
+		Artifact artifact = artifactRepo.findById(logDto.artifact).orElse(null);
+		if (artifact != null) {
+			// 1.2.4.1
+			programmer = artifact.getProgrammer();
+			bugStatus = BugStatus.ASSIGNED;
 		} else {
-			log.debug("log is ignored");
+			// 1.2.4.2
+			log.warn("Programmer related to the artifact {} doesn’t exist", logDto.artifact);
+			programmer = null;
+			bugStatus = BugStatus.OPEND;
 		}
+		String description = String.format("%s, %s", logDto.logType, logDto.result);// 1.2.6
+
+		bugsRepo.save(new Bug(description, dateOppen, dateClose, bugStatus, seriosness, oppeningMethod, programmer));
+		log.debug("New Bug report was created, seriosness:{}, bugStatus: {}, assignet to: {}", seriosness, bugStatus,
+				programmer == null ? "no assigned" : programmer);
+
 	}
 
-	LogDto validateDto(LogDto logDto) {
-		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
-		List<String> erorrs = new ArrayList<>();
-		if (!violations.isEmpty()) {
-			violations.forEach(cv -> erorrs.add("{" + cv.getPropertyPath() + ": '" + cv.getMessage() + "'}"));
-			log.debug("saved with exception because: {}", erorrs);
-			streamBridge.send(bindingName, logDto);
-			return new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, BugsOppenningService.class.toString(), 0,
-					erorrs.toString());
-		}
-		return logDto;
-	}
 }

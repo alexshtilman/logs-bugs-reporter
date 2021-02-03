@@ -35,7 +35,7 @@ class EntitiesTest {
 
 	@Test
 	void inital() {
-		Programmer programmer = new Programmer(123, "Moshe");
+		Programmer programmer = new Programmer(123, "Moshe", "moshe@gmail.com");
 		Artifact artifact = new Artifact("authentication", programmer);
 		programmersRepo.save(programmer);
 		artifactRepo.save(artifact);

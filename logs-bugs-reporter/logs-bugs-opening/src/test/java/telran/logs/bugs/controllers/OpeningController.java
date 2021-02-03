@@ -47,7 +47,7 @@ public class OpeningController {
 
 		long i = 1;
 		for (String programmer : randomProgrammersNames) {
-			programmersList.add(new Programmer(i++, programmer));
+			programmersList.add(new Programmer(i++, programmer, programmer + "@gmail.com"));
 		}
 		programmersRepo.saveAll(programmersList);
 		log.debug("generating random artifacts {}", nArtifacts);

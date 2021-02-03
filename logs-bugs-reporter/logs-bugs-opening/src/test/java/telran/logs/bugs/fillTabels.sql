@@ -2,11 +2,11 @@ DELETE FROM bugs;
 DELETE FROM artifacts;
 DELETE FROM programmers;
 
-insert into programmers (id,name) VALUES
-(1, 'Avior'),
-(2,	'Eina'),
-(3,	'Lior'),
-(4,	'Yonat');
+insert into programmers (id,name,email) VALUES
+(1, 'Avior','Avior@gmail.com'),
+(2,	'Eina','Eina@gmail.com'),
+(3,	'Lior','Lior@gmail.com'),
+(4,	'Yonat','Yonat@gmail.com');
 
 
 insert into artifacts (artifact_id,programmer_id) VALUES
