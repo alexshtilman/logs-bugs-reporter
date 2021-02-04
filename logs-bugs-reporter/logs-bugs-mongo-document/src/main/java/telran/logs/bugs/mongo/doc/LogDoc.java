@@ -6,9 +6,11 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.NoArgsConstructor;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
+@NoArgsConstructor
 @Document(collection = "logs")
 public class LogDoc {
 	@Id
@@ -44,8 +46,4 @@ public class LogDoc {
 		this.responseTime = responseTime;
 		this.result = result;
 	}
-
-	public LogDoc() {
-	}
-
 }

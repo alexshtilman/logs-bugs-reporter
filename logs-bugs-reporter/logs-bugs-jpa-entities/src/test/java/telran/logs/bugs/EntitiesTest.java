@@ -39,7 +39,7 @@ class EntitiesTest {
 		Artifact artifact = new Artifact("authentication", programmer);
 		programmersRepo.save(programmer);
 		artifactRepo.save(artifact);
-		Bug bug = new Bug("descri", LocalDate.now(), null, BugStatus.ASSIGNED, Seriosness.MINOR,
+		Bug bug = new Bug("description", LocalDate.now(), null, BugStatus.ASSIGNED, Seriosness.MINOR,
 				OppeningMethod.AUTOMATIC, programmer);
 		bugsRepo.save(bug);
 		List<Bug> bugs = bugsRepo.findAll();
