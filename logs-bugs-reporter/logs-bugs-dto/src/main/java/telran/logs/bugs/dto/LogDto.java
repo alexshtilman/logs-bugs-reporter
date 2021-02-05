@@ -6,10 +6,14 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@NoArgsConstructor
+@Getter
 public class LogDto {
 	@NotNull
 	public Date dateTime;
@@ -32,9 +36,4 @@ public class LogDto {
 		this.responseTime = responseTime;
 		this.result = result;
 	}
-
-	public LogType getLogType() {
-		return logType;
-	}
-
 }

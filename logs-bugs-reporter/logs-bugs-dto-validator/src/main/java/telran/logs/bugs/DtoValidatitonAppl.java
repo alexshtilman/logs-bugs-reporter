@@ -7,30 +7,22 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.LogDto;
-import telran.logs.bugs.mongo.doc.LogDoc;
+import telran.logs.bugs.services.IDtoValidatorService;
 
 @SpringBootApplication
-@Log4j2
-public class LogsDbPopulatorAppl {
-
-	@Autowired
-	LogsDbRepo consumerLogs;
+public class DtoValidatitonAppl {
 
 	public static void main(String[] args) {
-
-		SpringApplication.run(LogsDbPopulatorAppl.class, args);
-
+		SpringApplication.run(DtoValidatitonAppl.class, args);
 	}
+
+	@Autowired
+	IDtoValidatorService dtoValidatorService;
 
 	@Bean
-	Consumer<LogDto> getLogDtoCounsumer() {
-		return this::takeLogDto;
+	Consumer<LogDto> getDto() {
+		return dtoValidatorService::validateDto;
 	}
 
-	public void takeLogDto(LogDto logDto) {
-		log.debug("recived log {}", logDto);
-		consumerLogs.save(new LogDoc(logDto));
-	}
 }

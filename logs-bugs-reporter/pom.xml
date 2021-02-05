@@ -26,7 +26,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -64,5 +63,6 @@
 		<module>logs-bugs-jpa-entities</module>
 		<module>logs-bugs-opening</module>
 		<module>logs-bugs-email-provider</module>
+		<module>logs-bugs-dto-validator</module>
 	</modules>
 </project>
