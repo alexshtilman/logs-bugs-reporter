@@ -2,6 +2,7 @@ package telran.logs.bugs;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,10 +18,7 @@ import org.springframework.cloud.stream.binder.test.TestChannelBinderConfigurati
 import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
@@ -28,7 +26,6 @@ import telran.logs.bugs.dto.LogType;
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
 @Log4j2
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 class DtoValidationTests {
 
 	@Autowired
@@ -45,38 +42,41 @@ class DtoValidationTests {
 
 	List<LogDto> logDtoList = new ArrayList<>();
 	{
-		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "valid", 10, ""));
+		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "valid", 10, "valid 1"));
 
-		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "null date", 10, ""));
-		logDtoList.add(new LogDto(new Date(), null, "null LogType", 10, ""));
-		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "", 10, ""));
-		logDtoList.add(new LogDto(null, null, "null date & null LogType", 10, ""));
-		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "", 10, ""));
-		logDtoList.add(new LogDto(new Date(), null, "", 10, ""));
-		logDtoList.add(new LogDto(null, null, "", 10, ""));
+		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "null date", 10, "invalid 2"));
+		logDtoList.add(new LogDto(new Date(), null, "null LogType", 10, "invalid 3"));
+		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "", 10, "invalid 4"));
+		logDtoList.add(new LogDto(null, null, "null date & null LogType", 10, "invalid 5"));
+		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "", 10, "invalid 6"));
+		logDtoList.add(new LogDto(new Date(), null, "", 10, "invalid 7"));
+		logDtoList.add(new LogDto(null, null, "", 10, "invalid 8"));
 	}
 
 	@Test
-	void testAllLogs() {
-		tesCount(8, allLogs);
-	}
-
-	@Test
-	void testOnlyExceptions() {
-		tesCount(7, onlyExceptions);
-	}
-
-	@SneakyThrows
-	public void tesCount(int expectedCount, String bindingName) {
+	void testLogs() {
 		logDtoList.forEach(logDto -> input.send(new GenericMessage<LogDto>(logDto)));
+		List<String> resultAllLogs = receiveFromLogs(8, allLogs);
+		assertTrue(resultAllLogs.get(0).contains("NO_EXCEPTION"));
+		List<String> resultOnlyExceptions = receiveFromLogs(7, onlyExceptions);
+		for (String res : resultOnlyExceptions) {
+			assertTrue(res.contains("BAD_REQUEST_EXCEPTION"));
+		}
+	}
+
+	public List<String> receiveFromLogs(int expectedCount, String bindingName) {
+		List<String> result = new ArrayList<String>();
+
 		for (int i = 0; i < expectedCount; i++) {
 			Message<byte[]> message = consumer.receive(Long.MAX_VALUE, bindingName);
 			assertNotNull(message);
-			log.debug("{} Recived from streamBrige {}, message {}", i, bindingName, new String(message.getPayload()));
+			String json = new String(message.getPayload());
+			result.add(json);
+			log.debug("Recived from streamBrige {}, message {}", bindingName, json);
 		}
-
-		Message<byte[]> message = consumer.receive(1000, bindingName);
+		// there should no more messages
+		Message<byte[]> message = consumer.receive(0, bindingName);
 		assertNull(message);
-
+		return result;
 	}
 }
