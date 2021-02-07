@@ -48,11 +48,11 @@ public class LogsAnalyzerService {
 			logDto = new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, LogsAnalyzerService.class.toString(), 0,
 					errors.toString());
 			log.debug("Found validation errors: {}", errors.toString());
+		}
+		if (logDto.logType != LogType.NO_EXCEPTION) {
 			streamBridge.send(onlyExceptions, logDto);
 			log.debug("Has sent data to {}", onlyExceptions);
-		} else
-			log.debug("No validation errors");
-
+		}
 		streamBridge.send(allLogs, logDto);
 		log.debug("Has sent to {} logDto: {}", allLogs, logDto);
 	}
