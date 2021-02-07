@@ -1,6 +1,13 @@
 package telran.logs.bugs.services;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,18 +25,35 @@ public class LogsAnalyzerService {
 	@Autowired
 	StreamBridge streamBridge;
 
-	@Value("${app-binding-name:exceptions-out-0}")
-	String bindingName;
+	@Value("${app-binding-name:logs-all-out-0}")
+	String allLogs;
+
+	@Value("${app-binding-name-exceptions:logs-only-exception-out-0}")
+	String onlyExceptions;
+
+	@Autowired
+	Validator validator;
 
 	@Bean
-	Consumer<LogDto> getAnalyzerBean() {
-		return this::analyzerMethod;
+	Consumer<LogDto> getDto() {
+		return this::analyzeDto;
 	}
 
-	void analyzerMethod(LogDto logDto) {
-		log.debug("recived log {}", logDto);
-		if (logDto.logType != null && logDto.logType != LogType.NO_EXCEPTION) {
-			streamBridge.send(bindingName, logDto);
-		}
+	void analyzeDto(LogDto logDto) {
+		log.debug("Recived dto: {}", logDto);
+		Set<ConstraintViolation<LogDto>> violations = validator.validate(logDto);
+		List<String> errors = new ArrayList<>();
+		if (!violations.isEmpty()) {
+			violations.forEach(cv -> errors.add("{" + cv.getPropertyPath() + ":'" + cv.getMessage() + "'}"));
+			logDto = new LogDto(new Date(), LogType.BAD_REQUEST_EXCEPTION, LogsAnalyzerService.class.toString(), 0,
+					errors.toString());
+			log.debug("Found validation errors: {}", errors.toString());
+			streamBridge.send(onlyExceptions, logDto);
+			log.debug("Has sent data to {}", onlyExceptions);
+		} else
+			log.debug("No validation errors");
+
+		streamBridge.send(allLogs, logDto);
+		log.debug("Has sent to {} logDto: {}", allLogs, logDto);
 	}
 }

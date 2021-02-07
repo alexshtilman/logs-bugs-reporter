@@ -1,14 +1,14 @@
 package telran.logs.bugs;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,43 +19,64 @@ import org.springframework.context.annotation.Import;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 
+import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
+@Log4j2
 class LogsAnalyzerTests {
+
 	@Autowired
-	InputDestination producer;
+	InputDestination input;
 
 	@Autowired
 	OutputDestination consumer;
 
-	@Value("${app-binding-name}")
-	String bindingName;
+	@Value("${app-binding-name:logs-all-out-0}")
+	String allLogs;
 
-	static Logger LOG = LoggerFactory.getLogger(LogsAnalyzerTests.class);
+	@Value("${app-binding-name-exceptions:logs-only-exception-out-0}")
+	String onlyExceptions;
 
-	@Test
-	void analyzerTestNonException() {
-		LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 0, "");
-		producer.send(new GenericMessage<LogDto>(logDto));
-		assertThrows(Exception.class, consumer::receive);
+	List<LogDto> logDtoList = new ArrayList<>();
+	{
+		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "valid", 10, "valid 1"));
+
+		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "null date", 10, "invalid 2"));
+		logDtoList.add(new LogDto(new Date(), null, "null LogType", 10, "invalid 3"));
+		logDtoList.add(new LogDto(new Date(), LogType.NO_EXCEPTION, "", 10, "invalid 4"));
+		logDtoList.add(new LogDto(null, null, "null date & null LogType", 10, "invalid 5"));
+		logDtoList.add(new LogDto(null, LogType.NO_EXCEPTION, "", 10, "invalid 6"));
+		logDtoList.add(new LogDto(new Date(), null, "", 10, "invalid 7"));
+		logDtoList.add(new LogDto(null, null, "", 10, "invalid 8"));
 	}
 
-	@BeforeEach
-	void setup() {
-		consumer.clear();
+	@Test
+	void testLogs() {
+		logDtoList.forEach(logDto -> input.send(new GenericMessage<LogDto>(logDto)));
+		List<String> resultAllLogs = receiveFromLogs(8, allLogs);
+		assertTrue(resultAllLogs.get(0).contains("NO_EXCEPTION"));
+		List<String> resultOnlyExceptions = receiveFromLogs(7, onlyExceptions);
+		for (String res : resultOnlyExceptions) {
+			assertTrue(res.contains("BAD_REQUEST_EXCEPTION"));
+		}
 	}
 
-	@Test
-	void analyzerTestException() {
-		LogDto logDto = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact", 0, "");
-		producer.send(new GenericMessage<LogDto>(logDto));
-		// assertNull(consumer.receive(1000, bindingName + "42"));
+	public List<String> receiveFromLogs(int expectedCount, String bindingName) {
+		List<String> result = new ArrayList<String>();
+
+		for (int i = 0; i < expectedCount; i++) {
+			Message<byte[]> message = consumer.receive(Long.MAX_VALUE, bindingName);
+			assertNotNull(message);
+			String json = new String(message.getPayload());
+			result.add(json);
+			log.debug("Recived from streamBrige {}, message {}", bindingName, json);
+		}
+		// there should no more messages
 		Message<byte[]> message = consumer.receive(0, bindingName);
-		assertNotNull(message);
-		LOG.debug("recived in consumer {}", new String(message.getPayload()));
-
+		assertNull(message);
+		return result;
 	}
 }
