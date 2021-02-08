@@ -8,4 +8,9 @@ public class EmailProviderClient {
 		// TODO communication with sync service for email
 		return null;
 	}
+
+	public String getAssignerMail() {
+		// TODO communicating with sync service for getting assigner’s email
+		return null;
+	}
 }
