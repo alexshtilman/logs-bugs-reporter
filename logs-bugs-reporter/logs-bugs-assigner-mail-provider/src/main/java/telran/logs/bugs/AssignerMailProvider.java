@@ -19,6 +19,6 @@ public class AssignerMailProvider {
 
 	@GetMapping("/get_assigner_mail")
 	public String getAssignerMail() {
-		return defaultAssgnerEmail == null ? "" : defaultAssgnerEmail;
+		return defaultAssgnerEmail;
 	}
 }
