@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import telran.logs.bugs.jpa.entities.Artifact;
+import telran.logs.bugs.repo.ArtifactRepository;
 
 @SpringBootApplication
 @RestController
@@ -20,7 +21,7 @@ public class EmailProviderAppl {
 	}
 
 	@Autowired
-	ArtifactRepo artifactRepo;
+	ArtifactRepository artifactRepo;
 
 	@GetMapping("/{artifact}")
 	public String getEmailFromAtifact(@PathVariable(name = "artifact") String artifact) {
