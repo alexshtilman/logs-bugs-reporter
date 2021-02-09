@@ -33,19 +33,19 @@ public class EmailNotifierService {
 		String person = "Programmer";
 
 		String email = emailClient.getEmailByArtifact(logDto.artifact);
-		if (email == null) {
+		if (email == null || email.isEmpty()) {
 			person = "Opened Bugs Assigner";
 			email = emailClient.getAssignerMail();
-			if (email == null) {
-				log.error("Email to has received neither from logs-bugs-email-provider "
+			if (email == null || email.isEmpty()) {
+				log.error("Email `to` has been received neither from logs-bugs-email-provider "
 						+ "nor from logs-bugs-assigner-mail-provider!");
 				return;
 			}
 		}
 
 		String text = String.format(
-				"Hello, %s\n" + "Exception has been received\n" + "Date: %s \n" + "Exception type: %s\n"
-						+ "Artifact: %s\n" + "Explanation: %s",
+				"Hello, %s%n" + "Exception has been received%n" + "Date: %s%n" + "Exception type: %s%n"
+						+ "Artifact: %s%n" + "Explanation: %s",
 				person, logDto.dateTime, logDto.logType, logDto.artifact, logDto.result);
 
 		sendMail(email, subject, text);
