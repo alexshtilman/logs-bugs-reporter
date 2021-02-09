@@ -49,7 +49,7 @@ class EmailNotifierTest {
 	@Test
 	void normalFlow() {
 		when(client.getEmailByArtifact(anyString())).thenReturn(EMAIL);
-		setndAndAssert(EMAIL, "Programmer");
+		sendAndAssert(EMAIL, "Programmer");
 	}
 
 	@Test
@@ -57,7 +57,7 @@ class EmailNotifierTest {
 		when(client.getEmailByArtifact(anyString())).thenReturn(null);
 		when(client.getAssignerMail()).thenReturn(ASSIGNER_EMAIL);
 
-		setndAndAssert(ASSIGNER_EMAIL, "Opened Bugs Assigner");
+		sendAndAssert(ASSIGNER_EMAIL, "Opened Bugs Assigner");
 	}
 
 	@SneakyThrows
@@ -75,7 +75,7 @@ class EmailNotifierTest {
 	}
 
 	@SneakyThrows
-	void setndAndAssert(String email, String assigner) {
+	void sendAndAssert(String email, String assigner) {
 		LogDto logException = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact", 0, "result");
 		input.send(new GenericMessage<LogDto>(logException));
 		MimeMessage message = greenMail.getReceivedMessages()[0];
