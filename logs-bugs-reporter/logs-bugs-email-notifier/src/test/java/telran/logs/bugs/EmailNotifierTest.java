@@ -49,29 +49,15 @@ class EmailNotifierTest {
 	@Test
 	void normalFlow() {
 		when(client.getEmailByArtifact(anyString())).thenReturn(EMAIL);
-		LogDto logException = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact", 0, "result");
-		input.send(new GenericMessage<LogDto>(logException));
-		MimeMessage message = greenMail.getReceivedMessages()[0];
-		assertEquals(EMAIL, message.getAllRecipients()[0].toString());
-		assertEquals("exception", message.getSubject());
-		assertTrue(GreenMailUtil.getBody(message).contains("Programmer"));
-
+		setndAndAssert(EMAIL, "Programmer");
 	}
 
-	@SneakyThrows
 	@Test
 	void normalNotAssigned() {
-		// Assume that we don't know
 		when(client.getEmailByArtifact(anyString())).thenReturn(null);
 		when(client.getAssignerMail()).thenReturn(ASSIGNER_EMAIL);
 
-		LogDto logException = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "UNKNOWN ARTIFACT", 0, "");
-		input.send(new GenericMessage<LogDto>(logException));
-		MimeMessage message = greenMail.getReceivedMessages()[0];
-		assertEquals(ASSIGNER_EMAIL, message.getAllRecipients()[0].toString());
-		assertEquals("exception", message.getSubject());
-		assertTrue(GreenMailUtil.getBody(message).contains("Opened Bugs Assigner"));
-
+		setndAndAssert(ASSIGNER_EMAIL, "Opened Bugs Assigner");
 	}
 
 	@SneakyThrows
@@ -87,4 +73,15 @@ class EmailNotifierTest {
 		assertEquals(0, messages.length);
 
 	}
+
+	@SneakyThrows
+	void setndAndAssert(String email, String assigner) {
+		LogDto logException = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact", 0, "result");
+		input.send(new GenericMessage<LogDto>(logException));
+		MimeMessage message = greenMail.getReceivedMessages()[0];
+		assertEquals(email, message.getAllRecipients()[0].toString());
+		assertEquals("exception", message.getSubject());
+		assertTrue(GreenMailUtil.getBody(message).contains(assigner));
+	}
+
 }
