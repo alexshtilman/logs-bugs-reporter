@@ -20,9 +20,7 @@ public class LogsDbPopulatorAppl {
 	LogsRepo consumerLogs;
 
 	public static void main(String[] args) {
-
 		SpringApplication.run(LogsDbPopulatorAppl.class, args);
-
 	}
 
 	@Bean

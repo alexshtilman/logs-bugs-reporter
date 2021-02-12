@@ -1,10 +1,12 @@
 package telran.logs.bugs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,14 @@ class LogsDbPopulatorTest {
 
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;
+
+	@DisplayName("All beans successfully loaded")
+	@Test
+	void contextLoads() {
+		assertNotNull(input);
+		assertNotNull(consumerLogs);
+		assertNotNull(consumer);
+	}
 
 	@BeforeEach
 	void setup() {
@@ -71,10 +81,17 @@ class LogsDbPopulatorTest {
 		sendAndAssertExpected(logDto);
 	}
 
+	@Test
+	void sendEmptyLogDto() {
+		LogDto logDto = new LogDto();
+		sendAndAssertExpected(logDto);
+	}
+
 	public void sendAndAssertExpected(LogDto dto) {
 		input.send(new GenericMessage<LogDto>(dto));
 		StepVerifier.create(consumerLogs.count()).expectNextCount(1).verifyComplete();
 		StepVerifier.create(consumerLogs.findAll()).assertNext(doc -> {
+			assertNotNull(doc.getId());
 			assertEquals(dto.dateTime, doc.getLogDto().dateTime);
 			assertEquals(dto.logType, doc.getLogDto().logType);
 			assertEquals(dto.artifact, doc.getLogDto().artifact);
