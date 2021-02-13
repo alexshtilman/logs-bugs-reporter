@@ -17,9 +17,9 @@ import org.springframework.cloud.stream.binder.test.TestChannelBinderConfigurati
 import org.springframework.context.annotation.Import;
 import org.springframework.messaging.support.GenericMessage;
 
-import reactor.test.StepVerifier;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
+import telran.logs.bugs.mongo.doc.LogDoc;
 import telran.logs.bugs.mongo.repo.LogsRepo;
 
 @SpringBootTest
@@ -89,14 +89,9 @@ class LogsDbPopulatorTest {
 
 	public void sendAndAssertExpected(LogDto dto) {
 		input.send(new GenericMessage<LogDto>(dto));
-		StepVerifier.create(consumerLogs.count()).expectNextCount(1).verifyComplete();
-		StepVerifier.create(consumerLogs.findAll()).assertNext(doc -> {
-			assertNotNull(doc.getId());
-			assertEquals(dto.dateTime, doc.getLogDto().dateTime);
-			assertEquals(dto.logType, doc.getLogDto().logType);
-			assertEquals(dto.artifact, doc.getLogDto().artifact);
-			assertEquals(dto.responseTime, doc.getLogDto().responseTime);
-			assertEquals(dto.result, doc.getLogDto().result);
-		}).expectNextCount(0).verifyComplete();
+		assertEquals(1, consumerLogs.count().block());
+		LogDoc doc = consumerLogs.findAll().blockFirst();
+		assertNotNull(doc.getId());
+		assertEquals(dto, doc.getLogDto());
 	}
 }

@@ -1,6 +1,7 @@
 package telran.logs.bugs.mongo.doc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Date;
 
@@ -13,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import reactor.test.StepVerifier;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
@@ -34,14 +34,11 @@ class LogDocTest {
 	void docStoreTest() {
 		LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 20, "result");
 		logs.save(new LogDoc(logDto)).subscribe();
-		StepVerifier.create(logs.count()).expectNextCount(1).verifyComplete();
+		assertEquals(1, logs.count().block());
 
-		StepVerifier.create(logs.findAll()).assertNext(doc -> {
-			assertEquals(logDto.dateTime, doc.getLogDto().dateTime);
-			assertEquals(logDto.logType, doc.getLogDto().logType);
-			assertEquals(logDto.artifact, doc.getLogDto().artifact);
-			assertEquals(logDto.responseTime, doc.getLogDto().responseTime);
-			assertEquals(logDto.result, doc.getLogDto().result);
-		}).expectNextCount(0).verifyComplete();
+		LogDoc expected = logs.findAll().blockFirst();
+		assertNotNull(expected.getId());
+		assertEquals(logDto, expected.getLogDto());
+
 	}
 }
