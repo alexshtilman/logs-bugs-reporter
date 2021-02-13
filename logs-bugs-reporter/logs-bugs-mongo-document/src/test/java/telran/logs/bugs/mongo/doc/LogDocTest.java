@@ -27,13 +27,13 @@ class LogDocTest {
 
 	@BeforeEach
 	void setup() {
-		logs.deleteAll().log().subscribe();
+		logs.deleteAll().log().block();
 	}
 
 	@Test
 	void docStoreTest() {
 		LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 20, "result");
-		logs.save(new LogDoc(logDto)).subscribe();
+		logs.save(new LogDoc(logDto)).block();
 		assertEquals(1, logs.count().block());
 
 		LogDoc expected = logs.findAll().blockFirst();

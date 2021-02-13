@@ -48,7 +48,7 @@ class LogsDbPopulatorTest {
 
 	@BeforeEach
 	void setup() {
-		consumerLogs.deleteAll().log().subscribe();
+		consumerLogs.deleteAll().block();
 	}
 
 	@Test
