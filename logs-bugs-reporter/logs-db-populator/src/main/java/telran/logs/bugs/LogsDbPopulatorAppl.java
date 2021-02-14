@@ -30,6 +30,7 @@ public class LogsDbPopulatorAppl {
 
 	public void takeLogDto(LogDto logDto) {
 		log.debug("recived log {}", logDto);
-		consumerLogs.save(new LogDoc(logDto)).subscribe();
+		consumerLogs.save(new LogDoc(logDto)).subscribe(x -> log.debug("saved log {}", logDto));
+		log.debug("start saving log {}", logDto);
 	}
 }

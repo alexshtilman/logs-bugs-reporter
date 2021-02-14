@@ -3,6 +3,7 @@ package telran.logs.bugs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.time.Duration;
 import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -89,8 +90,8 @@ class LogsDbPopulatorTest {
 
 	public void sendAndAssertExpected(LogDto dto) {
 		input.send(new GenericMessage<LogDto>(dto));
-		assertEquals(1, consumerLogs.count().block());
-		LogDoc doc = consumerLogs.findAll().blockFirst();
+		assertEquals(1, consumerLogs.count().block(Duration.ofSeconds(10)));
+		LogDoc doc = consumerLogs.findAll().blockFirst(Duration.ofSeconds(10));
 		assertNotNull(doc.getId());
 		assertEquals(dto, doc.getLogDto());
 	}

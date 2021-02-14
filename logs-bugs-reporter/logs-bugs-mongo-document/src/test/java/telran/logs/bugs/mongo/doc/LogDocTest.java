@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +35,11 @@ class LogDocTest {
 	void docStoreTest() {
 		LogDto logDto = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 20, "result");
 		logs.save(new LogDoc(logDto)).block();
-		assertEquals(1, logs.count().block());
 
-		LogDoc expected = logs.findAll().blockFirst();
-		assertNotNull(expected.getId());
-		assertEquals(logDto, expected.getLogDto());
+		List<LogDoc> expected = logs.findAll().buffer().blockFirst();
+		assertEquals(1, expected.size());
+		assertNotNull(expected.get(0).getId());
+		assertEquals(logDto, expected.get(0).getLogDto());
 
 	}
 }
