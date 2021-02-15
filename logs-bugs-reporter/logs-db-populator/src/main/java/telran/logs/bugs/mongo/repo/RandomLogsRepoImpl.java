@@ -1,4 +1,4 @@
-package telran.logs.providers;
+package telran.logs.bugs.mongo.repo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 
 import telran.logs.bugs.mongo.doc.LogDoc;
+import telran.logs.bugs.mongo.dto.LogTypeAndCountDto;
 
 public class RandomLogsRepoImpl implements RandomLogsRepoCustom {
 

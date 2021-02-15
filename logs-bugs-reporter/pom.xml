@@ -80,5 +80,6 @@
 		<module>logs-bugs-email-notifier</module>
 		<module>logs-bugs-assigner-mail-provider</module>
 		<module>logs-info-back-office</module>
+		<module>logs-generator-component</module>
 	</modules>
 </project>

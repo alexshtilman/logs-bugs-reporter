@@ -1,6 +1,5 @@
-# home work 63
+# home work 64
 
-1. So far, commit of CW-63 contains the following issues:
-   1. compilation error in logs-bugs-mongo-document project: the method findAll returns `Flux<LogDoc>` rather than `List<logDto>`;
-   1. bug in logs-db-populator as Spring Data Mongodb Reactive implies ReactiveMongoRepository as the base repository
-      You should to fix all the issues by using Flux/Mono functionality
+1. So far, two projects have copies of the same file RandomLogs. It is not a good state because in the case we need to update that file we will have to do it at two different places. You should do refactoring of the application projects structure to fix the above
+1. Write implementation of the method getAllExceptions from the interface LogsInfo with appropriate Rest Controller end-point method.
+1. Write Unit test cases for all three end-points. Consider using WebTestClient class as we did in the project logs-bugs-emai-provider

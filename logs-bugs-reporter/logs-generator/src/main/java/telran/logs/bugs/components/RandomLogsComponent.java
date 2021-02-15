@@ -1,36 +1,24 @@
-package telran.logs.providers;
+package telran.logs.bugs.components;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Component;
 
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
-import telran.logs.bugs.mongo.doc.LogDoc;
 
+/**
+ * Component used to generate random {@link telran.logs.bugs.dto.LogDto}
+ * 
+ * @since homework 64
+ *
+ */
 @Component
-public class RandomLogsImpl implements RandomLogs {
-
-	@Autowired
-	RandomLogsRepo logs;
-
-	@Autowired
-	StreamBridge streamBridge;
-
-	@Value("${app-binding-name:exceptions-out-0}")
-	String bindingName;
-
-	static Logger LOG = LoggerFactory.getLogger(RandomLogsImpl.class);
+public class RandomLogsComponent {
 
 	static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
 	{
@@ -48,10 +36,9 @@ public class RandomLogsImpl implements RandomLogs {
 	@Value("${exception-prob:10}")
 	int exceptionProb;
 
-	@Value("${auth=exception-prob:70}")
+	@Value("${auth-exception-prob:70}")
 	int authenticationProb;
 
-	@Override
 	public LogDto createRandomLog() {
 		Date dateTime = new Date();
 		LogType exception = generateLogType();
@@ -63,31 +50,8 @@ public class RandomLogsImpl implements RandomLogs {
 
 	}
 
-	@Override
-	public List<LogDto> generateLogs(int count) {
-		List<LogDto> docs = new ArrayList<>();
-		List<LogDoc> newDocs = new ArrayList<>();
-		for (int i = 0; i < count; i++) {
-			LogDto dto = createRandomLog();
-			docs.add(dto);
-			newDocs.add(new LogDoc(dto));
-		}
-
-		logs.saveAll(newDocs);
-		return docs;
-	}
-
-	@Override
-	public void getStatisticsAggregate() {
-		LOG.info("Performing aggregation by annotation");
-		logs.getStatisticsAggregate().forEach(log -> LOG.info("{}", log));
-		LOG.info("Performing aggregation by custom repor");
-		logs.getStatistics().forEach(log -> LOG.info("{}", log));
-	}
-
 	private LogType generateLogType() {
 		int chance = getChance();
-
 		return chance <= exceptionProb ? getExceptionLog() : LogType.NO_EXCEPTION;
 	}
 

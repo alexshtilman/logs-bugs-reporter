@@ -15,14 +15,10 @@
 		</dependency>
 		<dependency>
 			<groupId>telran.logs.bugs</groupId>
-			<artifactId>logs-bugs-mongo-document</artifactId>
+			<artifactId>logs-generator-component</artifactId>
 			<version>0.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>de.flapdoodle.embed</groupId>
-			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-			<scope>test</scope>
-		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-stream -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

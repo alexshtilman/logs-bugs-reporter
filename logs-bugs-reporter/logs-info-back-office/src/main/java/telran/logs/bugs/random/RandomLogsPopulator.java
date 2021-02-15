@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.log4j.Log4j2;
+import telran.logs.bugs.components.RandomLogsComponent;
 import telran.logs.bugs.mongo.doc.LogDoc;
 import telran.logs.bugs.repo.LogRepository;
 
@@ -19,7 +20,8 @@ import telran.logs.bugs.repo.LogRepository;
 public class RandomLogsPopulator {
 
 	@Autowired
-	RandomLogs randomlogs;
+	RandomLogsComponent randomlogs;
+
 	@Value("${app-number-logs:0}")
 	int nLogs;
 	@Value("${app-population-enable:false}")

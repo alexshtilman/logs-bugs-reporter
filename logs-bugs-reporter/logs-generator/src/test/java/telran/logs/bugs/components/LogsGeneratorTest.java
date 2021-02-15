@@ -1,52 +1,45 @@
-package telran.logs.providers;
+package telran.logs.bugs.components;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.stream.binder.test.OutputDestination;
-import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
-import org.springframework.cloud.stream.function.StreamBridge;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
-@SpringBootTest
-@Import(TestChannelBinderConfiguration.class)
-class RandomLogsImplTest {
+/**
+ * Tests logic of generation and percent of random chances according
+ * distribution
+ * 
+ * @since homework 64
+ */
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = RandomLogsComponent.class)
+@Log4j2
+class LogsGeneratorTest {
 
 	@Autowired
-	RandomLogsImpl myLogs;
+	RandomLogsComponent myLogs;
 
-	@Autowired
-	OutputDestination output;
-
-	@Value("${count-of-logs:100000}")
+	@Value("${count-of-logs:10000000}")
 	int COUNT_OF_LOGS;
-	@Autowired
-	StreamBridge streamBridge;
-
-	@Value("${app-binding-name:exceptions-out-0}")
-	String bindingName;
-
-	static Logger LOG = LoggerFactory.getLogger(RandomLogsImplTest.class);
 
 	static List<LogDto> randomLogs = new ArrayList<>();
 
@@ -55,7 +48,6 @@ class RandomLogsImplTest {
 
 	@Test
 	void testLogGeneration() {
-
 		List<LogDto> logs = Stream.generate(() -> myLogs.createRandomLog()).parallel().limit(COUNT_OF_LOGS)
 				.collect(Collectors.toList());
 		List<LogType> otherType = new ArrayList<>();
@@ -95,25 +87,26 @@ class RandomLogsImplTest {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
 					throw new IllegalStateException();
 				}, LinkedHashMap::new));
-		counted.forEach((key, value) -> LOG.info("{}:{}", key, value));
+
+		long NO_EXCEPTION = counted.get(LogType.NO_EXCEPTION);
+		long EXCEPTION = COUNT_OF_LOGS - NO_EXCEPTION;
+		long SECURITY = counted.get(LogType.AUTHENTICATION_EXCEPTION) + counted.get(LogType.AUTHORIZATION_EXCEPTION);
+		long NON_SECURITY = EXCEPTION - SECURITY;
+
+		assertThat(NO_EXCEPTION * 100L / COUNT_OF_LOGS).isBetween(89L, 91L);
+		assertThat(EXCEPTION * 100L / COUNT_OF_LOGS).isBetween(9L, 11L);
+		assertThat(SECURITY * 100L / EXCEPTION).isBetween(29L, 31L);
+		assertThat(NON_SECURITY * 100L / EXCEPTION).isBetween(69L, 71L);
+
+		assertThat(counted.get(LogType.AUTHENTICATION_EXCEPTION) * 100L / SECURITY).isBetween(69L, 71L);
+		assertThat(counted.get(LogType.AUTHORIZATION_EXCEPTION) * 100L / SECURITY).isBetween(29L, 31L);
+
+		assertThat(counted.get(LogType.BAD_REQUEST_EXCEPTION) * 100L / NON_SECURITY).isBetween(24L, 26L);
+		assertThat(counted.get(LogType.NOT_FOUND_EXCEPTION) * 100L / NON_SECURITY).isBetween(24L, 26L);
+		assertThat(counted.get(LogType.DUPLICATED_KEY_EXCEPTION) * 100L / NON_SECURITY).isBetween(24L, 26L);
+		assertThat(counted.get(LogType.SERVER_EXCEPTION) * 100L / NON_SECURITY).isBetween(24L, 26L);
+
+		counted.forEach((key, value) -> log.info("{}:{}", key, value));
 	}
 
-	@Test
-	void sendRandomLogs() throws InterruptedException {
-
-		Set<String> data = new HashSet<>();
-		int countOfMessages = 10;
-		for (int i = 0; i < countOfMessages; i++) {
-			try {
-				byte[] messageBytes = output.receive(Long.MAX_VALUE).getPayload();
-				String messageString = new String(messageBytes);
-				data.add(messageString);
-				LOG.info("recived message: {}", messageString);
-			} catch (Exception e) {
-				LOG.warn("error on reciving message because: {}", e.getMessage());
-				i--;
-			}
-		}
-		assertEquals(countOfMessages, data.size());
-	}
 }

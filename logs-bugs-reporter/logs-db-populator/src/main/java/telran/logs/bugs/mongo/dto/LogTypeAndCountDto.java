@@ -1,4 +1,4 @@
-package telran.logs.providers;
+package telran.logs.bugs.mongo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
