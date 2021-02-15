@@ -30,10 +30,10 @@ import telran.logs.bugs.dto.LogType;
 
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
-class RandomLogsTest {
+class RandomLogsImplTest {
 
 	@Autowired
-	RandomLogs myLogs;
+	RandomLogsImpl myLogs;
 
 	@Autowired
 	OutputDestination output;
@@ -46,7 +46,7 @@ class RandomLogsTest {
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;
 
-	static Logger LOG = LoggerFactory.getLogger(RandomLogsTest.class);
+	static Logger LOG = LoggerFactory.getLogger(RandomLogsImplTest.class);
 
 	static List<LogDto> randomLogs = new ArrayList<>();
 
