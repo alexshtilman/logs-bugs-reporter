@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -23,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Flux;
 import telran.logs.bugs.components.RandomLogsComponent;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
@@ -57,44 +56,43 @@ class LogsInfoTests {
 	@Test
 	@Order(1)
 	void fillDb() {
-		List<LogDoc> logs = Stream.generate(() -> new LogDoc(randomlogs.createRandomLog())).parallel()
-				.limit(MAX_LOG_COUNT).collect(Collectors.toList());
-		logRepo.saveAll(logs).buffer().blockFirst();
-		log.debug("Saved {} logs", logs.size());
+		logRepo.saveAll(Flux.create(sink -> {
+			for (int i = 0; i < MAX_LOG_COUNT; i++) {
+				sink.next(new LogDoc(randomlogs.createRandomLog()));
+			}
+			sink.complete();
+		})).blockLast();
+		log.debug("Saved {} logs", MAX_LOG_COUNT);
 		assertEquals(MAX_LOG_COUNT, logRepo.count().block());
 	}
 
 	@Test
-	@Order(2)
-	void testAllLogs() {
-		List<LogDto> result = webClient.get().uri("/logs/all").exchange().expectStatus().isOk()
-				.returnResult(LogDto.class).getResponseBody().take(ALL_EXCEPTIONS_COUNT).collectList().block();
-		assertFalse(result.isEmpty());
-		assertEquals(EXCEPTIONS_COUNT_BY_TYPE, result.size());
+	void testTakeFirstFromAllLogs() {
+		getFromRestAndAssert("/logs/all", ALL_EXCEPTIONS_COUNT);
 	}
 
 	@Test
-	@Order(3)
-	void testByType() {
 
+	void testTakeFirstByType() {
 		for (LogType type : Arrays.asList(LogType.values())) {
-			List<LogDto> result = webClient.get().uri("/logs/by_type?type=" + type.name()).exchange().expectStatus()
-					.isOk().returnResult(LogDto.class).getResponseBody().take(EXCEPTIONS_COUNT_BY_TYPE).collectList()
-					.block();
-			assertEquals(EXCEPTIONS_COUNT_BY_TYPE, result.size());
-			assertFalse(result.isEmpty());
-			log.debug("recived {} LogDto to test on {}", result.size(), type.name());
-			assertThat(result).allSatisfy(dto -> assertEquals(type, dto.logType));
+			assertThat(getFromRestAndAssert("/logs/by_type?type=" + type.name(), EXCEPTIONS_COUNT))
+					.allSatisfy(dto -> assertEquals(type, dto.logType));
 		}
-
 	}
 
 	@Test
-	void testExceptions() {
-		List<LogDto> result = webClient.get().uri("/logs/exceptions").exchange().expectStatus().isOk()
-				.returnResult(LogDto.class).getResponseBody().take(EXCEPTIONS_COUNT).collectList().block();
+	void testTakeFirstFromExceptions() {
+		assertThat(getFromRestAndAssert("/logs/exceptions", EXCEPTIONS_COUNT_BY_TYPE))
+				.allSatisfy(dto -> assertNotEquals(LogType.NO_EXCEPTION, dto.logType));
+	}
+
+	public List<LogDto> getFromRestAndAssert(String uri, int count) {
+		List<LogDto> result = webClient.get().uri(uri).exchange().expectStatus().isOk().returnResult(LogDto.class)
+				.getResponseBody().take(count).collectList().block();
+		log.debug("recived {} LogDto", result.size());
 		assertFalse(result.isEmpty());
-		assertEquals(EXCEPTIONS_COUNT_BY_TYPE, result.size());
-		assertThat(result).allSatisfy(dto -> assertNotEquals(LogType.NO_EXCEPTION, dto.logType));
+		assertEquals(count, result.size());
+		return result;
+
 	}
 }
