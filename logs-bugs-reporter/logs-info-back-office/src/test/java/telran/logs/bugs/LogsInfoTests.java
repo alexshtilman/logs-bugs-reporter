@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -23,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Flux;
 import telran.logs.bugs.components.RandomLogsComponent;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
@@ -57,10 +56,15 @@ class LogsInfoTests {
 	@Test
 	@Order(1)
 	void fillDb() {
-		List<LogDoc> logs = Stream.generate(() -> new LogDoc(randomlogs.createRandomLog())).parallel()
-				.limit(MAX_LOG_COUNT).collect(Collectors.toList());
-		logRepo.saveAll(logs).buffer().blockFirst();
-		log.debug("Saved {} logs", logs.size());
+
+		logRepo.saveAll(Flux.create(sink -> {
+			for (int i = 0; i < MAX_LOG_COUNT; i++) {
+				sink.next(new LogDoc(randomlogs.createRandomLog()));
+			}
+			sink.complete();
+		})).buffer().blockLast();
+
+		log.debug("Saved {} logs", MAX_LOG_COUNT);
 		assertEquals(MAX_LOG_COUNT, logRepo.count().block());
 	}
 
@@ -70,7 +74,7 @@ class LogsInfoTests {
 		List<LogDto> result = webClient.get().uri("/logs/all").exchange().expectStatus().isOk()
 				.returnResult(LogDto.class).getResponseBody().take(ALL_EXCEPTIONS_COUNT).collectList().block();
 		assertFalse(result.isEmpty());
-		assertEquals(EXCEPTIONS_COUNT_BY_TYPE, result.size());
+		assertEquals(ALL_EXCEPTIONS_COUNT, result.size());
 	}
 
 	@Test
@@ -94,7 +98,7 @@ class LogsInfoTests {
 		List<LogDto> result = webClient.get().uri("/logs/exceptions").exchange().expectStatus().isOk()
 				.returnResult(LogDto.class).getResponseBody().take(EXCEPTIONS_COUNT).collectList().block();
 		assertFalse(result.isEmpty());
-		assertEquals(EXCEPTIONS_COUNT_BY_TYPE, result.size());
+		assertEquals(EXCEPTIONS_COUNT, result.size());
 		assertThat(result).allSatisfy(dto -> assertNotEquals(LogType.NO_EXCEPTION, dto.logType));
 	}
 }
