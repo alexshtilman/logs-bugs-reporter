@@ -54,7 +54,7 @@ public class LogsStatisticsImpl implements LogsStatistics {
 		aggregations.add(Aggregation.group(LogDoc.LOG_TYPE).count().as(COUNT));
 		aggregations.add(Aggregation.sort(Sort.Direction.DESC, COUNT));
 		aggregations.add(Aggregation.limit(count));
-		// aggregations.add(Aggregation.project().andExclude("_id").and("_id").as(LogTypeAndCountDto.LOG_TYPE));
+		aggregations.add(Aggregation.project().andExclude("_id").and("_id").as(LogTypeAndCountDto.LOG_TYPE));
 
 		TypedAggregation<LogDoc> pipeline = Aggregation.newAggregation(LogDoc.class, aggregations);
 		return mongoTemplate.aggregate(pipeline, LogTypeClass.class);
