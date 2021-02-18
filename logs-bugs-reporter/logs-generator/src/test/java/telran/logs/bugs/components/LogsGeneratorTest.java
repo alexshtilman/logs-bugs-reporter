@@ -17,7 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -32,24 +33,17 @@ import telran.logs.bugs.dto.LogType;
  * @since homework 64
  */
 @ExtendWith(SpringExtension.class)
+@EnableConfigurationProperties
+@PropertySource("classpath:application.properties")
 @ContextConfiguration(classes = RandomLogsComponent.class)
-
 @Log4j2
 class LogsGeneratorTest {
 
 	@Autowired
 	RandomLogsComponent myLogs;
 
-	@Autowired
-	private Environment environment;
-
-	public void readValues() {
-		System.out.println("Some Message:" + environment.getProperty("<Property Name>"));
-
-	}
-
 	@Value("${count.of.logs}")
-	String COUNT_OF_LOGS;
+	int COUNT_OF_LOGS;
 
 	static List<LogDto> randomLogs = new ArrayList<>();
 
@@ -58,8 +52,8 @@ class LogsGeneratorTest {
 
 	@Test
 	void testLogGeneration() {
-		List<LogDto> logs = Stream.generate(() -> myLogs.createRandomLog()).parallel()
-				.limit(Integer.valueOf(COUNT_OF_LOGS)).collect(Collectors.toList());
+		List<LogDto> logs = Stream.generate(() -> myLogs.createRandomLog()).parallel().limit(COUNT_OF_LOGS)
+				.collect(Collectors.toList());
 		List<LogType> otherType = new ArrayList<>();
 		otherType.add(LogType.AUTHENTICATION_EXCEPTION);
 		otherType.add(LogType.AUTHORIZATION_EXCEPTION);
@@ -97,14 +91,13 @@ class LogsGeneratorTest {
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (v1, v2) -> {
 					throw new IllegalStateException();
 				}, LinkedHashMap::new));
-		int I_COUNT_OF_LOGS = Integer.valueOf(COUNT_OF_LOGS);
 		long NO_EXCEPTION = counted.get(LogType.NO_EXCEPTION);
-		long EXCEPTION = I_COUNT_OF_LOGS - NO_EXCEPTION;
+		long EXCEPTION = COUNT_OF_LOGS - NO_EXCEPTION;
 		long SECURITY = counted.get(LogType.AUTHENTICATION_EXCEPTION) + counted.get(LogType.AUTHORIZATION_EXCEPTION);
 		long NON_SECURITY = EXCEPTION - SECURITY;
 
-		assertThat(NO_EXCEPTION * 100L / I_COUNT_OF_LOGS).isBetween(89L, 91L);
-		assertThat(EXCEPTION * 100L / I_COUNT_OF_LOGS).isBetween(9L, 11L);
+		assertThat(NO_EXCEPTION * 100L / COUNT_OF_LOGS).isBetween(89L, 91L);
+		assertThat(EXCEPTION * 100L / COUNT_OF_LOGS).isBetween(9L, 11L);
 		assertThat(SECURITY * 100L / EXCEPTION).isBetween(29L, 31L);
 		assertThat(NON_SECURITY * 100L / EXCEPTION).isBetween(69L, 71L);
 

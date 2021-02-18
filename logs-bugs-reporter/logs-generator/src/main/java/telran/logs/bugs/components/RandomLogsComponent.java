@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import telran.logs.bugs.dto.LogDto;
@@ -18,7 +20,18 @@ import telran.logs.bugs.dto.LogType;
  *
  */
 @Component
+@EnableConfigurationProperties
+@PropertySource("classpath:application.properties")
 public class RandomLogsComponent {
+
+	@Value("${sec-exception-prob}")
+	int secExceptionProb;
+
+	@Value("${exception-prob}")
+	int exceptionProb;
+
+	@Value("${auth-exception-prob}")
+	int authenticationProb;
 
 	static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
 	{
@@ -30,14 +43,6 @@ public class RandomLogsComponent {
 			artifacts.put(type, String.format("class %d", getChance()));
 		}
 	}
-	@Value("${sec-exception-prob:30}")
-	int secExceptionProb;
-
-	@Value("${exception-prob:10}")
-	int exceptionProb;
-
-	@Value("${auth-exception-prob:70}")
-	int authenticationProb;
 
 	public LogDto createRandomLog() {
 		Date dateTime = new Date();
