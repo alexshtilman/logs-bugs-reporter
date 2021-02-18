@@ -8,8 +8,8 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import telran.logs.bugs.dto.LogTypeAndCountDto;
 import telran.logs.bugs.mongo.doc.LogDoc;
-import telran.logs.bugs.mongo.dto.LogTypeAndCountDto;
 
 public interface LogsRepo extends ReactiveMongoRepository<LogDoc, ObjectId>, RandomLogsRepoCustom {
 	Mono<LogDoc> findFirstByDateTime(Date dateTime);
