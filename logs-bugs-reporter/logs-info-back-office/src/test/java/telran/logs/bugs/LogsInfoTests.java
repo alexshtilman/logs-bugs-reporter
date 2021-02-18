@@ -37,7 +37,7 @@ import telran.logs.bugs.repo.LogRepository;
 @AutoConfigureDataMongo
 @Log4j2
 class LogsInfoTests {
-	private static final int ALL_EXCEPTIONS_COUNT = 20;
+	private static final int ALL_EXCEPTIONS_COUNT = 8;
 	private static final int EXCEPTIONS_COUNT = 6;
 	private static final int EXCEPTIONS_COUNT_BY_TYPE = 1;
 
@@ -65,13 +65,7 @@ class LogsInfoTests {
 		for (LogType type : LogType.values()) {
 			docs.add(new LogDoc(new Date(), type, "artifact", 0, ""));
 		}
-		for (int i = 0; i < 3; i++) {
-			docs.add(new LogDoc(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact1", 0, ""));
-			docs.add(new LogDoc(new Date(), LogType.AUTHENTICATION_EXCEPTION, "artifact2", 0, ""));
-			docs.add(new LogDoc(new Date(), LogType.NOT_FOUND_EXCEPTION, "artifact2", 0, ""));
-			docs.add(new LogDoc(new Date(), LogType.SERVER_EXCEPTION, "artifact2", 0, ""));
-		}
-		docs.add(new LogDoc(new Date(), LogType.NO_EXCEPTION, "", 100, ""));
+		docs.add(new LogDoc(new Date(), LogType.NO_EXCEPTION, "NO_EXCEPTION", 100, ""));
 		logRepo.saveAll(docs).blockLast();
 		log.debug("Saved {} logs", ALL_EXCEPTIONS_COUNT);
 		assertEquals(ALL_EXCEPTIONS_COUNT, logRepo.count().block());
@@ -121,64 +115,56 @@ class LogsInfoTests {
 		@Test
 		void testGetLogTypeOccurences() {
 			List<LogTypeAndCountDto> expected = new ArrayList<>();
-			expected.add(new LogTypeAndCountDto(LogType.AUTHENTICATION_EXCEPTION, 7));
-			expected.add(new LogTypeAndCountDto(LogType.SERVER_EXCEPTION, 4));
-			expected.add(new LogTypeAndCountDto(LogType.NOT_FOUND_EXCEPTION, 4));
 			expected.add(new LogTypeAndCountDto(LogType.NO_EXCEPTION, 2));
 			expected.add(new LogTypeAndCountDto(LogType.AUTHORIZATION_EXCEPTION, 1));
+			expected.add(new LogTypeAndCountDto(LogType.SERVER_EXCEPTION, 1));
+			expected.add(new LogTypeAndCountDto(LogType.AUTHENTICATION_EXCEPTION, 1));
 			expected.add(new LogTypeAndCountDto(LogType.BAD_REQUEST_EXCEPTION, 1));
 			expected.add(new LogTypeAndCountDto(LogType.DUPLICATED_KEY_EXCEPTION, 1));
+			expected.add(new LogTypeAndCountDto(LogType.NOT_FOUND_EXCEPTION, 1));
 
-			webClient.get().uri(STATISTICS + LOGTYPE_AND_COUNT).exchange().expectStatus().isOk()
-					.expectBody(new ParameterizedTypeReference<List<LogTypeAndCountDto>>() {
-					}).isEqualTo(expected);
-
+			getListFromUriAndAssert(STATISTICS + LOGTYPE_AND_COUNT, expected,
+					new ParameterizedTypeReference<List<LogTypeAndCountDto>>() {
+					});
 		}
 
 		@Test
 		void testGetFirstMostEncounteredExceptions() {
 			List<LogType> expected = new ArrayList<>();
+			expected.add(LogType.AUTHORIZATION_EXCEPTION);
 			expected.add(LogType.AUTHENTICATION_EXCEPTION);
-			expected.add(LogType.SERVER_EXCEPTION);
-			expected.add(LogType.NOT_FOUND_EXCEPTION);
+			expected.add(LogType.BAD_REQUEST_EXCEPTION);
 
-			webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_EXCEPTIONS).exchange().expectStatus().isOk()
-					.expectBody(new ParameterizedTypeReference<List<LogType>>() {
-					}).isEqualTo(expected);
-
+			getListFromUriAndAssert(STATISTICS + MOST_ENCOUNTERED_EXCEPTIONS, expected,
+					new ParameterizedTypeReference<List<LogType>>() {
+					});
 		}
 
 		@Test
 		void testGetFirstMostEncounteredArtifacts() {
 			List<String> expected = new ArrayList<>();
-			expected.add("artifact2");
 			expected.add("artifact");
-			expected.add("artifact1");
+			expected.add("NO_EXCEPTION");
 
-			webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_ARTIFACTS).exchange().expectStatus().isOk()
-					.expectBody(new ParameterizedTypeReference<List<String>>() {
-					}).isEqualTo(expected);
+			getListFromUriAndAssert(STATISTICS + MOST_ENCOUNTERED_ARTIFACTS, expected,
+					new ParameterizedTypeReference<List<String>>() {
+					});
 		}
 
 		@Test
 		void testGetArtifactOccuresnces() {
 			List<ArtifactAndCountDto> expected = new ArrayList<>();
-			expected.add(new ArtifactAndCountDto("artifact2", 9));
 			expected.add(new ArtifactAndCountDto("artifact", 7));
-			expected.add(new ArtifactAndCountDto("artifact1", 3));
-			expected.add(new ArtifactAndCountDto("", 1));
+			expected.add(new ArtifactAndCountDto("NO_EXCEPTION", 1));
 
-			webClient.get().uri(STATISTICS + ARTIFACT_AND_COUNT).exchange().expectStatus().isOk()
-					.expectBody(new ParameterizedTypeReference<List<ArtifactAndCountDto>>() {
-					}).isEqualTo(expected);
-
+			getListFromUriAndAssert(STATISTICS + ARTIFACT_AND_COUNT, expected,
+					new ParameterizedTypeReference<List<ArtifactAndCountDto>>() {
+					});
 		}
 
-		<T> void getListFromUriAndAssert(String uri, List<T> expected) {
-			webClient.get().uri(uri).exchange().expectStatus().isOk()
-					.expectBody(new ParameterizedTypeReference<List<T>>() {
-					}).isEqualTo(expected);
-			// this
+		<T> void getListFromUriAndAssert(String uri, List<T> expected,
+				ParameterizedTypeReference<List<T>> typeReference) {
+			webClient.get().uri(uri).exchange().expectStatus().isOk().expectBody(typeReference).isEqualTo(expected);
 		}
 	}
 }
