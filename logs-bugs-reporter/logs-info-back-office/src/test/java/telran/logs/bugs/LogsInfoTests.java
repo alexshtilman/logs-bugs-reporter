@@ -3,7 +3,6 @@ package telran.logs.bugs;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.ArrayList;
@@ -21,6 +20,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataMongo;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import lombok.extern.log4j.Log4j2;
@@ -129,13 +129,10 @@ class LogsInfoTests {
 			expected.add(new LogTypeAndCountDto(LogType.BAD_REQUEST_EXCEPTION, 1));
 			expected.add(new LogTypeAndCountDto(LogType.DUPLICATED_KEY_EXCEPTION, 1));
 
-			List<LogTypeAndCountDto> result = webClient.get().uri(STATISTICS + LOGTYPE_AND_COUNT).exchange()
-					.expectStatus().isOk().returnResult(LogTypeAndCountDto.class).getResponseBody().collectList()
-					.block();
+			webClient.get().uri(STATISTICS + LOGTYPE_AND_COUNT).exchange().expectStatus().isOk()
+					.expectBody(new ParameterizedTypeReference<List<LogTypeAndCountDto>>() {
+					}).isEqualTo(expected);
 
-			assertFalse(result.isEmpty());
-			assertEquals(expected.size(), result.size());
-			assertIterableEquals(expected, result);
 		}
 
 		@Test
@@ -144,26 +141,23 @@ class LogsInfoTests {
 			expected.add(LogType.AUTHENTICATION_EXCEPTION);
 			expected.add(LogType.SERVER_EXCEPTION);
 			expected.add(LogType.NOT_FOUND_EXCEPTION);
-			List<LogType> result = webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_EXCEPTIONS).exchange()
-					.expectStatus().isOk().returnResult(LogType.class).getResponseBody().collectList().block();
 
-			assertFalse(result.isEmpty());
-			assertEquals(expected.size(), result.size());
-			assertIterableEquals(expected, result);
+			webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_EXCEPTIONS).exchange().expectStatus().isOk()
+					.expectBody(new ParameterizedTypeReference<List<LogType>>() {
+					}).isEqualTo(expected);
+
 		}
 
 		@Test
 		void testGetFirstMostEncounteredArtifacts() {
 			List<String> expected = new ArrayList<>();
-
 			expected.add("artifact2");
 			expected.add("artifact");
 			expected.add("artifact1");
 
-			List<String> result = webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_ARTIFACTS).exchange().expectStatus()
-					.isOk().returnResult(String.class).getResponseBody().collectList().block();
-			result.forEach(System.out::println);
-			assertIterableEquals(expected, result);
+			webClient.get().uri(STATISTICS + MOST_ENCOUNTERED_ARTIFACTS).exchange().expectStatus().isOk()
+					.expectBody(new ParameterizedTypeReference<List<String>>() {
+					}).isEqualTo(expected);
 		}
 
 		@Test
@@ -173,14 +167,17 @@ class LogsInfoTests {
 			expected.add(new ArtifactAndCountDto("artifact", 7));
 			expected.add(new ArtifactAndCountDto("artifact1", 3));
 			expected.add(new ArtifactAndCountDto("", 1));
-			List<ArtifactAndCountDto> result = webClient.get().uri(STATISTICS + ARTIFACT_AND_COUNT).exchange()
-					.expectStatus().isOk().returnResult(ArtifactAndCountDto.class).getResponseBody().collectList()
-					.block();
-			assertFalse(result.isEmpty());
-			assertEquals(expected.size(), result.size());
-			assertIterableEquals(expected, result);
+
+			webClient.get().uri(STATISTICS + ARTIFACT_AND_COUNT).exchange().expectStatus().isOk()
+					.expectBody(new ParameterizedTypeReference<List<ArtifactAndCountDto>>() {
+					}).isEqualTo(expected);
 
 		}
 
+		<T> void getListFromUriAndAssert(String uri, List<T> expected) {
+			webClient.get().uri(uri).exchange().expectStatus().isOk()
+					.expectBody(new ParameterizedTypeReference<List<T>>() {
+					}).isEqualTo(expected);
+		}
 	}
 }

@@ -39,9 +39,9 @@ public class LogsStatisticsImpl implements LogsStatistics {
 	@Override
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
 		List<AggregationOperation> aggregations = new ArrayList<>();
-		aggregations.add(Aggregation.group("artifact").count().as(COUNT));
+		aggregations.add(Aggregation.group(LogDoc.ARTIFACT).count().as(COUNT));
 		aggregations.add(Aggregation.sort(Sort.Direction.DESC, COUNT));
-		aggregations.add(Aggregation.project(COUNT).and("_id").as("artifact"));
+		aggregations.add(Aggregation.project(COUNT).and("_id").as(LogDoc.ARTIFACT));
 
 		TypedAggregation<LogDoc> pipeline = Aggregation.newAggregation(LogDoc.class, aggregations);
 		return mongoTemplate.aggregate(pipeline, ArtifactAndCountDto.class);
