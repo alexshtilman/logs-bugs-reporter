@@ -178,6 +178,7 @@ class LogsInfoTests {
 			webClient.get().uri(uri).exchange().expectStatus().isOk()
 					.expectBody(new ParameterizedTypeReference<List<T>>() {
 					}).isEqualTo(expected);
+			// this
 		}
 	}
 }
