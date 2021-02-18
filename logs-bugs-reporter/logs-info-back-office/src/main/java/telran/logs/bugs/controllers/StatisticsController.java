@@ -22,9 +22,6 @@ public class StatisticsController {
 	private static final String MOST_ENCOUNTERED_ARTIFACTS = "/most_encountered_artifacts";
 	private static final String MOST_ENCOUNTERED_EXCEPTIONS = "/most_encountered_exceptions";
 	private static final String LOGTYPE_AND_COUNT = "/logtype_and_count";
-	private static final String STRINGS = "/strings";
-	private static final String INTEGERS = "/integers";
-	private static final String STRINGS_LIST = "/strings_list";
 
 	@Autowired
 	LogsInfo logsInfo;
@@ -51,6 +48,10 @@ public class StatisticsController {
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
 		return logsInfo.getArtifactOccuresnces();
 	}
+
+	private static final String STRINGS = "/strings";
+	private static final String INTEGERS = "/integers";
+	private static final String STRINGS_LIST = "/strings_list";
 
 	@GetMapping(value = STRINGS)
 	public Flux<String> getStrings() {
