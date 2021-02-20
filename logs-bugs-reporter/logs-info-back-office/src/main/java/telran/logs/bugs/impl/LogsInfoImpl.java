@@ -36,21 +36,22 @@ public class LogsInfoImpl implements LogsInfo {
 
 	@Override
 	public Flux<LogTypeAndCountDto> getLogTypeOccurences() {
-		return logs.getLogTypeOccurences();
+		return logs.getLogTypeOccurencesByAggregation();
 	}
 
 	@Override
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
-		return logs.getArtifactOccuresnces();
+		return logs.getArtifactOccuresncesByAggregation();
+
 	}
 
 	@Override
 	public Flux<LogType> getFirstMostEncounteredExceptions(int count) {
-		return logs.getFirstMostEncounteredExceptions(count).map(x -> x.logType);
+		return logs.getFirstMostEncounteredExceptionsByAggregation(count).map(x -> x.logType);
 	}
 
 	@Override
 	public Flux<String> getFirstMostEncounteredArtifacts(int count) {
-		return logs.getFirstMostEncounteredArtifacts(count).map(LogDocClass::getArtifact);
+		return logs.getFirstMostEncounteredArtifactsByAggregation(count).map(LogDocClass::getArtifact);
 	}
 }
