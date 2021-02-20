@@ -49,13 +49,24 @@ public class StatisticsController {
 		return logsInfo.getArtifactOccuresnces();
 	}
 
-	private static final String STRINGS = "/strings";
-	private static final String INTEGERS = "/integers";
+	private static final String INTEGERS = "/integers_flux";
+	private static final String STRINGS_FLUX = "/strings_flux";
 	private static final String STRINGS_LIST = "/strings_list";
+	private static final String STRINGS_MONO = "/strings_mono";
 
-	@GetMapping(value = STRINGS)
+	@GetMapping(value = STRINGS_FLUX)
 	public Flux<String> getStrings() {
 		return Flux.just("1", "2", "3", "4");
+	}
+
+	@GetMapping(value = STRINGS_LIST)
+	public List<String> getIStringGList() {
+		return List.of("1", "2", "3", "4");
+	}
+
+	@GetMapping(value = STRINGS_MONO)
+	public Mono<List<String>> getIntegersList() {
+		return Flux.just("1", "2", "3", "4").collectList();
 	}
 
 	@GetMapping(value = INTEGERS)
@@ -63,13 +74,4 @@ public class StatisticsController {
 		return Flux.just(1, 2, 3, 4);
 	}
 
-	@GetMapping(value = STRINGS_LIST)
-	public Mono<List<String>> getIntegersList() {
-		return Flux.just("1", "2", "3", "4").collectList();
-	}
-
-	@GetMapping(value = "/test")
-	public List<String> getIStringGList() {
-		return List.of("1", "2", "3", "4");
-	}
 }
