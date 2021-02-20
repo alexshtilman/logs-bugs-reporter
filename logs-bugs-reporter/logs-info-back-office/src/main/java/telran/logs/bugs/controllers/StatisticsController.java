@@ -67,4 +67,9 @@ public class StatisticsController {
 	public Mono<List<String>> getIntegersList() {
 		return Flux.just("1", "2", "3", "4").collectList();
 	}
+
+	@GetMapping(value = "/test")
+	public List<String> getIStringGList() {
+		return List.of("1", "2", "3", "4");
+	}
 }
