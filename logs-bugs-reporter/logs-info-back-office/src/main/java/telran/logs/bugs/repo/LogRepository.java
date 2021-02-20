@@ -19,29 +19,31 @@ public interface LogRepository extends ReactiveMongoRepository<LogDoc, ObjectId>
 	Flux<LogDoc> findByLogTypeNot(LogType noException);
 
 	@Aggregation(pipeline = { 
-			"{$group: {_id: $logType,count: { $sum: 1}}}",
-			"{$sort: {count:-1}}",
+			"{ $group: { _id: $logType,count: { $sum: 1}}}",
+			"{ $sort: { count:-1}}",
 			"{ $project: { _id: 0, logType: $_id, count: 1 } }" 
 			})
 	Flux<LogTypeAndCountDto> getLogTypeOccurencesByAggregation();
 
 	@Aggregation(pipeline = { 
-			"{$group: {_id: $artifact,count: { $sum: 1}}}", 
-			"{$sort: {count:-1}}",
+			"{ $group: {_id: $artifact,count: { $sum: 1}}}", 
+			"{ $sort: { count:-1}}",
 			"{ $project: { _id: 0, artifact: $_id, count: 1 } }" })
 	Flux<ArtifactAndCountDto> getArtifactOccuresncesByAggregation();
 
 	@Aggregation(pipeline = {
 			"{ $match : { logType : { $ne : NO_EXCEPTION}}}",
 			"{ $group : { _id : $logType, count : { $sum : 1}}}", 
-			"{ $sort : { count : -1}}", "{ $limit : ?0}",
+			"{ $sort : { count : -1}}",
+			"{ $limit : ?0}",
 			"{ $project : { _id : 0, logType : $_id}}" })
 	Flux<LogTypeClass> getFirstMostEncounteredExceptionsByAggregation(int limit);
 
 	@Aggregation(pipeline = { 
 			"{ $group : { _id : $artifact, count : { $sum : 1}}}",
 			"{ $sort : { count : -1}}",
-			"{ $limit : ?0}", "{ $project : { _id : 0, artifact : $_id}}" })
+			"{ $limit : ?0}",
+			"{ $project : { _id : 0, artifact : $_id}}" })
 	Flux<LogDocClass> getFirstMostEncounteredArtifactsByAggregation(int limit);
 
 }
