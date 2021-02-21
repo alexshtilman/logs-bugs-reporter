@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,9 +91,9 @@ class LogsDbPopulatorTest {
 
 	public void sendAndAssertExpected(LogDto dto) {
 		input.send(new GenericMessage<LogDto>(dto));
-		assertEquals(1, consumerLogs.count().block(Duration.ofSeconds(10)));
-		LogDoc doc = consumerLogs.findAll().blockFirst(Duration.ofSeconds(10));
-		assertNotNull(doc.getId());
-		assertEquals(dto, doc.getLogDto());
+		List<LogDoc> doc = consumerLogs.findAll().delaySubscription(Duration.ofMillis(100)).buffer().blockFirst();
+		assertEquals(1, doc.size());
+		assertNotNull(doc.get(0).getId());
+		assertEquals(dto, doc.get(0).getLogDto());
 	}
 }
