@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import telran.logs.bugs.dto.LogTypeAndCountDto;
 import telran.logs.bugs.mongo.doc.LogDoc;
 
-public interface LogsRepo extends ReactiveMongoRepository<LogDoc, ObjectId>, RandomLogsRepoCustom {
+public interface LogsRepo extends ReactiveMongoRepository<LogDoc, ObjectId> {
 	Mono<LogDoc> findFirstByDateTime(Date dateTime);
 
 	@Aggregation(pipeline = { "{$group: {_id: $logType,count: { $sum: 1}}}", "{$sort: {count:-1}}",

@@ -24,13 +24,13 @@ import telran.logs.bugs.dto.LogType;
 @PropertySource("classpath:application.properties")
 public class RandomLogsComponent {
 
-	@Value("${sec-exception-prob}")
+	@Value("${sec-exception-prob:30}")
 	int secExceptionProb;
 
-	@Value("${exception-prob}")
+	@Value("${exception-prob:10}")
 	int exceptionProb;
 
-	@Value("${auth-exception-prob}")
+	@Value("${auth-exception-probL70}")
 	int authenticationProb;
 
 	static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);
