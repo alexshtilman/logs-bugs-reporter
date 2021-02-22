@@ -28,22 +28,17 @@ import telran.logs.bugs.repositories.ProgrammersRepo;
 @Service
 @Log4j2
 public class BugsOppenningService {
-	@Autowired
+
 	ArtifactRepo artifactRepo;
-
-	@Autowired
 	BugsRepo bugsRepo;
-
-	@Autowired
 	ProgrammersRepo programmersRepo;
 
-	@Autowired
 	Validator validator;
+
+	StreamBridge streamBridge;
 
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;
-	@Autowired
-	StreamBridge streamBridge;
 
 	@Bean
 	Consumer<LogDto> oppenBug() {
@@ -52,7 +47,15 @@ public class BugsOppenningService {
 
 	EnumMap<LogType, Seriousness> logType = new EnumMap<>(LogType.class);
 
-	public BugsOppenningService() {
+	@Autowired
+	public BugsOppenningService(ArtifactRepo artifactRepo, BugsRepo bugsRepo, ProgrammersRepo programmersRepo,
+			Validator validator, StreamBridge streamBridge) {
+		super();
+		this.artifactRepo = artifactRepo;
+		this.bugsRepo = bugsRepo;
+		this.programmersRepo = programmersRepo;
+		this.validator = validator;
+		this.streamBridge = streamBridge;
 		logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriousness.BLOCKING);
 		logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriousness.CRITICAL);
 		logType.put(LogType.SERVER_EXCEPTION, Seriousness.CRITICAL);

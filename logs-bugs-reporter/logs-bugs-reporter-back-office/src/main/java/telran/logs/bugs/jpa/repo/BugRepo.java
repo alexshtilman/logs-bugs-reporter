@@ -13,12 +13,8 @@ import telran.logs.bugs.jpa.entities.Bug;
  * @author Alex Shtilman Feb 21, 2021
  *
  */
-public interface BugsRepo extends JpaRepository<Bug, Long> {
+public interface BugRepo extends JpaRepository<Bug, Long> {
 
-	/**
-	 * @param programmerId
-	 * @return
-	 */
 	List<Bug> findByProgrammerId(long programmerId);
 
 }

@@ -9,9 +9,6 @@
 	</parent>
 	<artifactId>logs-bugs-email-provider</artifactId>
 	<description>providing email of programmer according to artifact</description>
-	<properties>
-		<java.version>11</java.version>
-	</properties>
 	<dependencies>
 
 		<dependency>

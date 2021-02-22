@@ -1,7 +1,7 @@
 /**
  * 
  */
-package telran.logs.bugs.interfaces;
+package telran.logs.bugs.services;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import telran.logs.bugs.dto.ArtifactDto;
 import telran.logs.bugs.dto.AssignBugData;
 import telran.logs.bugs.dto.BugAssignDto;
 import telran.logs.bugs.dto.BugDto;
-import telran.logs.bugs.dto.BugResponceDto;
+import telran.logs.bugs.dto.BugResponseDto;
 import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.ProgrammerDto;
@@ -24,19 +24,19 @@ public interface BugsReporter {
 
 	ArtifactDto addArtifactDto(ArtifactDto artifactDto);
 
-	BugResponceDto openBug(BugDto bugDto);
+	BugResponseDto openBug(BugDto bugDto);
 
-	BugResponceDto openAndAssignBug(BugAssignDto bugDto);
+	BugResponseDto openAndAssignBug(BugAssignDto bugDto);
 
 	void assginBug(AssignBugData assgnData);
 
 	void closeBug(CloseBugData closeData);
 
-	List<BugResponceDto> getNonAssignedBugs();
+	List<BugResponseDto> getNonAssignedBugs();
 
-	List<BugResponceDto> getUnclosedBugsMoreDuration(int days);
+	List<BugResponseDto> getUnclosedBugsMoreDuration(int days);
 
-	List<BugResponceDto> getBugsByProgrammerId(long programmerId);
+	List<BugResponseDto> getBugsByProgrammerId(long programmerId);
 
 	List<EmailBugsCount> getEmailBugsCounts();
 

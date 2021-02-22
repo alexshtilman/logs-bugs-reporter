@@ -1,5 +1,15 @@
 package telran.logs.bugs.controllers;
 
+import static telran.logs.bugs.api.LogsStatisticsApi.ARTIFACT_AND_COUNT;
+import static telran.logs.bugs.api.LogsStatisticsApi.INTEGERS;
+import static telran.logs.bugs.api.LogsStatisticsApi.LOGTYPE_AND_COUNT;
+import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_ARTIFACTS;
+import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_EXCEPTIONS;
+import static telran.logs.bugs.api.LogsStatisticsApi.STATISTICS;
+import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_FLUX;
+import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_LIST;
+import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_MONO;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +26,8 @@ import telran.logs.bugs.dto.LogTypeAndCountDto;
 import telran.logs.bugs.interfaces.LogsInfo;
 
 @RestController
-@RequestMapping("/statistics")
+@RequestMapping(STATISTICS)
 public class StatisticsController {
-	private static final String ARTIFACT_AND_COUNT = "/artifact_and_count";
-	private static final String MOST_ENCOUNTERED_ARTIFACTS = "/most_encountered_artifacts";
-	private static final String MOST_ENCOUNTERED_EXCEPTIONS = "/most_encountered_exceptions";
-	private static final String LOGTYPE_AND_COUNT = "/logtype_and_count";
 
 	@Autowired
 	LogsInfo logsInfo;
@@ -48,11 +54,6 @@ public class StatisticsController {
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
 		return logsInfo.getArtifactOccuresnces();
 	}
-
-	private static final String INTEGERS = "/integers_flux";
-	private static final String STRINGS_FLUX = "/strings_flux";
-	private static final String STRINGS_LIST = "/strings_list";
-	private static final String STRINGS_MONO = "/strings_mono";
 
 	@GetMapping(value = STRINGS_FLUX)
 	public Flux<String> getStrings() {

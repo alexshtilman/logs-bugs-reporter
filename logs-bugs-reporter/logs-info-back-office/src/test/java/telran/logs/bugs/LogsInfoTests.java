@@ -4,6 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static telran.logs.bugs.api.LogsInfoApi.ALL;
+import static telran.logs.bugs.api.LogsInfoApi.BY_TYPE;
+import static telran.logs.bugs.api.LogsInfoApi.EXCEPTIONS;
+import static telran.logs.bugs.api.LogsInfoApi.LOGS;
+import static telran.logs.bugs.api.LogsStatisticsApi.ARTIFACT_AND_COUNT;
+import static telran.logs.bugs.api.LogsStatisticsApi.LOGTYPE_AND_COUNT;
+import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_ARTIFACTS;
+import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_EXCEPTIONS;
+import static telran.logs.bugs.api.LogsStatisticsApi.STATISTICS;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,22 +50,15 @@ class LogsInfoTests {
 	private static final int EXCEPTIONS_COUNT = 6;
 	private static final int EXCEPTIONS_COUNT_BY_TYPE = 1;
 
-	private static final String LOGS = "/logs";
-	private static final String EXCEPTIONS = "/exceptions";
-	private static final String BY_TYPE = "/by_type?type=";
-	private static final String ALL = "/all";
-
-	private static final String STATISTICS = "/statistics";
-	private static final String ARTIFACT_AND_COUNT = "/artifact_and_count";
-	private static final String MOST_ENCOUNTERED_ARTIFACTS = "/most_encountered_artifacts";
-	private static final String MOST_ENCOUNTERED_EXCEPTIONS = "/most_encountered_exceptions";
-	private static final String LOGTYPE_AND_COUNT = "/logtype_and_count";
-
-	@Autowired
-	private WebTestClient webClient;
-
-	@Autowired
+	WebTestClient webClient;
 	LogRepository logRepo;
+
+	@Autowired
+	public LogsInfoTests(WebTestClient webClient, LogRepository logRepo) {
+		super();
+		this.webClient = webClient;
+		this.logRepo = logRepo;
+	}
 
 	@Test
 	@Order(1)
@@ -82,14 +84,14 @@ class LogsInfoTests {
 		@Test
 		void testTakeFirstByType() {
 			for (LogType type : Arrays.asList(LogType.values())) {
-				assertThat(getFromRestAndAssert(LOGS + BY_TYPE + type.name(), EXCEPTIONS_COUNT_BY_TYPE))
+				assertThat(getFromRestAndAssert(LOGS + BY_TYPE + "?type=" + type.name(), EXCEPTIONS_COUNT_BY_TYPE))
 						.allSatisfy(dto -> assertEquals(type, dto.logType));
 			}
 		}
 
 		@Test
 		void testWrongType() {
-			webClient.get().uri(LOGS + BY_TYPE + "NOT_EXIST").exchange().expectStatus().isBadRequest();
+			webClient.get().uri(LOGS + BY_TYPE + "?type=NOT_EXIST").exchange().expectStatus().isBadRequest();
 		}
 
 		@Test

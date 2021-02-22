@@ -1,5 +1,7 @@
 package telran.logs.bugs;
 
+import static telran.logs.bugs.api.MailProviderApi.MAIL;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -26,14 +28,14 @@ class EmailProviderTests {
 	@Test
 	@Sql("fillTabels.sql")
 	void testEmailExist() {
-		webClient.get().uri("/email/LogTypeAndCountDto.class").exchange().expectStatus().isOk().expectBody(String.class)
-				.isEqualTo("Avior@gmail.com");
+		webClient.get().uri(MAIL + "/LogTypeAndCountDto.class").exchange().expectStatus().isOk()
+				.expectBody(String.class).isEqualTo("Avior@gmail.com");
 	}
 
 	@Test
 	@Sql("fillTabels.sql")
 	void emailNoExisting() {
-		webClient.get().uri("/email/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
+		webClient.get().uri(MAIL + "/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
 				.isEqualTo(null);
 	}
 }
