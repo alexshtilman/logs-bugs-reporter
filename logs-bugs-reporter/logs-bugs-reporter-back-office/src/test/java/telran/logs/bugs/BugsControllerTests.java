@@ -1,27 +1,39 @@
 package telran.logs.bugs;
 
-import static telran.logs.bugs.api.BugsApi.ASSIGN;
-import static telran.logs.bugs.api.BugsApi.BUGS;
-import static telran.logs.bugs.api.BugsApi.OPEN;
-import static telran.logs.bugs.api.BugsApi.PROGRAMMERS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static telran.logs.bugs.api.Constants.ASSIGN;
+import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.OPEN;
+import static telran.logs.bugs.api.Constants.PROGRAMMERS;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
+import telran.logs.bugs.dto.AssignBugData;
+import telran.logs.bugs.dto.BugAssignDto;
 import telran.logs.bugs.dto.BugDto;
 import telran.logs.bugs.dto.BugResponseDto;
+import telran.logs.bugs.dto.BugStatus;
+import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
+import telran.logs.bugs.dto.Seriousness;
+import telran.logs.bugs.jpa.entities.Bug;
+import telran.logs.bugs.jpa.entities.Programmer;
+import telran.logs.bugs.jpa.repo.BugRepo;
+import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 
 /**
  * 
@@ -31,61 +43,134 @@ import telran.logs.bugs.dto.ProgrammerDto;
  * @author Alex Shtilman Feb 22, 2021
  *
  */
-@ExtendWith(SpringExtension.class)
-@EnableAutoConfiguration
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebTestClient
 @AutoConfigureDataJpa
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BugsControllerTests {
 
 	private static final String SQL_FILE = "fill_db.sql";
 
 	WebTestClient webClient;
 
-	@BeforeAll
-	void initClient() {
-		webClient = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build();
+	BugRepo bugsRepo;
+	ProgrammerRepo programmerRepo;
+
+	@Autowired
+	public BugsControllerTests(BugRepo bugsRepo, ProgrammerRepo programmerRepo, WebTestClient webClient) {
+		this.bugsRepo = bugsRepo;
+		this.programmerRepo = programmerRepo;
+		this.webClient = webClient;
 	}
 
 	@Test
 	@Sql(SQL_FILE)
 	void testGetProgrammersBugsById() {
 		List<BugResponseDto> expected = new ArrayList<>();
-		expected.add(new BugResponseDto(null, null, null, 0, null, null, null, 0));
-		expected.add(new BugResponseDto(null, null, null, 0, null, null, null, 0));
-		expected.add(new BugResponseDto(null, null, null, 0, null, null, null, 0));
-		webClient.get().uri(BUGS + PROGRAMMERS + "/1").exchange().expectStatus().isOk()
+
+		expected.add(new BugResponseDto(Seriousness.BLOCKING, "BLOCKING bug description", LocalDate.of(1991, 1, 1), 1,
+				null, BugStatus.ASSIGNED, OpenningMethod.MANUAL, 1));
+
+		expected.add(new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 1,
+				null, BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2));
+
+		expected.add(new BugResponseDto(Seriousness.MINOR, "MINOR bug description", LocalDate.of(1991, 1, 1), 1,
+				LocalDate.of(2018, 1, 1), BugStatus.CLOSED, OpenningMethod.AUTOMATIC, 3));
+
+		webClient.get().uri(BUGS_CONTROLLER + PROGRAMMERS + "/1").exchange().expectStatus().isOk()
 				.expectBodyList(BugResponseDto.class).isEqualTo(expected);
+
+		webClient.get().uri(BUGS_CONTROLLER + PROGRAMMERS + "/Vasya").exchange().expectStatus().isBadRequest();
+
+		webClient.get().uri(BUGS_CONTROLLER + PROGRAMMERS + "/999").exchange().expectStatus().isOk()
+				.expectBodyList(BugResponseDto.class).isEqualTo(new LinkedList<BugResponseDto>());
 	}
 
 	@Test
 	@Sql(SQL_FILE)
 	void testPostAddProgrammer() {
-		ProgrammerDto programmerDto = new ProgrammerDto();
-		webClient.post().uri(BUGS + PROGRAMMERS).contentType(MediaType.APPLICATION_JSON).bodyValue(programmerDto)
-				.exchange().expectStatus().isOk().expectBody(ProgrammerDto.class).isEqualTo(programmerDto);
+		ProgrammerDto expected = new ProgrammerDto(6, "Alex", "alex@gmail.com");
+		ProgrammerDto invalid = new ProgrammerDto(-1, null, "ex@ist@x.0.1");
+
+		testAssertions(BUGS_CONTROLLER + PROGRAMMERS, ProgrammerDto.class, expected, invalid);
+		Programmer programmer = programmerRepo.findById(expected.id).orElse(null);
+
+		assertEquals(expected.email, programmer.getEmail());
+		assertEquals(expected.name, programmer.getName());
 	}
 
 	@Test
 	@Sql(SQL_FILE)
 	void testPostOpenBug() {
-		BugDto bugDto = new BugDto();
-		webClient.post().uri(BUGS + OPEN).contentType(MediaType.APPLICATION_JSON).bodyValue(bugDto).exchange()
-				.expectStatus().isOk().expectBody(BugDto.class).isEqualTo(bugDto);
+
+		BugDto dto = new BugDto(Seriousness.BLOCKING, "Description", LocalDate.now());
+		BugResponseDto expected = new BugResponseDto(dto.seriousness, dto.description, dto.dateOpen, 0, null,
+				BugStatus.OPEND, OpenningMethod.MANUAL, 6);
+
+		BugDto invalid = new BugDto(null, "", null);
+		testAssertions(BUGS_CONTROLLER + OPEN, BugResponseDto.class, dto, expected, invalid);
+
+		findBugByIdAndAssert(expected);
 	}
 
 	@Test
 	@Sql(SQL_FILE)
 	void testPostOpenAndAssignBug() {
-		BugResponseDto bugResponseDto = new BugResponseDto(null, null, null, 0, null, null, null, 0);
-		webClient.post().uri(BUGS + OPEN + ASSIGN).contentType(MediaType.APPLICATION_JSON).bodyValue(bugResponseDto)
-				.exchange().expectStatus().isOk().expectBody(BugResponseDto.class).isEqualTo(bugResponseDto);
+		BugAssignDto dto = new BugAssignDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 1);
+		BugResponseDto expected = new BugResponseDto(dto.seriousness, dto.description, dto.dateOpen, 1, null,
+				BugStatus.ASSIGNED, OpenningMethod.MANUAL, 6);
+
+		BugAssignDto invalid = new BugAssignDto(null, null, null, 0);
+		testAssertions(BUGS_CONTROLLER + OPEN + ASSIGN, BugResponseDto.class, dto, expected, invalid);
+
+		findBugByIdAndAssert(expected);
+
 	}
 
 	@Test
 	@Sql(SQL_FILE)
-	void testPutAssignBug() {
-		BugResponseDto bugResponseDto = new BugResponseDto(null, null, null, 0, null, null, null, 0);
-		webClient.put().uri(BUGS + ASSIGN).contentType(MediaType.APPLICATION_JSON).bodyValue(bugResponseDto).exchange()
-				.expectStatus().isOk().expectBody(BugResponseDto.class).isEqualTo(bugResponseDto);
+	void testPutAndAssignBug() {
+		AssignBugData dto = new AssignBugData(4, 1, "assigned!");
+
+		webClient.put().uri(BUGS_CONTROLLER + ASSIGN).contentType(MediaType.APPLICATION_JSON).bodyValue(dto).exchange()
+				.expectStatus().isOk();
+
+		Bug bug = bugsRepo.findById(dto.bugId).orElse(null);
+		assertEquals("CRITICAL bug description%n Assigment Description " + dto.description, bug.getDescription());
+		assertEquals(dto.programmerId, bug.getProgrammer().getId());
+
 	}
+
+	public <T> ResponseSpec getResponceFromPost(String uri, T bodyValue) {
+		return webClient.post().uri(uri).contentType(MediaType.APPLICATION_JSON).bodyValue(bodyValue).exchange();
+	}
+
+	public <T> void expectOkAndEqual(String uri, T bodyValue, Class<T> clazz) {
+		getResponceFromPost(uri, bodyValue).expectStatus().isOk().expectBody(clazz).isEqualTo(bodyValue);
+	}
+
+	public <T, P> void expectOkAndEqual(String uri, T bodyValue, P expected, Class<P> clazz) {
+		getResponceFromPost(uri, bodyValue).expectStatus().isOk().expectBody(clazz).isEqualTo(expected);
+	}
+
+	public <T> void expectBadRequest(String uri, T bodyValue) {
+		getResponceFromPost(uri, bodyValue).expectStatus().isBadRequest();
+	}
+
+	public <T> void testAssertions(String uri, Class<T> clazz, T expected, T invalid) {
+		expectOkAndEqual(uri, expected, clazz);
+		expectBadRequest(uri, invalid);
+	}
+
+	public <T, P> void testAssertions(String uri, Class<P> clazz, T bodyValue, P expected, T invalid) {
+		expectOkAndEqual(uri, bodyValue, expected, clazz);
+		expectBadRequest(uri, invalid);
+	}
+
+	public void findBugByIdAndAssert(BugResponseDto expected) {
+		Bug bug = bugsRepo.findById(expected.bugId).orElse(null);
+		BugResponseDto expectedRepo = new BugResponseDto(bug.getSeriosness(), bug.getDescription(), bug.getDateOppen(),
+				0, bug.getDateClose(), bug.getStatus(), bug.getOppeningMethod(), bug.getId());
+		assertEquals(expectedRepo, expected);
+	}
+
 }

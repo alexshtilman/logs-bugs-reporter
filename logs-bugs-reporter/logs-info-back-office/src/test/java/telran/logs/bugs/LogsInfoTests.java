@@ -4,15 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static telran.logs.bugs.api.LogsInfoApi.ALL;
-import static telran.logs.bugs.api.LogsInfoApi.BY_TYPE;
-import static telran.logs.bugs.api.LogsInfoApi.EXCEPTIONS;
-import static telran.logs.bugs.api.LogsInfoApi.LOGS;
-import static telran.logs.bugs.api.LogsStatisticsApi.ARTIFACT_AND_COUNT;
-import static telran.logs.bugs.api.LogsStatisticsApi.LOGTYPE_AND_COUNT;
-import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_ARTIFACTS;
-import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_EXCEPTIONS;
-import static telran.logs.bugs.api.LogsStatisticsApi.STATISTICS;
+import static telran.logs.bugs.api.Constants.ALL;
+import static telran.logs.bugs.api.Constants.ARTIFACT_AND_COUNT;
+import static telran.logs.bugs.api.Constants.BY_TYPE;
+import static telran.logs.bugs.api.Constants.EXCEPTIONS;
+import static telran.logs.bugs.api.Constants.LOGS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.LOGTYPE_AND_COUNT;
+import static telran.logs.bugs.api.Constants.MOST_ENCOUNTERED_ARTIFACTS;
+import static telran.logs.bugs.api.Constants.MOST_ENCOUNTERED_EXCEPTIONS;
+import static telran.logs.bugs.api.Constants.STATISTICS_CONTROLLER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,25 +78,25 @@ class LogsInfoTests {
 
 		@Test
 		void testTakeFirstFromAllLogs() {
-			getFromRestAndAssert(LOGS + ALL, EXCEPTIONS_COUNT);
+			getFromRestAndAssert(LOGS_CONTROLLER + ALL, EXCEPTIONS_COUNT);
 		}
 
 		@Test
 		void testTakeFirstByType() {
 			for (LogType type : Arrays.asList(LogType.values())) {
-				assertThat(getFromRestAndAssert(LOGS + BY_TYPE + "?type=" + type.name(), EXCEPTIONS_COUNT_BY_TYPE))
-						.allSatisfy(dto -> assertEquals(type, dto.logType));
+				assertThat(getFromRestAndAssert(LOGS_CONTROLLER + BY_TYPE + "?type=" + type.name(),
+						EXCEPTIONS_COUNT_BY_TYPE)).allSatisfy(dto -> assertEquals(type, dto.logType));
 			}
 		}
 
 		@Test
 		void testWrongType() {
-			webClient.get().uri(LOGS + BY_TYPE + "?type=NOT_EXIST").exchange().expectStatus().isBadRequest();
+			webClient.get().uri(LOGS_CONTROLLER + BY_TYPE + "?type=NOT_EXIST").exchange().expectStatus().isBadRequest();
 		}
 
 		@Test
 		void testTakeFirstFromExceptions() {
-			assertThat(getFromRestAndAssert(LOGS + EXCEPTIONS, EXCEPTIONS_COUNT))
+			assertThat(getFromRestAndAssert(LOGS_CONTROLLER + EXCEPTIONS, EXCEPTIONS_COUNT))
 					.allSatisfy(dto -> assertNotEquals(LogType.NO_EXCEPTION, dto.logType));
 		}
 
@@ -125,7 +125,7 @@ class LogsInfoTests {
 			expected.add(new LogTypeAndCountDto(LogType.DUPLICATED_KEY_EXCEPTION, 1));
 			expected.add(new LogTypeAndCountDto(LogType.NOT_FOUND_EXCEPTION, 1));
 
-			getListFromUriAndAssert(STATISTICS + LOGTYPE_AND_COUNT, expected,
+			getListFromUriAndAssert(STATISTICS_CONTROLLER + LOGTYPE_AND_COUNT, expected,
 					new ParameterizedTypeReference<List<LogTypeAndCountDto>>() {
 					});
 		}
@@ -137,7 +137,7 @@ class LogsInfoTests {
 			expected.add(LogType.AUTHENTICATION_EXCEPTION);
 			expected.add(LogType.BAD_REQUEST_EXCEPTION);
 
-			getListFromUriAndAssert(STATISTICS + MOST_ENCOUNTERED_EXCEPTIONS, expected,
+			getListFromUriAndAssert(STATISTICS_CONTROLLER + MOST_ENCOUNTERED_EXCEPTIONS, expected,
 					new ParameterizedTypeReference<List<LogType>>() {
 					});
 		}
@@ -148,7 +148,7 @@ class LogsInfoTests {
 			expected.add("artifact");
 			expected.add("NO_EXCEPTION");
 
-			getListFromUriAndAssert(STATISTICS + MOST_ENCOUNTERED_ARTIFACTS, expected,
+			getListFromUriAndAssert(STATISTICS_CONTROLLER + MOST_ENCOUNTERED_ARTIFACTS, expected,
 					new ParameterizedTypeReference<List<String>>() {
 					});
 		}
@@ -159,7 +159,7 @@ class LogsInfoTests {
 			expected.add(new ArtifactAndCountDto("artifact", 7));
 			expected.add(new ArtifactAndCountDto("NO_EXCEPTION", 1));
 
-			getListFromUriAndAssert(STATISTICS + ARTIFACT_AND_COUNT, expected,
+			getListFromUriAndAssert(STATISTICS_CONTROLLER + ARTIFACT_AND_COUNT, expected,
 					new ParameterizedTypeReference<List<ArtifactAndCountDto>>() {
 					});
 		}

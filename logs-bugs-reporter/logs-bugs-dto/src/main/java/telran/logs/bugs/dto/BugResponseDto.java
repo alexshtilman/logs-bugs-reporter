@@ -14,6 +14,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = false)
 @ToString
+
 public class BugResponseDto extends BugAssignDto {
 
 	public BugResponseDto(Seriousness seriousness, String description, LocalDate dateOpen, long programmerId,

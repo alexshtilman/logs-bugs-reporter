@@ -1,6 +1,6 @@
 package telran.logs.bugs;
 
-import static telran.logs.bugs.api.MailProviderApi.MAIL;
+import static telran.logs.bugs.api.Constants.MAIL_CONTROLLER;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +28,14 @@ class EmailProviderTests {
 	@Test
 	@Sql("fillTabels.sql")
 	void testEmailExist() {
-		webClient.get().uri(MAIL + "/LogTypeAndCountDto.class").exchange().expectStatus().isOk()
+		webClient.get().uri(MAIL_CONTROLLER + "/LogTypeAndCountDto.class").exchange().expectStatus().isOk()
 				.expectBody(String.class).isEqualTo("Avior@gmail.com");
 	}
 
 	@Test
 	@Sql("fillTabels.sql")
 	void emailNoExisting() {
-		webClient.get().uri(MAIL + "/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
+		webClient.get().uri(MAIL_CONTROLLER + "/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
 				.isEqualTo(null);
 	}
 }

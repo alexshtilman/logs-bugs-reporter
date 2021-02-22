@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
  *
  */
 @EqualsAndHashCode(callSuper = false)
+
 public class BugAssignDto extends BugDto {
 	@Min(value = 1)
 

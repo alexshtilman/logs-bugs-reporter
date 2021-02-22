@@ -9,6 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -21,6 +22,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @EqualsAndHashCode
+@Builder
 public class BugDto {
 	@NotNull
 	public Seriousness seriousness;

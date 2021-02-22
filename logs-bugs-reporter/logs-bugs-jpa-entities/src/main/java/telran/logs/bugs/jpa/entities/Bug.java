@@ -13,8 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.apache.velocity.tools.config.SkipSetters;
-
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,13 +28,12 @@ import telran.logs.bugs.dto.Seriousness;
 @NoArgsConstructor
 @Getter
 @Setter
-@SkipSetters()
 @EqualsAndHashCode
 @ToString
 public class Bug {
-	// FIXME remove setters!
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Setter(value = AccessLevel.NONE)
 	long id;
 	@Column(nullable = false)
 	String description;

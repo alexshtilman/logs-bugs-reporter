@@ -3,11 +3,11 @@
  */
 package telran.logs.bugs.controllers;
 
-import static telran.logs.bugs.api.BugsApi.ASSIGN;
-import static telran.logs.bugs.api.BugsApi.BUGS;
-import static telran.logs.bugs.api.BugsApi.BY_ID;
-import static telran.logs.bugs.api.BugsApi.OPEN;
-import static telran.logs.bugs.api.BugsApi.PROGRAMMERS;
+import static telran.logs.bugs.api.Constants.ASSIGN;
+import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.ID;
+import static telran.logs.bugs.api.Constants.OPEN;
+import static telran.logs.bugs.api.Constants.PROGRAMMERS;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ import telran.logs.bugs.services.BugsReporterImpl;
  *
  */
 @RestController
-@RequestMapping(BUGS)
+@RequestMapping(BUGS_CONTROLLER)
 @Log4j2
 public class BugsController {
 
@@ -49,7 +49,7 @@ public class BugsController {
 		this.bugsReporterService = bugsReporterService;
 	}
 
-	@GetMapping(PROGRAMMERS + BY_ID)
+	@GetMapping(PROGRAMMERS + ID)
 	public List<BugResponseDto> getBugsProgrammer(@PathVariable(name = "id") @NotBlank @Min(1) long programmerId) {
 		List<BugResponseDto> dto = bugsReporterService.getBugsByProgrammerId(programmerId);
 		log.debug("got list BugResponseDto.size = {}", dto.size());

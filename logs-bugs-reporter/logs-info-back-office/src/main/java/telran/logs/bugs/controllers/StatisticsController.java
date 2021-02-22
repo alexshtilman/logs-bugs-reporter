@@ -1,14 +1,14 @@
 package telran.logs.bugs.controllers;
 
-import static telran.logs.bugs.api.LogsStatisticsApi.ARTIFACT_AND_COUNT;
-import static telran.logs.bugs.api.LogsStatisticsApi.INTEGERS;
-import static telran.logs.bugs.api.LogsStatisticsApi.LOGTYPE_AND_COUNT;
-import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_ARTIFACTS;
-import static telran.logs.bugs.api.LogsStatisticsApi.MOST_ENCOUNTERED_EXCEPTIONS;
-import static telran.logs.bugs.api.LogsStatisticsApi.STATISTICS;
-import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_FLUX;
-import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_LIST;
-import static telran.logs.bugs.api.LogsStatisticsApi.STRINGS_MONO;
+import static telran.logs.bugs.api.Constants.ARTIFACT_AND_COUNT;
+import static telran.logs.bugs.api.Constants.INTEGERS;
+import static telran.logs.bugs.api.Constants.LOGTYPE_AND_COUNT;
+import static telran.logs.bugs.api.Constants.MOST_ENCOUNTERED_ARTIFACTS;
+import static telran.logs.bugs.api.Constants.MOST_ENCOUNTERED_EXCEPTIONS;
+import static telran.logs.bugs.api.Constants.STATISTICS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.STRINGS_FLUX;
+import static telran.logs.bugs.api.Constants.STRINGS_LIST;
+import static telran.logs.bugs.api.Constants.STRINGS_MONO;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ import telran.logs.bugs.dto.LogTypeAndCountDto;
 import telran.logs.bugs.interfaces.LogsInfo;
 
 @RestController
-@RequestMapping(STATISTICS)
+@RequestMapping(STATISTICS_CONTROLLER)
 public class StatisticsController {
 
 	@Autowired

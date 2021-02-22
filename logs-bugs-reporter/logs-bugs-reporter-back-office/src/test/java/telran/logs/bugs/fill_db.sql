@@ -1,6 +1,8 @@
 DELETE bugs;
 DELETE programmers;
 
+TRUNCATE TABLE bugs RESTART IDENTITY;
+
 insert into programmers (id,name,email) VALUES
 (1, 'Sara','sara@gmail.com'),
 (2, 'Moshe','moshe@gmail.com');
@@ -8,17 +10,17 @@ insert into programmers (id,name,email) VALUES
 insert into bugs (
 					id,
 					description,
-					dateOppen,
-					dateClose,
+					date_oppen,
+					date_close,
 					status,
 					seriosness,
-					oppeningMethod,
-					programmer
+					oppening_method,
+					programmer_id
 				)
 VALUES
-(1,'BLOCKING bug description','21/03/2018, 11:36:14',null,'ASSIGNED','BLOCKING','MANUAL',1),
-(2,'CRITICAL bug description','21/03/2019, 11:36:14',null,'OPEND','CRITICAL','AUTOMATIC',1),
-(3,'MINOR bug description','21/03/2019, 11:36:14','21/06/2019, 11:36:14','CLOSED','MINOR','AUTOMATIC',1),
-(4,'CRITICAL bug description','21/03/2019, 11:36:14',null,'OPEND','CRITICAL','AUTOMATIC',null),
-(5,'bug description','21/03/2018, 11:36:14','22/03/2018, 11:36:14', 'CLOSED', 'COSMETIC','MANUAL',2);
+(1,'BLOCKING bug description','1991-01-01',null,'ASSIGNED','BLOCKING','MANUAL',1),
+(2,'CRITICAL bug description','1991-01-01',null,'OPEND','CRITICAL','AUTOMATIC',1),
+(3,'MINOR bug description','1991-01-01','2018-01-01','CLOSED','MINOR','AUTOMATIC',1),
+(4,'CRITICAL bug description','1991-01-01',null,'OPEND','CRITICAL','AUTOMATIC',null),
+(5,'COSMETIC bug description','1991-01-01','1991-02-01', 'CLOSED', 'COSMETIC','MANUAL',2);
 

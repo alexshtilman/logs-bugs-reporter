@@ -1,7 +1,7 @@
 package telran.logs.bugs;
 
-import static telran.logs.bugs.api.MailProviderApi.GET_ASIGNER_EMAIL;
-import static telran.logs.bugs.api.MailProviderApi.MAIL;
+import static telran.logs.bugs.api.Constants.GET_ASIGNER_EMAIL;
+import static telran.logs.bugs.api.Constants.MAIL_CONTROLLER;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ class AssignerMailProviderTest {
 
 	@Test
 	void testEmailExist() {
-		webClient.get().uri(MAIL + GET_ASIGNER_EMAIL).exchange().expectStatus().isOk().expectBody(String.class)
-				.isEqualTo("test@gmail.com");
+		webClient.get().uri(MAIL_CONTROLLER + GET_ASIGNER_EMAIL).exchange().expectStatus().isOk()
+				.expectBody(String.class).isEqualTo("test@gmail.com");
 	}
 }
