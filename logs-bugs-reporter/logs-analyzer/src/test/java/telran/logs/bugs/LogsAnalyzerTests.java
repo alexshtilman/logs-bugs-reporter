@@ -23,6 +23,11 @@ import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
+/**
+ * 
+ * @author Alex Shtilman Feb 22, 2021
+ * 
+ */
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
 @Log4j2

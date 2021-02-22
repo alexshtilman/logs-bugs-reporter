@@ -10,12 +10,14 @@ import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "artifacts")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@ToString
 public class Artifact {
 	@Id
 	@Column(name = "artifact_id")

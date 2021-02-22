@@ -13,14 +13,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
+import telran.logs.bugs.dto.BugStatus;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
+import telran.logs.bugs.dto.OpenningMethod;
+import telran.logs.bugs.dto.Seriousness;
 import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Bug;
-import telran.logs.bugs.jpa.entities.BugStatus;
-import telran.logs.bugs.jpa.entities.OppeningMethod;
 import telran.logs.bugs.jpa.entities.Programmer;
-import telran.logs.bugs.jpa.entities.Seriosness;
 import telran.logs.bugs.repositories.ArtifactRepo;
 import telran.logs.bugs.repositories.BugsRepo;
 import telran.logs.bugs.repositories.ProgrammersRepo;
@@ -50,24 +50,24 @@ public class BugsOppenningService {
 		return this::oppenBugMethod;
 	}
 
-	EnumMap<LogType, Seriosness> logType = new EnumMap<>(LogType.class);
+	EnumMap<LogType, Seriousness> logType = new EnumMap<>(LogType.class);
 
 	public BugsOppenningService() {
-		logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriosness.BLOCKING);
-		logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriosness.CRITICAL);
-		logType.put(LogType.SERVER_EXCEPTION, Seriosness.CRITICAL);
+		logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriousness.BLOCKING);
+		logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriousness.CRITICAL);
+		logType.put(LogType.SERVER_EXCEPTION, Seriousness.CRITICAL);
 	}
 
 	void oppenBugMethod(LogDto logDto) {
 		log.debug("BugsOppenningService recived log {}", logDto);
 		LocalDate dateOppen = LocalDate.now(); // 1.2.1
 		LocalDate dateClose = null;// 1.2.2
-		OppeningMethod oppeningMethod = OppeningMethod.AUTOMATIC;// 1.2.5
-		Seriosness seriosness;// 1.2.3
+		OpenningMethod oppeningMethod = OpenningMethod.AUTOMATIC;// 1.2.5
+		Seriousness seriosness;// 1.2.3
 		if (logType.get(logDto.logType) != null)
 			seriosness = logType.get(logDto.logType);
 		else
-			seriosness = Seriosness.MINOR;
+			seriosness = Seriousness.MINOR;
 		BugStatus bugStatus;// 1.2.4
 		Programmer programmer;
 		Artifact artifact = artifactRepo.findById(logDto.artifact).orElse(null);

@@ -24,18 +24,27 @@ import telran.logs.bugs.dto.LogType;
 import telran.logs.bugs.mongo.doc.LogDoc;
 import telran.logs.bugs.mongo.repo.LogsRepo;
 
+/**
+ * 
+ * @author Alex Shtilman Feb 22, 2021
+ *
+ */
 @SpringBootTest
 @Import(TestChannelBinderConfiguration.class)
 class LogsDbPopulatorTest {
 
-	@Autowired
 	InputDestination input;
+	OutputDestination consumer;
 
-	@Autowired
 	LogsRepo consumerLogs;
 
 	@Autowired
-	OutputDestination consumer;
+	public LogsDbPopulatorTest(InputDestination input, LogsRepo consumerLogs, OutputDestination consumer) {
+		super();
+		this.input = input;
+		this.consumerLogs = consumerLogs;
+		this.consumer = consumer;
+	}
 
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;

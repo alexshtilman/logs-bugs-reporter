@@ -18,6 +18,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
+/**
+ * 
+ * @author Alex Shtilman Feb 22, 2021
+ *
+ */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LogsRepo.class)
 @EnableAutoConfiguration

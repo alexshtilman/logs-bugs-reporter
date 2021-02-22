@@ -20,11 +20,15 @@ import telran.logs.bugs.components.RandomLogsComponent;
 @Log4j2
 class RandomLogsImplTest {
 
-	@Autowired
 	OutputDestination output;
+	RandomLogsComponent myLogs;
 
 	@Autowired
-	RandomLogsComponent myLogs;
+	public RandomLogsImplTest(OutputDestination output, RandomLogsComponent myLogs) {
+		super();
+		this.output = output;
+		this.myLogs = myLogs;
+	}
 
 	@Test
 	void sendRandomLogs() throws InterruptedException {

@@ -81,5 +81,6 @@
 		<module>logs-bugs-assigner-mail-provider</module>
 		<module>logs-info-back-office</module>
 		<module>logs-generator-component</module>
+		<module>logs-bugs-reporter-back-office</module>
 	</modules>
 </project>

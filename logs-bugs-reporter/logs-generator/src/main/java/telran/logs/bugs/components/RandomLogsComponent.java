@@ -30,7 +30,7 @@ public class RandomLogsComponent {
 	@Value("${exception-prob:10}")
 	int exceptionProb;
 
-	@Value("${auth-exception-probL70}")
+	@Value("${auth-exception-prob:70}")
 	int authenticationProb;
 
 	static Map<LogType, String> artifacts = new EnumMap<>(LogType.class);

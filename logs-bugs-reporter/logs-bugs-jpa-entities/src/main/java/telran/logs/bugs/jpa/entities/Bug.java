@@ -13,18 +13,27 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.velocity.tools.config.SkipSetters;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
+import telran.logs.bugs.dto.BugStatus;
+import telran.logs.bugs.dto.OpenningMethod;
+import telran.logs.bugs.dto.Seriousness;
 
 @Entity
 @Table(name = "bugs")
 @NoArgsConstructor
 @Getter
+@Setter
+@SkipSetters()
 @EqualsAndHashCode
 @ToString
 public class Bug {
+	// FIXME remove setters!
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	long id;
@@ -43,18 +52,18 @@ public class Bug {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	Seriosness seriosness;
+	Seriousness seriosness;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "oppening_method", nullable = false)
-	OppeningMethod oppeningMethod;
+	OpenningMethod oppeningMethod;
 
 	@ManyToOne
 	@JoinColumn(name = "programmer_id", nullable = true)
 	Programmer programmer;
 
-	public Bug(String description, LocalDate dateOppen, LocalDate dateClose, BugStatus status, Seriosness seriosness,
-			OppeningMethod oppeningMethod, Programmer programmer) {
+	public Bug(String description, LocalDate dateOppen, LocalDate dateClose, BugStatus status, Seriousness seriosness,
+			OpenningMethod oppeningMethod, Programmer programmer) {
 		super();
 		this.description = description;
 		this.dateOppen = dateOppen;

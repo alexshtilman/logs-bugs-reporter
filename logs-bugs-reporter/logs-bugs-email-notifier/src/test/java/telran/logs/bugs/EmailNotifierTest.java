@@ -30,6 +30,11 @@ import telran.logs.bugs.client.EmailProviderClient;
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
 
+/**
+ * 
+ * @author Alex Shtilman Feb 22, 2021
+ *
+ */
 @SpringBootTest
 @Import({ TestChannelBinderConfiguration.class, MailSenderValidatorAutoConfiguration.class })
 class EmailNotifierTest {
