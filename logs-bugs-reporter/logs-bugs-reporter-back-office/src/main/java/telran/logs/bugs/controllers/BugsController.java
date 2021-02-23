@@ -13,9 +13,9 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +39,7 @@ import telran.logs.bugs.services.BugsReporterImpl;
 @RestController
 @RequestMapping(BUGS_CONTROLLER)
 @Log4j2
+@Validated
 public class BugsController {
 
 	BugsReporterImpl bugsReporterService;
@@ -50,7 +51,7 @@ public class BugsController {
 	}
 
 	@GetMapping(PROGRAMMERS + ID)
-	public List<BugResponseDto> getBugsProgrammer(@PathVariable(name = "id") @NotBlank @Min(1) long programmerId) {
+	public List<BugResponseDto> getBugsProgrammer(@PathVariable(name = "id") @Min(1) long programmerId) {
 		List<BugResponseDto> dto = bugsReporterService.getBugsByProgrammerId(programmerId);
 		log.debug("got list BugResponseDto.size = {}", dto.size());
 		return dto;

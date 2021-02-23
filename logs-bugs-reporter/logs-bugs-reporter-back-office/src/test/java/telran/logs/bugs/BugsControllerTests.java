@@ -8,7 +8,7 @@ import static telran.logs.bugs.api.Constants.PROGRAMMERS;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class BugsControllerTests {
 		webClient.get().uri(BUGS_CONTROLLER + PROGRAMMERS + "/Vasya").exchange().expectStatus().isBadRequest();
 
 		webClient.get().uri(BUGS_CONTROLLER + PROGRAMMERS + "/999").exchange().expectStatus().isOk()
-				.expectBodyList(BugResponseDto.class).isEqualTo(new LinkedList<BugResponseDto>());
+				.expectBodyList(BugResponseDto.class).isEqualTo(Collections.emptyList());
 	}
 
 	@Test
@@ -115,24 +115,12 @@ class BugsControllerTests {
 	@Test
 	@Sql(SQL_FILE)
 	void testPostOpenAndAssignBug() {
-		BugAssignDto dto = BugAssignDto.builder()
-				.dateOpen(LocalDate.now())
-				.description("Description")
-				.seriousness(Seriousness.BLOCKING)
-				.programmerId(1)
-				.build();
+		BugAssignDto dto = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
+				.seriousness(Seriousness.BLOCKING).programmerId(1).build();
 
-		BugResponseDto expected = 
-				BugResponseDto.builder()
-				.bugId(6)
-				.dateClose(null)
-				.dateOpen(dto.dateOpen)
-				.description(dto.description)
-				.seriousness(dto.seriousness)
-				.status(BugStatus.ASSIGNED)
-				.openningMethod(OpenningMethod.MANUAL)
-				.programmerId(1)
-				.build();
+		BugResponseDto expected = BugResponseDto.builder().bugId(6).dateClose(null).dateOpen(dto.dateOpen)
+				.description(dto.description).seriousness(dto.seriousness).status(BugStatus.ASSIGNED)
+				.openningMethod(OpenningMethod.MANUAL).programmerId(1).build();
 
 		BugAssignDto invalid = new BugAssignDto(null, null, null, 0);
 		testAssertions(BUGS_CONTROLLER + OPEN + ASSIGN, BugResponseDto.class, dto, expected, invalid);
@@ -159,10 +147,6 @@ class BugsControllerTests {
 		return webClient.post().uri(uri).contentType(MediaType.APPLICATION_JSON).bodyValue(bodyValue).exchange();
 	}
 
-	public <T> void expectOkAndEqual(String uri, T bodyValue, Class<T> clazz) {
-		getResponceFromPost(uri, bodyValue).expectStatus().isOk().expectBody(clazz).isEqualTo(bodyValue);
-	}
-
 	public <T, P> void expectOkAndEqual(String uri, T bodyValue, P expected, Class<P> clazz) {
 		getResponceFromPost(uri, bodyValue).expectStatus().isOk().expectBody(clazz).isEqualTo(expected);
 	}
@@ -172,8 +156,7 @@ class BugsControllerTests {
 	}
 
 	public <T> void testAssertions(String uri, Class<T> clazz, T expected, T invalid) {
-		expectOkAndEqual(uri, expected, clazz);
-		expectBadRequest(uri, invalid);
+		testAssertions(uri, clazz, expected, expected, invalid);
 	}
 
 	public <T, P> void testAssertions(String uri, Class<P> clazz, T bodyValue, P expected, T invalid) {
