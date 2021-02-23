@@ -115,9 +115,24 @@ class BugsControllerTests {
 	@Test
 	@Sql(SQL_FILE)
 	void testPostOpenAndAssignBug() {
-		BugAssignDto dto = new BugAssignDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 1);
-		BugResponseDto expected = new BugResponseDto(dto.seriousness, dto.description, dto.dateOpen, 1, null,
-				BugStatus.ASSIGNED, OpenningMethod.MANUAL, 6);
+		BugAssignDto dto = BugAssignDto.builder()
+				.dateOpen(LocalDate.now())
+				.description("Description")
+				.seriousness(Seriousness.BLOCKING)
+				.programmerId(1)
+				.build();
+
+		BugResponseDto expected = 
+				BugResponseDto.builder()
+				.bugId(6)
+				.dateClose(null)
+				.dateOpen(dto.dateOpen)
+				.description(dto.description)
+				.seriousness(dto.seriousness)
+				.status(BugStatus.ASSIGNED)
+				.openningMethod(OpenningMethod.MANUAL)
+				.programmerId(1)
+				.build();
 
 		BugAssignDto invalid = new BugAssignDto(null, null, null, 0);
 		testAssertions(BUGS_CONTROLLER + OPEN + ASSIGN, BugResponseDto.class, dto, expected, invalid);

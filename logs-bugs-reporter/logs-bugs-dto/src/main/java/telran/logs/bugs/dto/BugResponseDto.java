@@ -5,8 +5,13 @@ package telran.logs.bugs.dto;
 
 import java.time.LocalDate;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 /**
  * @author Alex Shtilman Feb 21, 2021
@@ -14,7 +19,11 @@ import lombok.ToString;
  */
 @EqualsAndHashCode(callSuper = false)
 @ToString
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@SuperBuilder
 public class BugResponseDto extends BugAssignDto {
 
 	public BugResponseDto(Seriousness seriousness, String description, LocalDate dateOpen, long programmerId,
