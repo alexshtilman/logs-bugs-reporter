@@ -1,5 +1,10 @@
 package telran.logs.bugs.controllers;
 
+import static telran.logs.bugs.api.Constants.ALL;
+import static telran.logs.bugs.api.Constants.BY_TYPE;
+import static telran.logs.bugs.api.Constants.EXCEPTIONS;
+import static telran.logs.bugs.api.Constants.LOGS_CONTROLLER;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +19,8 @@ import telran.logs.bugs.interfaces.LogsInfo;
 
 @RestController
 @Log4j2
-@RequestMapping("/logs")
+@RequestMapping(LOGS_CONTROLLER)
 public class LogsInfoController {
-
-	private static final String EXCEPTIONS = "/exceptions";
-	private static final String BY_TYPE = "/by_type";
-	private static final String ALL = "/all";
 
 	@Autowired
 	LogsInfo logsInfo;
