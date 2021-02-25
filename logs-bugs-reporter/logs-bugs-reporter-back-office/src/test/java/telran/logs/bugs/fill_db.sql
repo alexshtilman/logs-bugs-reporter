@@ -5,7 +5,8 @@ TRUNCATE TABLE bugs RESTART IDENTITY;
 
 insert into programmers (id,name,email) VALUES
 (1, 'Sara','sara@gmail.com'),
-(2, 'Moshe','moshe@gmail.com');
+(2, 'Moshe','moshe@gmail.com'),
+(3, 'new','new@gmail.com');
 
 insert into bugs (
 					id,

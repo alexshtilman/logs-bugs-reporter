@@ -5,6 +5,7 @@ package telran.logs.bugs.controllers;
 
 import static telran.logs.bugs.api.Constants.ASSIGN;
 import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.EMAIL_BUGS_COUNTS;
 import static telran.logs.bugs.api.Constants.ID;
 import static telran.logs.bugs.api.Constants.OPEN;
 import static telran.logs.bugs.api.Constants.PROGRAMMERS;
@@ -29,6 +30,7 @@ import telran.logs.bugs.dto.AssignBugData;
 import telran.logs.bugs.dto.BugAssignDto;
 import telran.logs.bugs.dto.BugDto;
 import telran.logs.bugs.dto.BugResponseDto;
+import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.services.BugsReporterImpl;
 
@@ -81,6 +83,11 @@ public class BugsController {
 	@PutMapping(ASSIGN)
 	public void assignBug(@RequestBody @Valid AssignBugData assignData) {
 		bugsReporterService.assginBug(assignData);
+	}
+
+	@GetMapping(EMAIL_BUGS_COUNTS)
+	public List<EmailBugsCount> getEmailBugsCounts() {
+		return bugsReporterService.getEmailBugsCounts();
 	}
 
 }

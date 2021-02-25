@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.dto.ArtifactDto;
 import telran.logs.bugs.dto.AssignBugData;
 import telran.logs.bugs.dto.BugAssignDto;
@@ -33,6 +34,7 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
  *
  */
 @Service
+@Log4j2
 public class BugsReporterImpl implements BugsReporter {
 
 	BugRepo bugsRepo;
@@ -74,20 +76,6 @@ public class BugsReporterImpl implements BugsReporter {
 		return toBugResponceDto(bug);
 	}
 
-	/**
-	 * @param bug
-	 * @return
-	 */
-	private BugResponseDto toBugResponceDto(Bug bug) {
-		Programmer programmer = bug.getProgrammer();
-		long programmerId = 0;
-		if (programmer != null) {
-			programmer.getId();
-		}
-		return new BugResponseDto(bug.getSeriosness(), bug.getDescription(), bug.getDateOppen(), programmerId,
-				bug.getDateClose(), bug.getStatus(), bug.getOppeningMethod(), bug.getId());
-	}
-
 	@Transactional
 	@Override
 	public BugResponseDto openAndAssignBug(BugAssignDto bugDto) {
@@ -125,31 +113,31 @@ public class BugsReporterImpl implements BugsReporter {
 
 	@Override
 	public List<BugResponseDto> getNonAssignedBugs() {
-		// TODO Auto-generated method stub
-		return null;
+		List<Bug> bugs = bugsRepo.findByStatus(BugStatus.OPEND);
+		log.debug("found bugs {}", bugs.size());
+		return toListBugResponceDto(bugs);
 	}
 
 	@Override
 	public List<BugResponseDto> getUnclosedBugsMoreDuration(int days) {
-		// TODO Auto-generated method stub
-		return null;
+		LocalDate dateOpen = LocalDate.now().minusDays(days);
+		List<Bug> bugs = bugsRepo.findByStatusNotAndDateOppenBefore(BugStatus.CLOSED, dateOpen);
+		log.debug("found bugs {}", bugs.size());
+
+		return toListBugResponceDto(bugs);
 	}
 
 	@Override
 	public List<BugResponseDto> getBugsByProgrammerId(long programmerId) {
 		List<Bug> bugs = bugsRepo.findByProgrammerId(programmerId);
 
-		return bugs.isEmpty() ? new LinkedList<BugResponseDto>() : toListBugResponceDto(bugs);
-	}
-
-	private List<BugResponseDto> toListBugResponceDto(List<Bug> bugs) {
-		return bugs.stream().map(this::toBugResponceDto).collect(Collectors.toList());
+		return bugs.isEmpty() ? new LinkedList<>() : toListBugResponceDto(bugs);
 	}
 
 	@Override
 	public List<EmailBugsCount> getEmailBugsCounts() {
-		// TODO Auto-generated method stub
-		return null;
+		List<EmailBugsCount> bugs = bugsRepo.groupByEmailAndCount();
+		return bugs;
 	}
 
 	@Override
@@ -164,4 +152,17 @@ public class BugsReporterImpl implements BugsReporter {
 		return null;
 	}
 
+	private BugResponseDto toBugResponceDto(Bug bug) {
+		Programmer programmer = bug.getProgrammer();
+		long programmerId = 0;
+		if (programmer != null) {
+			programmer.getId();
+		}
+		return new BugResponseDto(bug.getSeriosness(), bug.getDescription(), bug.getDateOppen(), programmerId,
+				bug.getDateClose(), bug.getStatus(), bug.getOppeningMethod(), bug.getId());
+	}
+
+	private List<BugResponseDto> toListBugResponceDto(List<Bug> bugs) {
+		return bugs.stream().map(this::toBugResponceDto).collect(Collectors.toList());
+	}
 }

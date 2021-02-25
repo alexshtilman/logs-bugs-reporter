@@ -18,6 +18,7 @@ public class Constants {
 	public static final String PROGRAMMERS = "/programmers";
 	public static final String OPEN = "/open";
 	public static final String ASSIGN = "/assign";
+	public static final String EMAIL_BUGS_COUNTS = "/email_bugs_count";
 
 	// Logs
 	public static final String LOGS_CONTROLLER = "/logs";
