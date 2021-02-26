@@ -17,8 +17,8 @@ import lombok.experimental.SuperBuilder;
  * @author Alex Shtilman Feb 21, 2021
  *
  */
-@EqualsAndHashCode(callSuper = false)
-@ToString
+@EqualsAndHashCode
+@ToString(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

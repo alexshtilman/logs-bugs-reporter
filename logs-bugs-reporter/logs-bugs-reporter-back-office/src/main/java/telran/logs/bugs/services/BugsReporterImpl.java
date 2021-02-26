@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,8 @@ import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
+import telran.logs.bugs.dto.ProgrammerName;
+import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Bug;
 import telran.logs.bugs.jpa.entities.Programmer;
 import telran.logs.bugs.jpa.repo.ArtifactRepo;
@@ -37,6 +40,10 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 @Log4j2
 public class BugsReporterImpl implements BugsReporter {
 
+	/**
+	 * 
+	 */
+	private static final String FOUND_BUGS = "found bugs {}";
 	BugRepo bugsRepo;
 	ArtifactRepo artifactRepo;
 	ProgrammerRepo programmerRepo;
@@ -58,8 +65,10 @@ public class BugsReporterImpl implements BugsReporter {
 
 	@Override
 	public ArtifactDto addArtifactDto(ArtifactDto artifactDto) {
-		// TODO Auto-generated method stub
-		return null;
+		// FIXME add exception implementation handler
+		Programmer programmer = programmerRepo.findById(artifactDto.getProgrammerId()).orElse(null);
+		artifactRepo.save(new Artifact(artifactDto.getArtifactId(), programmer));
+		return artifactDto;
 	}
 
 	@Transactional
@@ -105,16 +114,23 @@ public class BugsReporterImpl implements BugsReporter {
 
 	}
 
+	@Transactional
 	@Override
 	public void closeBug(CloseBugData closeData) {
-		// TODO Auto-generated method stub
-
+		// FIXME exceptions
+		LocalDate dateClose = LocalDate.now();
+		if (closeData.dateClose != null) {
+			dateClose = closeData.dateClose;
+		}
+		Bug bug = bugsRepo.findById(closeData.bugId).orElse(null);
+		bug.setDescription(String.format("bug was closed %s because: %s", dateClose, closeData.description));
+		bug.setDateClose(dateClose);
+		bug.setStatus(BugStatus.CLOSED);
 	}
 
 	@Override
 	public List<BugResponseDto> getNonAssignedBugs() {
 		List<Bug> bugs = bugsRepo.findByStatus(BugStatus.OPEND);
-		log.debug("found bugs {}", bugs.size());
 		return toListBugResponceDto(bugs);
 	}
 
@@ -122,7 +138,6 @@ public class BugsReporterImpl implements BugsReporter {
 	public List<BugResponseDto> getUnclosedBugsMoreDuration(int days) {
 		LocalDate dateOpen = LocalDate.now().minusDays(days);
 		List<Bug> bugs = bugsRepo.findByStatusNotAndDateOppenBefore(BugStatus.CLOSED, dateOpen);
-		log.debug("found bugs {}", bugs.size());
 
 		return toListBugResponceDto(bugs);
 	}
@@ -137,32 +152,36 @@ public class BugsReporterImpl implements BugsReporter {
 	@Override
 	public List<EmailBugsCount> getEmailBugsCounts() {
 		List<EmailBugsCount> bugs = bugsRepo.groupByEmailAndCount();
+		bugs.forEach(bug -> log.debug(FOUND_BUGS, bugs));
 		return bugs;
 	}
 
 	@Override
-	public List<String> getProgrammersMostBugs(int nProgrammers) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ProgrammerName> getProgrammersMostBugs(int nProgrammers) {
+		List<ProgrammerName> names = bugsRepo.findProgrammersBugsDesc(PageRequest.of(0, nProgrammers));
+		names.forEach(name -> log.debug(FOUND_BUGS, name));
+		return names;
 	}
 
 	@Override
-	public List<String> getProgrammersLeastBugs(int nProgrammers) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<ProgrammerName> getProgrammersLeastBugs(int nProgrammers) {
+		List<ProgrammerName> names = bugsRepo.findProgrammersBugsAsc(PageRequest.of(0, nProgrammers));
+		names.forEach(name -> log.debug(FOUND_BUGS, name));
+		return names;
 	}
 
 	private BugResponseDto toBugResponceDto(Bug bug) {
 		Programmer programmer = bug.getProgrammer();
 		long programmerId = 0;
 		if (programmer != null) {
-			programmer.getId();
+			programmerId = programmer.getId();
 		}
 		return new BugResponseDto(bug.getSeriosness(), bug.getDescription(), bug.getDateOppen(), programmerId,
 				bug.getDateClose(), bug.getStatus(), bug.getOppeningMethod(), bug.getId());
 	}
 
 	private List<BugResponseDto> toListBugResponceDto(List<Bug> bugs) {
+		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
 		return bugs.stream().map(this::toBugResponceDto).collect(Collectors.toList());
 	}
 }

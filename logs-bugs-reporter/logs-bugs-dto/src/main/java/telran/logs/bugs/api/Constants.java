@@ -16,9 +16,17 @@ public class Constants {
 	// bugs
 	public static final String BUGS_CONTROLLER = "/bugs";
 	public static final String PROGRAMMERS = "/programmers";
+	public static final String ARTIFACTS = "/artifacts";
 	public static final String OPEN = "/open";
+	public static final String CLOSE = "/close";
+
 	public static final String ASSIGN = "/assign";
 	public static final String EMAIL_BUGS_COUNTS = "/email_bugs_count";
+	public static final String NON_ASSIGNED_BUGS_COUNTS = "/non_assigned_bugs_count";
+
+	public static final String UNCLOSED_DURATION = "/unclosed_duration";
+	public static final String MOST_BUGS = "/most_bugs";
+	public static final String LEAST_BUGS = "/least_bugs";
 
 	// Logs
 	public static final String LOGS_CONTROLLER = "/logs";

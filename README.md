@@ -1,26 +1,13 @@
-# home work 66
+# home work 67
 
-1. Complete the flow of controller-service-data for the methods we have done at the service-data layers
-   - `addProgrammer` POST request `/bugs/programmers`. Gets `ProgrammerDto` object with a relevant validation (consider annotation `@Valid`) and returns the same `ProgrammerDto` object in the case of success (exceptions will be considered later)
-   - `openBug`. POST request `/bugs/open` . Gets BugDto object with a relevant validation (consider annotation `@Valid`) and returns the BugResponseDto object in the case of success (exceptions will be considered later)
-   - `openAndAssignBug`. POST request `/bugs/open/assign` . Gets BugAssignDto object with a relevant validation (consider annotation `@Valid`) and returns the `BugResponseDto` object in the case of success (exceptions will be considered later)
-   - `assignBug`. PUT request `/bugs/assign`. Gets AssignData object with a relevant validation (consider annotation @Valid) and returns nothing in the case of success (exceptions will be considered later)
-   - `getBugsProgrammer` GET request `/bugs/programmers` Gets parameter programmer_id and returns `List<BugResponseDto>` containing objects related to the bugs having been assigned to a programmer with the given id
-1. Write Unit tests for these methods
+1. Complete the logs-bugs-reporter-back-office application with all three layers (controller-services-data) and tests. Think of the proper REST requests (POST, PUT, GET) for the controller end-point methods
+1. Add three layers with the tests for the following functionality
+   - Getting distribution of the bug counts by bugs seriousness `List<SeriousnessBugCount> getSeriousnessBugCounts()`
+   - Getting a given number of the seriousness types with the most bugs `List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes)`
 
-   - For POST requests you may use the following template:
+Implementation notes:
 
-     ```java
-     testClient.post().uri(<uri string>).contentType(MediaType.APPLICATION_JSON)
-     .bodyValue(<object passed in request>).exchange().expectStatus(). <ok or bad request>().
-
-     <only for valid requests>body(<class object for the returned type>. isEqualTo(<expected object>)
-     ```
-
-   - For PUT request of the method `assignBug` you may use the same template as for POST requests just instead of post there will be put and the method returns nothing
-   - For GET request of the method `getBugsProgrammer` you may use the following template:
-
-   ```java
-   testClient.get().uri(<uri string with parameter> ).exchange().expectStatus().<ok or bad request> ()
-   .expectBodyList(<element class object>).isEqualTo(<list of expected objects>);
-   ```
+- Apply the proper REST requests (POST, PUT, GET)
+- Apply repository naming convention wherever possible
+- Apply JPQL in the cases when naming is impossible
+- Apply SQL native in the cases when naming and JPQL is impossible

@@ -19,16 +19,15 @@ import lombok.experimental.SuperBuilder;
  * @author Alex Shtilman Feb 21, 2021
  *
  */
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(callSuper = true)
 @SuperBuilder
 public class BugAssignDto extends BugDto {
 	@Min(value = 1)
-
 	public long programmerId;
 
 	public BugAssignDto(Seriousness seriousness, String description, LocalDate dateOpen, long programmerId) {
