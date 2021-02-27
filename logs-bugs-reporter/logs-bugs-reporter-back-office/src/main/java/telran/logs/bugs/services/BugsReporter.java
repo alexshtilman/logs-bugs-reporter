@@ -14,6 +14,8 @@ import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.dto.ProgrammerName;
+import telran.logs.bugs.dto.Seriousness;
+import telran.logs.bugs.dto.SeriousnessBugCount;
 
 /**
  * @author Alex Shtilman Feb 21, 2021
@@ -44,4 +46,8 @@ public interface BugsReporter {
 	List<ProgrammerName> getProgrammersMostBugs(int nProgrammers);
 
 	List<ProgrammerName> getProgrammersLeastBugs(int nProgrammers);
+
+	List<SeriousnessBugCount> getSeriousnessBugCounts();
+
+	List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes);
 }

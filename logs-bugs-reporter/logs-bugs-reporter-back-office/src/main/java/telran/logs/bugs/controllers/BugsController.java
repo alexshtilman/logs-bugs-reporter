@@ -14,6 +14,8 @@ import static telran.logs.bugs.api.Constants.MOST_BUGS;
 import static telran.logs.bugs.api.Constants.NON_ASSIGNED_BUGS_COUNTS;
 import static telran.logs.bugs.api.Constants.OPEN;
 import static telran.logs.bugs.api.Constants.PROGRAMMERS;
+import static telran.logs.bugs.api.Constants.SERIOSNESS_BUGS_COUNT;
+import static telran.logs.bugs.api.Constants.TYPES_BUGS_COUNT;
 import static telran.logs.bugs.api.Constants.UNCLOSED_DURATION;
 
 import java.util.List;
@@ -42,6 +44,8 @@ import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.dto.ProgrammerName;
+import telran.logs.bugs.dto.Seriousness;
+import telran.logs.bugs.dto.SeriousnessBugCount;
 import telran.logs.bugs.services.BugsReporterImpl;
 
 /**
@@ -130,5 +134,15 @@ public class BugsController {
 	@GetMapping(LEAST_BUGS)
 	public List<ProgrammerName> getProgrammersLeastBugs(@RequestParam(name = "limit") @Min(0) int limit) {
 		return bugsReporterService.getProgrammersLeastBugs(limit);
+	}
+
+	@GetMapping(SERIOSNESS_BUGS_COUNT)
+	public List<SeriousnessBugCount> getSeriousnessBugCounts() {
+		return bugsReporterService.getSeriousnessBugCounts();
+	}
+
+	@GetMapping(TYPES_BUGS_COUNT)
+	public List<Seriousness> getSeriousnessTypesWithMostBugs(@RequestParam(name = "limit") @Min(0) int limit) {
+		return bugsReporterService.getSeriousnessTypesWithMostBugs(limit);
 	}
 }

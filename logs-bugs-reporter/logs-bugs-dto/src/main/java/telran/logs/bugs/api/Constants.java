@@ -27,6 +27,8 @@ public class Constants {
 	public static final String UNCLOSED_DURATION = "/unclosed_duration";
 	public static final String MOST_BUGS = "/most_bugs";
 	public static final String LEAST_BUGS = "/least_bugs";
+	public static final String SERIOSNESS_BUGS_COUNT = "/seriosness_bugs_count";
+	public static final String TYPES_BUGS_COUNT = "/types_bugs_count";
 
 	// Logs
 	public static final String LOGS_CONTROLLER = "/logs";

@@ -25,6 +25,8 @@ import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.dto.ProgrammerName;
+import telran.logs.bugs.dto.Seriousness;
+import telran.logs.bugs.dto.SeriousnessBugCount;
 import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Bug;
 import telran.logs.bugs.jpa.entities.Programmer;
@@ -183,5 +185,19 @@ public class BugsReporterImpl implements BugsReporter {
 	private List<BugResponseDto> toListBugResponceDto(List<Bug> bugs) {
 		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
 		return bugs.stream().map(this::toBugResponceDto).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<SeriousnessBugCount> getSeriousnessBugCounts() {
+		List<SeriousnessBugCount> bugs = bugsRepo.getSeriousnessBugCounts();
+		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
+		return bugs;
+	}
+
+	@Override
+	public List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes) {
+		List<Seriousness> bugs = bugsRepo.getSeriousnessTypesWithMostBugs(PageRequest.of(0, nTypes));
+		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
+		return bugs;
 	}
 }
