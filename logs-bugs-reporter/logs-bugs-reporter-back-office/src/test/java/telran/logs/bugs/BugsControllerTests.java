@@ -65,7 +65,7 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 @TestMethodOrder(OrderAnnotation.class)
 class BugsControllerTests {
 
-	private static final String LIMIT_INVALID = "?limit=INVALID";
+	private static final String LIMIT_INVALID = "?limit=-42";
 
 	WebTestClient webClient;
 	BugRepo bugRepo;
@@ -138,12 +138,14 @@ class BugsControllerTests {
 				.description(dto.description).seriousness(dto.seriousness).status(BugStatus.ASSIGNED)
 				.openningMethod(OpenningMethod.MANUAL).programmerId(1).build();
 
-		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-
-		BugAssignDto invalid = BugAssignDto.builder().dateOpen(LocalDate.now()).description("")
+		BugAssignDto invalidDescription = BugAssignDto.builder().dateOpen(LocalDate.now()).description("")
 				.seriousness(Seriousness.BLOCKING).programmerId(1).build();
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalid);
 
+		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
+				.seriousness(Seriousness.BLOCKING).programmerId(99).build();
+		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
 	}
 
 	@Test
@@ -171,6 +173,8 @@ class BugsControllerTests {
 	@Nested
 	@DisplayName("Get methods")
 	class GetMethods {
+		private static final String LIMIT_2 = "?limit=2";
+
 		@Test
 		void programmers_BugsById_1() {
 			List<BugResponseDto> expected = Arrays.asList(
@@ -223,14 +227,14 @@ class BugsControllerTests {
 		@Test
 		void programmers_MostBugs_limit_2() {
 			String[] expected = { "Sara", "moshe" };
-			testGetOkAndEqual(BUGS_CONTROLLER + MOST_BUGS + "?limit=2", String[].class, expected);
+			testGetOkAndEqual(BUGS_CONTROLLER + MOST_BUGS + LIMIT_2, String[].class, expected);
 			testGetIsBadRequest(BUGS_CONTROLLER + MOST_BUGS + LIMIT_INVALID);
 		}
 
 		@Test
 		void first_2_Programmers_with_moust_Least_Bugs() {
 			String[] expected = { "Alex", "new" };
-			testGetOkAndEqual(BUGS_CONTROLLER + LEAST_BUGS + "?limit=2", String[].class, expected);
+			testGetOkAndEqual(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_2, String[].class, expected);
 			testGetIsBadRequest(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_INVALID);
 		}
 
@@ -246,7 +250,7 @@ class BugsControllerTests {
 		@Test
 		void getSeriousnessTypesWithMostBugs() {
 			List<Seriousness> expected = Arrays.asList(Seriousness.BLOCKING, Seriousness.CRITICAL);
-			testGetOkAndEqual(BUGS_CONTROLLER + TYPES_BUGS_COUNT + "?limit=2", Seriousness.class, expected);
+			testGetOkAndEqual(BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_2, Seriousness.class, expected);
 			testGetIsBadRequest(BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_INVALID);
 		}
 	}

@@ -15,9 +15,6 @@
 	<version>0.0.1</version>
 	<name>logs-bugs-reporter</name>
 	<description>Java 36 base project</description>
-	<properties>
-		<java.version>11</java.version>
-	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -45,7 +42,6 @@
 		<dependency>
 			<groupId>io.projectreactor</groupId>
 			<artifactId>reactor-core</artifactId>
-			<version>3.4.2</version>
 		</dependency>
 	</dependencies>
 
@@ -58,7 +54,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -82,5 +77,6 @@
 		<module>logs-info-back-office</module>
 		<module>logs-generator-component</module>
 		<module>logs-bugs-reporter-back-office</module>
+		<module>logs-bugs-exception-handler</module>
 	</modules>
 </project>

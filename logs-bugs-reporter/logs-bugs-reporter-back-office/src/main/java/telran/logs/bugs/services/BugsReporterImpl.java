@@ -8,6 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.dto.Seriousness;
 import telran.logs.bugs.dto.SeriousnessBugCount;
+import telran.logs.bugs.exceptions.NotFoundException;
 import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Bug;
 import telran.logs.bugs.jpa.entities.Programmer;
@@ -41,9 +44,6 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 @Log4j2
 public class BugsReporterImpl implements BugsReporter {
 
-	/**
-	 * 
-	 */
 	private static final String FOUND_BUGS = "found bugs {}";
 	BugRepo bugsRepo;
 	ArtifactRepo artifactRepo;
@@ -89,9 +89,13 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public BugResponseDto openAndAssignBug(BugAssignDto bugDto) {
-		// FIXME exceptions
+
 		Programmer programmer = programmerRepo.findById(bugDto.programmerId).orElse(null);
-		// TODO EXCEPTION
+		if (programmer == null) {
+			throw new NotFoundException(
+					String.format("Can't assign this bug to programmer with id %s because programmer not found",
+							bugDto.programmerId));
+		}
 		LocalDate dateOpen = LocalDate.now();
 		if (bugDto.dateOpen != null) {
 			dateOpen = bugDto.dateOpen;
@@ -106,8 +110,10 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public void assginBug(AssignBugData assgnData) {
-		// FIXME exceptions
 		Bug bug = bugsRepo.findById(assgnData.bugId).orElse(null);
+		if (bug == null) {
+			throw new NotFoundException(String.format("Bug not found by id %s", assgnData.bugId));
+		}
 		bug.setDescription(bug.getDescription() + "%n Assigment Description " + assgnData.description);
 		Programmer programmer = programmerRepo.findById(assgnData.programmerId).orElse(null);
 		bug.setProgrammer(programmer);
@@ -118,12 +124,14 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public void closeBug(CloseBugData closeData) {
-		// FIXME exceptions
 		LocalDate dateClose = LocalDate.now();
 		if (closeData.dateClose != null) {
 			dateClose = closeData.dateClose;
 		}
 		Bug bug = bugsRepo.findById(closeData.bugId).orElse(null);
+		if (bug == null) {
+			throw new NotFoundException(String.format("Bug not found by id %s", closeData.bugId));
+		}
 		bug.setDescription(String.format("%s%nbug was closed %s because: %s", bug.getDescription(), dateClose,
 				closeData.description));
 		bug.setDateClose(dateClose);
@@ -196,6 +204,10 @@ public class BugsReporterImpl implements BugsReporter {
 
 	@Override
 	public List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes) {
+		if (nTypes < 0) {
+			throw new ConstraintViolationException(String.format("nTypes shold be grather than 0!, but was %s", nTypes),
+					null);
+		}
 		List<Seriousness> bugs = bugsRepo.getSeriousnessTypesWithMostBugs(PageRequest.of(0, nTypes));
 		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
 		return bugs;

@@ -47,4 +47,6 @@ public interface BugRepo extends JpaRepository<Bug, Long> {
 	@Query(value = "SELECT b.seriousness as seriousness  FROM Bug b "
 			+ "GROUP BY seriousness ORDER BY count(b) DESC, b.seriousness ASC")
 	List<Seriousness> getSeriousnessTypesWithMostBugs(Pageable pageable);
+
+	long countBySeriousness(Seriousness s);
 }
