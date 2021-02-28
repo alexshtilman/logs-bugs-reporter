@@ -99,7 +99,7 @@ class OpenningLogsBugsTest {
 		log.debug(bug.getDescription());
 		assertNull(bug.getDateClose());
 		assertEquals(bugstatus, bug.getStatus());
-		assertEquals(seriosness, bug.getSeriosness());
+		assertEquals(seriosness, bug.getSeriousness());
 		assertEquals(OpenningMethod.AUTOMATIC, bug.getOppeningMethod());
 		if (id == null) {
 			assertNull(bug.getProgrammer());

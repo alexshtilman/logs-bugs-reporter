@@ -43,7 +43,6 @@ import telran.logs.bugs.dto.BugResponseDto;
 import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.ProgrammerDto;
-import telran.logs.bugs.dto.ProgrammerName;
 import telran.logs.bugs.dto.Seriousness;
 import telran.logs.bugs.dto.SeriousnessBugCount;
 import telran.logs.bugs.services.BugsReporterImpl;
@@ -127,12 +126,12 @@ public class BugsController {
 	}
 
 	@GetMapping(MOST_BUGS)
-	public List<ProgrammerName> getProgrammersMostBugs(@RequestParam(name = "limit") @Min(0) int limit) {
+	public List<String> getProgrammersMostBugs(@RequestParam(name = "limit") @Min(0) int limit) {
 		return bugsReporterService.getProgrammersMostBugs(limit);
 	}
 
 	@GetMapping(LEAST_BUGS)
-	public List<ProgrammerName> getProgrammersLeastBugs(@RequestParam(name = "limit") @Min(0) int limit) {
+	public List<String> getProgrammersLeastBugs(@RequestParam(name = "limit") @Min(0) int limit) {
 		return bugsReporterService.getProgrammersLeastBugs(limit);
 	}
 

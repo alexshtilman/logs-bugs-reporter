@@ -50,7 +50,7 @@ public class Bug {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	Seriousness seriosness;
+	Seriousness seriousness;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "oppening_method", nullable = false)
@@ -60,14 +60,14 @@ public class Bug {
 	@JoinColumn(name = "programmer_id", nullable = true)
 	Programmer programmer;
 
-	public Bug(String description, LocalDate dateOppen, LocalDate dateClose, BugStatus status, Seriousness seriosness,
+	public Bug(String description, LocalDate dateOppen, LocalDate dateClose, BugStatus status, Seriousness seriousness,
 			OpenningMethod oppeningMethod, Programmer programmer) {
 		super();
 		this.description = description;
 		this.dateOppen = dateOppen;
 		this.dateClose = dateClose;
 		this.status = status;
-		this.seriosness = seriosness;
+		this.seriousness = seriousness;
 		this.oppeningMethod = oppeningMethod;
 		this.programmer = programmer;
 	}

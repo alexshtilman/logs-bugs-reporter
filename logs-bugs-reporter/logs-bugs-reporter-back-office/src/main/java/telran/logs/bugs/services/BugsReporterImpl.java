@@ -24,7 +24,6 @@ import telran.logs.bugs.dto.CloseBugData;
 import telran.logs.bugs.dto.EmailBugsCount;
 import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
-import telran.logs.bugs.dto.ProgrammerName;
 import telran.logs.bugs.dto.Seriousness;
 import telran.logs.bugs.dto.SeriousnessBugCount;
 import telran.logs.bugs.jpa.entities.Artifact;
@@ -125,7 +124,8 @@ public class BugsReporterImpl implements BugsReporter {
 			dateClose = closeData.dateClose;
 		}
 		Bug bug = bugsRepo.findById(closeData.bugId).orElse(null);
-		bug.setDescription(String.format("bug was closed %s because: %s", dateClose, closeData.description));
+		bug.setDescription(String.format("%s%nbug was closed %s because: %s", bug.getDescription(), dateClose,
+				closeData.description));
 		bug.setDateClose(dateClose);
 		bug.setStatus(BugStatus.CLOSED);
 	}
@@ -159,15 +159,15 @@ public class BugsReporterImpl implements BugsReporter {
 	}
 
 	@Override
-	public List<ProgrammerName> getProgrammersMostBugs(int nProgrammers) {
-		List<ProgrammerName> names = bugsRepo.findProgrammersBugsDesc(PageRequest.of(0, nProgrammers));
+	public List<String> getProgrammersMostBugs(int nProgrammers) {
+		List<String> names = bugsRepo.findProgrammersBugsDesc(PageRequest.of(0, nProgrammers));
 		names.forEach(name -> log.debug(FOUND_BUGS, name));
 		return names;
 	}
 
 	@Override
-	public List<ProgrammerName> getProgrammersLeastBugs(int nProgrammers) {
-		List<ProgrammerName> names = bugsRepo.findProgrammersBugsAsc(PageRequest.of(0, nProgrammers));
+	public List<String> getProgrammersLeastBugs(int nProgrammers) {
+		List<String> names = bugsRepo.findProgrammersBugsAsc(PageRequest.of(0, nProgrammers));
 		names.forEach(name -> log.debug(FOUND_BUGS, name));
 		return names;
 	}
@@ -178,7 +178,7 @@ public class BugsReporterImpl implements BugsReporter {
 		if (programmer != null) {
 			programmerId = programmer.getId();
 		}
-		return new BugResponseDto(bug.getSeriosness(), bug.getDescription(), bug.getDateOppen(), programmerId,
+		return new BugResponseDto(bug.getSeriousness(), bug.getDescription(), bug.getDateOppen(), programmerId,
 				bug.getDateClose(), bug.getStatus(), bug.getOppeningMethod(), bug.getId());
 	}
 
