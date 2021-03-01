@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.exceptions.DuplicatedException;
 import telran.logs.bugs.exceptions.NotFoundException;
+import telran.logs.bugs.exceptions.NotValidArgumentException;
 
 /**
  * @author Alex Shtilman Feb 28, 2021
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(NotFoundException.class)
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	String notFounHandler(NotFoundException e) {
+		return processingExceptions(e);
+	}
+
+	@ExceptionHandler(NumberFormatException.class)
+	@ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+	String requestFormatNumer(NotValidArgumentException e) {
 		return processingExceptions(e);
 	}
 

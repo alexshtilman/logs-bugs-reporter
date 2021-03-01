@@ -8,8 +8,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.ConstraintViolationException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -60,11 +58,10 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public ProgrammerDto addProgrammerDto(ProgrammerDto programmerDto) {
-		Programmer programmer = programmerRepo.findById(programmerDto.id).orElse(null);
-		if (programmer != null) {
-			throw new DuplicatedException(String.format("Programmer with id %s not found!", programmerDto.id));
+		if (programmerRepo.findById(programmerDto.id).orElse(null) != null) {
+			throw new DuplicatedException(String.format("Programmer with id %s already exist!", programmerDto.id));
 		}
-		programmerRepo.save(programmer);
+		programmerRepo.save(new Programmer(programmerDto.id, programmerDto.name, programmerDto.email));
 		return programmerDto;
 	}
 
@@ -126,6 +123,9 @@ public class BugsReporterImpl implements BugsReporter {
 		}
 		bug.setDescription(bug.getDescription() + "%n Assigment Description " + assgnData.description);
 		Programmer programmer = programmerRepo.findById(assgnData.programmerId).orElse(null);
+		if (programmer == null) {
+			throw new NotFoundException(String.format("Programmer with id %s not found", assgnData.programmerId));
+		}
 		bug.setProgrammer(programmer);
 		bug.setStatus(BugStatus.ASSIGNED);
 
@@ -139,7 +139,7 @@ public class BugsReporterImpl implements BugsReporter {
 			dateClose = closeData.dateClose;
 		}
 		Bug bug = bugsRepo.findById(closeData.bugId).orElse(null);
-		if (bug == null) {
+		if (bug == null || bug.getStatus() == BugStatus.CLOSED) {
 			throw new NotFoundException(String.format("Bug not found by id %s", closeData.bugId));
 		}
 		bug.setDescription(String.format("%s%nbug was closed %s because: %s", bug.getDescription(), dateClose,
@@ -214,10 +214,6 @@ public class BugsReporterImpl implements BugsReporter {
 
 	@Override
 	public List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes) {
-		if (nTypes < 0) {
-			throw new ConstraintViolationException(String.format("nTypes shold be grather than 0!, but was %s", nTypes),
-					null);
-		}
 		List<Seriousness> bugs = bugsRepo.getSeriousnessTypesWithMostBugs(PageRequest.of(0, nTypes));
 		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
 		return bugs;

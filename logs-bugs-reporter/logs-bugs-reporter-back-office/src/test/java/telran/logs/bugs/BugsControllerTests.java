@@ -11,17 +11,15 @@ import static telran.logs.bugs.api.Constants.MOST_BUGS;
 import static telran.logs.bugs.api.Constants.NON_ASSIGNED_BUGS_COUNTS;
 import static telran.logs.bugs.api.Constants.OPEN;
 import static telran.logs.bugs.api.Constants.PROGRAMMERS;
-import static telran.logs.bugs.api.Constants.SERIOSNESS_BUGS_COUNT;
-import static telran.logs.bugs.api.Constants.TYPES_BUGS_COUNT;
 import static telran.logs.bugs.api.Constants.UNCLOSED_DURATION;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -67,11 +65,19 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 @TestMethodOrder(OrderAnnotation.class)
 class BugsControllerTests {
 
+	private static final String LIMIT_2 = "?limit=2";
+	private static final String DAYS_INVALID = "?days=INVALID";
+	private static final String DAYS_WRONG_TYPE = "?days=INVALID";
 	private static final String LIMIT_INVALID = "?limit=-42";
+	private static final String LIMIT_WRONG_TYPE = "?limit=INVALID";
 
 	enum Method {
-		POST, PUT
+		POST, PUT, GET
 	}
+
+	private static final String GET = "GET ";
+	private static final String POST = "POST ";
+	private static final String PUT = "PUT ";
 
 	WebTestClient webClient;
 	BugRepo bugRepo;
@@ -118,25 +124,38 @@ class BugsControllerTests {
 
 	@Test
 	@Order(2)
-	void add_Programmer() {
+	@DisplayName(POST + BUGS_CONTROLLER + PROGRAMMERS)
+	void testPostAddProgrammer() {
 		ProgrammerDto expected = new ProgrammerDto(6, "Alex", "alex@gmail.com");
 		testPostOkAndEqual(BUGS_CONTROLLER + PROGRAMMERS, expected, expected, ProgrammerDto.class);
-		testPostIsBadRequest(BUGS_CONTROLLER + PROGRAMMERS, new ProgrammerDto(8, "Alex", "ex@ist@x.0.1"));
+
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + PROGRAMMERS,
+				new ProgrammerDto(8, "Alex", "ex@ist@x.0.1"));
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + PROGRAMMERS,
+				new ProgrammerDto(8, null, "alex@gmail.com"));
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + PROGRAMMERS,
+				new ProgrammerDto(-99, "Alex", "alex@gmail.com"));
+		Send_and_expect_Fail(Method.POST, HttpStatus.CONFLICT, BUGS_CONTROLLER + PROGRAMMERS,
+				new ProgrammerDto(1, "Alex", "alex@gmail.com"));
 	}
 
 	@Test
 	@Order(3)
-	void add_Bug() {
+	@DisplayName(POST + BUGS_CONTROLLER + OPEN)
+	void testPostOpenBug() {
 		BugDto dto = new BugDto(Seriousness.BLOCKING, "Description", LocalDate.now());
 		BugResponseDto expected = new BugResponseDto(dto.seriousness, dto.description, dto.dateOpen, 0, null,
 				BugStatus.OPEND, OpenningMethod.MANUAL, 6);
 		testPostOkAndEqual(BUGS_CONTROLLER + OPEN, dto, expected, BugResponseDto.class);
+
 		testPostIsBadRequest(BUGS_CONTROLLER + OPEN, new BugDto(null, "Description", LocalDate.now()));
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN, new BugDto(Seriousness.BLOCKING, "", LocalDate.now()));
 	}
 
 	@Test
 	@Order(4)
-	void add_assigned_Bug() {
+	@DisplayName(POST + BUGS_CONTROLLER + OPEN + ASSIGN)
+	void testPostOpenAndAssignBug() {
 		BugAssignDto dto = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
 				.seriousness(Seriousness.BLOCKING).programmerId(1).build();
 
@@ -144,128 +163,143 @@ class BugsControllerTests {
 				.description(dto.description).seriousness(dto.seriousness).status(BugStatus.ASSIGNED)
 				.openningMethod(OpenningMethod.MANUAL).programmerId(1).build();
 
+		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
+
 		BugAssignDto invalidDescription = BugAssignDto.builder().dateOpen(LocalDate.now()).description("")
 				.seriousness(Seriousness.BLOCKING).programmerId(1).build();
 
+		BugAssignDto invalidSeriousness = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
+				.seriousness(null).programmerId(1).build();
+		BugAssignDto invalidProgrammerId = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
+				.seriousness(null).programmerId(-1).build();
 		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
-				.seriousness(Seriousness.BLOCKING).programmerId(99).build();
-		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
-		testPostOrPutFail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
+				.seriousness(null).programmerId(999).build();
+
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidSeriousness);
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidProgrammerId);
+		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
 	}
 
 	@Test
 	@Order(5)
-	void update_assigned_Bug() {
-		testPutOk(BUGS_CONTROLLER + ASSIGN, new AssignBugData(4, 1, "assigned!"));
-		testPostOrPutFail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
+	@DisplayName(PUT + BUGS_CONTROLLER + ASSIGN)
+	void testPutAndAssignBug() {
+		AssignBugData dto = new AssignBugData(4, 1, "assigned!");
+		testPutOk(BUGS_CONTROLLER + ASSIGN, dto);
+		Send_and_expect_Fail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
 				new AssignBugData(-1, 1, "assigned!"));
-		testPostOrPutFail(Method.PUT, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ASSIGN,
-				new AssignBugData(999, 1, "assigned!"));
+		Send_and_expect_Fail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
+				new AssignBugData(4, -1, "assigned!"));
+		Send_and_expect_Fail(Method.PUT, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ASSIGN,
+				new AssignBugData(4, 999, "assigned!"));
+	}
+
+	@Test
+	@DisplayName(POST + BUGS_CONTROLLER + ARTIFACTS)
+	@Order(6)
+	void testAddArtifact() {
+		ArtifactDto drtifactDto = new ArtifactDto("Artifact №42", 1);
+		testPostOkAndEqual(BUGS_CONTROLLER + ARTIFACTS, drtifactDto, drtifactDto, ArtifactDto.class);
+
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS, new ArtifactDto("", 1));
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS,
+				new ArtifactDto("Artifact №42", -1));
+		Send_and_expect_Fail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ARTIFACTS,
+				new ArtifactDto("Artifact №42", 999));
 	}
 
 	@Test
 	@Order(6)
-	void add_artifact() {
-		ArtifactDto drtifactDto = new ArtifactDto("Artifact №42", 1);
-		testPostOkAndEqual(BUGS_CONTROLLER + ARTIFACTS, drtifactDto, drtifactDto, ArtifactDto.class);
-		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS, new ArtifactDto("", 1));
-		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS,
-				new ArtifactDto("Artifact", -1));
-		testPostOrPutFail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ARTIFACTS,
-				new ArtifactDto("Artifact", 99));
+	@DisplayName(PUT + BUGS_CONTROLLER + CLOSE + " with valid CloseBugData")
+	void testcloseBug() {
+		testPutOk(BUGS_CONTROLLER + CLOSE, new CloseBugData(1, LocalDate.now(), "description"));
+
+		Send_and_expect_Fail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + CLOSE,
+				new CloseBugData(-1, LocalDate.now(), "description"));
+		Send_and_expect_Fail(Method.PUT, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + CLOSE,
+				new CloseBugData(1, LocalDate.now(), "description"));
 	}
 
 	@Test
-	@Order(7)
-	void close_Bug() {
-		testPutOk(BUGS_CONTROLLER + CLOSE, new CloseBugData(1, LocalDate.now(), "description"));
-		testPutIsBadRequest(BUGS_CONTROLLER + CLOSE, new CloseBugData(-1, LocalDate.now(), "description"));
+	@DisplayName(GET + BUGS_CONTROLLER + PROGRAMMERS + "/1")
+	void testGetProgrammersBugsById() {
+		List<BugResponseDto> expected = Arrays.asList(
+				new BugResponseDto(Seriousness.BLOCKING, "bug was closed 2021-02-26 because: description",
+						LocalDate.of(1991, 1, 1), 1, LocalDate.now(), BugStatus.CLOSED, OpenningMethod.MANUAL, 1),
+				new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 1, null,
+						BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
+				new BugResponseDto(Seriousness.MINOR, "MINOR bug description", LocalDate.of(1991, 1, 1), 1,
+						LocalDate.of(2018, 1, 1), BugStatus.CLOSED, OpenningMethod.AUTOMATIC, 3),
+				new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description%n Assigment Description assigned!",
+						LocalDate.of(1991, 1, 1), 1, null, BugStatus.ASSIGNED, OpenningMethod.AUTOMATIC, 4),
+				new BugResponseDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 1, null, BugStatus.ASSIGNED,
+						OpenningMethod.MANUAL, 7));
+		testGetOkAndEqual(BUGS_CONTROLLER + PROGRAMMERS + "/1", BugResponseDto.class, expected);
+		testGetOkAndEqual(BUGS_CONTROLLER + PROGRAMMERS + "/999", BugResponseDto.class, Collections.emptyList());
+
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + PROGRAMMERS + "/-1", null);
+
 	}
 
-	@Nested
-	@DisplayName("Get methods")
-	class GetMethods {
-		private static final String LIMIT_2 = "?limit=2";
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + EMAIL_BUGS_COUNTS)
+	void testGetEmailBugsCounts() {
+		List<EmailBugsCountTest> expected = Arrays.asList(new EmailBugsCountTest("sara@gmail.com", 5),
+				new EmailBugsCountTest("moshe@gmail.com", 1), new EmailBugsCountTest("new@gmail.com", 0),
+				new EmailBugsCountTest("alex@gmail.com", 0));
 
-		@Test
-		void programmers_BugsById_1() {
-			List<BugResponseDto> expected = Arrays.asList(
-					new BugResponseDto(Seriousness.BLOCKING, "bug was closed 2021-02-26 because: description",
-							LocalDate.of(1991, 1, 1), 1, LocalDate.now(), BugStatus.CLOSED, OpenningMethod.MANUAL, 1),
-					new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 1,
-							null, BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
-					new BugResponseDto(Seriousness.MINOR, "MINOR bug description", LocalDate.of(1991, 1, 1), 1,
-							LocalDate.of(2018, 1, 1), BugStatus.CLOSED, OpenningMethod.AUTOMATIC, 3),
-					new BugResponseDto(Seriousness.CRITICAL,
-							"CRITICAL bug description%n Assigment Description assigned!", LocalDate.of(1991, 1, 1), 1,
-							null, BugStatus.ASSIGNED, OpenningMethod.AUTOMATIC, 4),
-					new BugResponseDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 1, null,
-							BugStatus.ASSIGNED, OpenningMethod.MANUAL, 7));
-			testGetOkAndEqual(BUGS_CONTROLLER + PROGRAMMERS + "/1", BugResponseDto.class, expected);
-			testGetIsBadRequest(BUGS_CONTROLLER + PROGRAMMERS + "/Vasya");
+		testGetOkAndEqual(BUGS_CONTROLLER + EMAIL_BUGS_COUNTS, EmailBugsCountTest.class, expected);
+	}
 
-		}
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + NON_ASSIGNED_BUGS_COUNTS)
+	void testGetNonAssignedBugs() {
+		List<BugResponseDto> expected = Arrays.asList(
+				new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 1, null,
+						BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
+				new BugResponseDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 0, null, BugStatus.OPEND,
+						OpenningMethod.MANUAL, 6));
+		testGetOkAndEqual(BUGS_CONTROLLER + NON_ASSIGNED_BUGS_COUNTS, BugResponseDto.class, expected);
+	}
 
-		@Test
-		void email_BugsCounts() {
-			List<EmailBugsCountTest> expected = Arrays.asList(new EmailBugsCountTest("sara@gmail.com", 5),
-					new EmailBugsCountTest("moshe@gmail.com", 1), new EmailBugsCountTest("new@gmail.com", 0),
-					new EmailBugsCountTest("alex@gmail.com", 0));
-			testGetOkAndEqual(BUGS_CONTROLLER + EMAIL_BUGS_COUNTS, EmailBugsCountTest.class, expected);
-		}
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + UNCLOSED_DURATION + "?days=1")
+	void testGetUnclosedBugsMoreDuration() {
+		List<BugResponseDto> expected = Arrays.asList(
+				new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 0, null,
+						BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
+				new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description%n Assigment Description assigned!",
+						LocalDate.of(1991, 1, 1), 1, null, BugStatus.ASSIGNED, OpenningMethod.AUTOMATIC, 4));
+		testGetOkAndEqual(BUGS_CONTROLLER + UNCLOSED_DURATION + "?days=1", BugResponseDto.class, expected);
 
-		@Test
-		void non_Assigned_Bugs() {
-			List<BugResponseDto> expected = Arrays.asList(
-					new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 1,
-							null, BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
-					new BugResponseDto(Seriousness.BLOCKING, "Description", LocalDate.now(), 0, null, BugStatus.OPEND,
-							OpenningMethod.MANUAL, 6));
-			testGetOkAndEqual(BUGS_CONTROLLER + NON_ASSIGNED_BUGS_COUNTS, BugResponseDto.class, expected);
-		}
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + UNCLOSED_DURATION, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
+				BUGS_CONTROLLER + UNCLOSED_DURATION + DAYS_WRONG_TYPE, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
+				BUGS_CONTROLLER + UNCLOSED_DURATION + DAYS_INVALID, null);
+	}
 
-		@Test
-		void unclosed_Bugs_More_Duration_1day() {
-			List<BugResponseDto> expected = Arrays.asList(
-					new BugResponseDto(Seriousness.CRITICAL, "CRITICAL bug description", LocalDate.of(1991, 1, 1), 0,
-							null, BugStatus.OPEND, OpenningMethod.AUTOMATIC, 2),
-					new BugResponseDto(Seriousness.CRITICAL,
-							"CRITICAL bug description%n Assigment Description assigned!", LocalDate.of(1991, 1, 1), 1,
-							null, BugStatus.ASSIGNED, OpenningMethod.AUTOMATIC, 4));
-			testGetOkAndEqual(BUGS_CONTROLLER + UNCLOSED_DURATION + "?days=1", BugResponseDto.class, expected);
-			testGetIsBadRequest(BUGS_CONTROLLER + UNCLOSED_DURATION);
-		}
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + MOST_BUGS + LIMIT_2)
+	void testGetProgrammersMostBugs() {
+		String[] expected = { "Sara", "moshe" };
+		testGetOkAndEqual(BUGS_CONTROLLER + MOST_BUGS + LIMIT_2, String[].class, expected);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + MOST_BUGS, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + MOST_BUGS + LIMIT_INVALID, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
+				BUGS_CONTROLLER + MOST_BUGS + LIMIT_WRONG_TYPE, null);
+	}
 
-		@Test
-		void programmers_MostBugs_limit_2() {
-			String[] expected = { "Sara", "moshe" };
-			testGetOkAndEqual(BUGS_CONTROLLER + MOST_BUGS + LIMIT_2, String[].class, expected);
-			testGetIsBadRequest(BUGS_CONTROLLER + MOST_BUGS + LIMIT_INVALID);
-		}
-
-		@Test
-		void first_2_Programmers_with_moust_Least_Bugs() {
-			String[] expected = { "Alex", "new" };
-			testGetOkAndEqual(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_2, String[].class, expected);
-			testGetIsBadRequest(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_INVALID);
-		}
-
-		@Test
-		void count_Bugs_group_By_seriousness() {
-			List<SeriousnessBugCountTest> expected = Arrays.asList(new SeriousnessBugCountTest(Seriousness.BLOCKING, 3),
-					new SeriousnessBugCountTest(Seriousness.CRITICAL, 2),
-					new SeriousnessBugCountTest(Seriousness.COSMETIC, 1),
-					new SeriousnessBugCountTest(Seriousness.MINOR, 1));
-			testGetOkAndEqual(BUGS_CONTROLLER + SERIOSNESS_BUGS_COUNT, SeriousnessBugCountTest.class, expected);
-		}
-
-		@Test
-		void getSeriousnessTypesWithMostBugs() {
-			List<Seriousness> expected = Arrays.asList(Seriousness.BLOCKING, Seriousness.CRITICAL);
-			testGetOkAndEqual(BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_2, Seriousness.class, expected);
-			testGetIsBadRequest(BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_INVALID);
-		}
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + LEAST_BUGS + LIMIT_2)
+	void testGetProgrammersLeastBugs() {
+		String[] expected = { "Alex", "new" };
+		testGetOkAndEqual(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_2, String[].class, expected);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + LEAST_BUGS, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + LEAST_BUGS + LIMIT_INVALID, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
+				BUGS_CONTROLLER + LEAST_BUGS + LIMIT_WRONG_TYPE, null);
 	}
 
 	@NoArgsConstructor
@@ -308,10 +342,34 @@ class BugsControllerTests {
 
 	}
 
-	private <T> void testPostOrPutFail(Method method, HttpStatus status, String uri, T invalidDto) {
-		StatusAssertions responceStatus = method.equals(Method.POST)
-				? getResponceFromPost(uri, invalidDto).expectStatus()
-				: getResponceFromPut(uri, invalidDto).expectStatus();
+	/**
+	 * 
+	 * @param <T>
+	 * @param method     http noun can we test GET, PUT, POST
+	 * @param status     which status we want to catch from RestControllerAdvice
+	 * @param uri        endpoint
+	 * @param invalidDto method get does not have to provide dto
+	 */
+	private <T> void Send_and_expect_Fail(Method method, HttpStatus status, String uri, T invalidDto) {
+		StatusAssertions responceStatus;
+		switch (method) {
+		case GET: {
+			responceStatus = getResponceFromGet(uri).expectStatus();
+		}
+			break;
+		case POST: {
+			responceStatus = getResponceFromPost(uri, invalidDto).expectStatus();
+		}
+			break;
+		case PUT: {
+			responceStatus = getResponceFromPut(uri, invalidDto).expectStatus();
+		}
+			break;
+		default: {
+			throw new IllegalArgumentException("Unexpected value: " + method);
+		}
+		}
+
 		switch (status) {
 		case BAD_REQUEST: {
 			responceStatus.isBadRequest();
@@ -329,34 +387,12 @@ class BugsControllerTests {
 			responceStatus.is5xxServerError();
 			break;
 		}
-		default: {
-			throw new IllegalArgumentException("Unexpected value: " + status);
-
-		}
-		}
-	}
-
-	private <T> void testGetFail(String uri, HttpStatus status) {
-		StatusAssertions responceStatus = getResponceFromGet(uri).expectStatus();
-		switch (status) {
-		case BAD_REQUEST: {
-			responceStatus.isBadRequest();
-			break;
-		}
-		case NOT_FOUND: {
-			responceStatus.isNotFound();
-			break;
-		}
-		case CONFLICT: {
+		case UNPROCESSABLE_ENTITY: {
 			responceStatus.is4xxClientError();
-			break;
-		}
-		case INTERNAL_SERVER_ERROR: {
-			responceStatus.is5xxServerError();
-			break;
 		}
 		default: {
 			throw new IllegalArgumentException("Unexpected value: " + status);
+
 		}
 		}
 	}

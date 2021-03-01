@@ -91,7 +91,8 @@ class LogsInfoTests {
 
 		@Test
 		void testWrongType() {
-			webClient.get().uri(LOGS_CONTROLLER + BY_TYPE + "?type=NOT_EXIST").exchange().expectStatus().isBadRequest();
+			webClient.get().uri(LOGS_CONTROLLER + BY_TYPE + "?type=NOT_EXIST").exchange().expectStatus()
+					.is5xxServerError();
 		}
 
 		@Test
