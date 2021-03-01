@@ -30,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
@@ -144,8 +145,24 @@ class BugsControllerTests {
 		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
 				.seriousness(Seriousness.BLOCKING).programmerId(99).build();
 		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
+		testPostFail(BUGS_CONTROLLER + OPEN + ASSIGN, HttpStatus.BAD_REQUEST, invalidDescription);
+		testPostFail(BUGS_CONTROLLER + OPEN + ASSIGN, HttpStatus.NOT_FOUND, nonExistProgrammer);
+	}
+
+	private <T> void testPostFail(String uri, HttpStatus status, T invalidDto) {
+		switch (status) {
+		case BAD_REQUEST: {
+			getResponceFromPost(uri, invalidDto).expectStatus().isBadRequest();
+			break;
+		}
+		case NOT_FOUND: {
+			getResponceFromPost(uri, invalidDto).expectStatus().isNotFound();
+			break;
+		}
+		default:
+			break;
+		}
+
 	}
 
 	@Test
