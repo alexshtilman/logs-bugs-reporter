@@ -28,6 +28,7 @@ import telran.logs.bugs.dto.OpenningMethod;
 import telran.logs.bugs.dto.ProgrammerDto;
 import telran.logs.bugs.dto.Seriousness;
 import telran.logs.bugs.dto.SeriousnessBugCount;
+import telran.logs.bugs.exceptions.DuplicatedException;
 import telran.logs.bugs.exceptions.NotFoundException;
 import telran.logs.bugs.jpa.entities.Artifact;
 import telran.logs.bugs.jpa.entities.Bug;
@@ -59,15 +60,27 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public ProgrammerDto addProgrammerDto(ProgrammerDto programmerDto) {
-		// FIXME add exception implementation handler
-		programmerRepo.save(new Programmer(programmerDto.id, programmerDto.name, programmerDto.email));
+		Programmer programmer = programmerRepo.findById(programmerDto.id).orElse(null);
+		if (programmer != null) {
+			throw new DuplicatedException(String.format("Programmer with id %s not found!", programmerDto.id));
+		}
+		programmerRepo.save(programmer);
 		return programmerDto;
 	}
 
+	@Transactional
 	@Override
 	public ArtifactDto addArtifactDto(ArtifactDto artifactDto) {
-		// FIXME add exception implementation handler
 		Programmer programmer = programmerRepo.findById(artifactDto.getProgrammerId()).orElse(null);
+		if (programmer == null) {
+			throw new NotFoundException(
+					String.format("Programmer with id %s not found!", artifactDto.getProgrammerId()));
+		}
+		Artifact artifact = artifactRepo.findById(artifactDto.getArtifactId()).orElse(null);
+		if (artifact != null) {
+			throw new DuplicatedException(
+					String.format("Artifact with id %s already exist!", artifactDto.getArtifactId()));
+		}
 		artifactRepo.save(new Artifact(artifactDto.getArtifactId(), programmer));
 		return artifactDto;
 	}
@@ -75,7 +88,6 @@ public class BugsReporterImpl implements BugsReporter {
 	@Transactional
 	@Override
 	public BugResponseDto openBug(BugDto bugDto) {
-		// FIXME exceptions
 		LocalDate dateOpen = LocalDate.now();
 		if (bugDto.dateOpen != null) {
 			dateOpen = bugDto.dateOpen;
@@ -92,9 +104,7 @@ public class BugsReporterImpl implements BugsReporter {
 
 		Programmer programmer = programmerRepo.findById(bugDto.programmerId).orElse(null);
 		if (programmer == null) {
-			throw new NotFoundException(
-					String.format("Can't assign this bug to programmer with id %s because programmer not found",
-							bugDto.programmerId));
+			throw new NotFoundException(String.format("Programmer with id %s not found", bugDto.programmerId));
 		}
 		LocalDate dateOpen = LocalDate.now();
 		if (bugDto.dateOpen != null) {

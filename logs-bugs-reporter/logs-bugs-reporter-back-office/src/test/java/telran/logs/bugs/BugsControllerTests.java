@@ -32,6 +32,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.StatusAssertions;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
@@ -67,6 +68,10 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 class BugsControllerTests {
 
 	private static final String LIMIT_INVALID = "?limit=-42";
+
+	enum Method {
+		POST, PUT
+	}
 
 	WebTestClient webClient;
 	BugRepo bugRepo;
@@ -145,31 +150,18 @@ class BugsControllerTests {
 		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
 				.seriousness(Seriousness.BLOCKING).programmerId(99).build();
 		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-		testPostFail(BUGS_CONTROLLER + OPEN + ASSIGN, HttpStatus.BAD_REQUEST, invalidDescription);
-		testPostFail(BUGS_CONTROLLER + OPEN + ASSIGN, HttpStatus.NOT_FOUND, nonExistProgrammer);
-	}
-
-	private <T> void testPostFail(String uri, HttpStatus status, T invalidDto) {
-		switch (status) {
-		case BAD_REQUEST: {
-			getResponceFromPost(uri, invalidDto).expectStatus().isBadRequest();
-			break;
-		}
-		case NOT_FOUND: {
-			getResponceFromPost(uri, invalidDto).expectStatus().isNotFound();
-			break;
-		}
-		default:
-			break;
-		}
-
+		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
+		testPostOrPutFail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
 	}
 
 	@Test
 	@Order(5)
 	void update_assigned_Bug() {
 		testPutOk(BUGS_CONTROLLER + ASSIGN, new AssignBugData(4, 1, "assigned!"));
-		testPutIsBadRequest(BUGS_CONTROLLER + ASSIGN, new AssignBugData(-1, 1, "assigned!"));
+		testPostOrPutFail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
+				new AssignBugData(-1, 1, "assigned!"));
+		testPostOrPutFail(Method.PUT, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ASSIGN,
+				new AssignBugData(999, 1, "assigned!"));
 	}
 
 	@Test
@@ -177,7 +169,11 @@ class BugsControllerTests {
 	void add_artifact() {
 		ArtifactDto drtifactDto = new ArtifactDto("Artifact №42", 1);
 		testPostOkAndEqual(BUGS_CONTROLLER + ARTIFACTS, drtifactDto, drtifactDto, ArtifactDto.class);
-		testPostIsBadRequest(BUGS_CONTROLLER + ARTIFACTS, new ArtifactDto("", 1));
+		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS, new ArtifactDto("", 1));
+		testPostOrPutFail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS,
+				new ArtifactDto("Artifact", -1));
+		testPostOrPutFail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ARTIFACTS,
+				new ArtifactDto("Artifact", 99));
 	}
 
 	@Test
@@ -312,6 +308,59 @@ class BugsControllerTests {
 
 	}
 
+	private <T> void testPostOrPutFail(Method method, HttpStatus status, String uri, T invalidDto) {
+		StatusAssertions responceStatus = method.equals(Method.POST)
+				? getResponceFromPost(uri, invalidDto).expectStatus()
+				: getResponceFromPut(uri, invalidDto).expectStatus();
+		switch (status) {
+		case BAD_REQUEST: {
+			responceStatus.isBadRequest();
+			break;
+		}
+		case NOT_FOUND: {
+			responceStatus.isNotFound();
+			break;
+		}
+		case CONFLICT: {
+			responceStatus.is4xxClientError();
+			break;
+		}
+		case INTERNAL_SERVER_ERROR: {
+			responceStatus.is5xxServerError();
+			break;
+		}
+		default: {
+			throw new IllegalArgumentException("Unexpected value: " + status);
+
+		}
+		}
+	}
+
+	private <T> void testGetFail(String uri, HttpStatus status) {
+		StatusAssertions responceStatus = getResponceFromGet(uri).expectStatus();
+		switch (status) {
+		case BAD_REQUEST: {
+			responceStatus.isBadRequest();
+			break;
+		}
+		case NOT_FOUND: {
+			responceStatus.isNotFound();
+			break;
+		}
+		case CONFLICT: {
+			responceStatus.is4xxClientError();
+			break;
+		}
+		case INTERNAL_SERVER_ERROR: {
+			responceStatus.is5xxServerError();
+			break;
+		}
+		default: {
+			throw new IllegalArgumentException("Unexpected value: " + status);
+		}
+		}
+	}
+
 	public <T> void testGetOkAndEqual(String uri, Class<T> dtoResponceClazz, List<T> dtoResponce) {
 		webClient.get().uri(uri).exchange().expectStatus().isOk().expectBodyList(dtoResponceClazz)
 				.isEqualTo(dtoResponce);
@@ -361,4 +410,7 @@ class BugsControllerTests {
 		return webClient.put().uri(uri).contentType(MediaType.APPLICATION_JSON).bodyValue(dtoRequest).exchange();
 	}
 
+	public <T> ResponseSpec getResponceFromGet(String uri) {
+		return webClient.get().uri(uri).exchange();
+	}
 }
