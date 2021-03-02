@@ -274,10 +274,10 @@ class BugsControllerTests {
 		testGetOkAndEqual(BUGS_CONTROLLER + UNCLOSED_DURATION + "?days=1", BugResponseDto.class, expected);
 
 		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + UNCLOSED_DURATION, null);
-		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
+		Send_and_expect_Fail(Method.GET, HttpStatus.I_AM_A_TEAPOT,
 				BUGS_CONTROLLER + UNCLOSED_DURATION + DAYS_WRONG_TYPE, null);
-		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
-				BUGS_CONTROLLER + UNCLOSED_DURATION + DAYS_INVALID, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.I_AM_A_TEAPOT, BUGS_CONTROLLER + UNCLOSED_DURATION + DAYS_INVALID,
+				null);
 	}
 
 	@Test
@@ -287,8 +287,8 @@ class BugsControllerTests {
 		testGetOkAndEqual(BUGS_CONTROLLER + MOST_BUGS + LIMIT_2, String[].class, expected);
 		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + MOST_BUGS, null);
 		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + MOST_BUGS + LIMIT_INVALID, null);
-		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
-				BUGS_CONTROLLER + MOST_BUGS + LIMIT_WRONG_TYPE, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.I_AM_A_TEAPOT, BUGS_CONTROLLER + MOST_BUGS + LIMIT_WRONG_TYPE,
+				null);
 	}
 
 	@Test
@@ -298,8 +298,8 @@ class BugsControllerTests {
 		testGetOkAndEqual(BUGS_CONTROLLER + LEAST_BUGS + LIMIT_2, String[].class, expected);
 		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + LEAST_BUGS, null);
 		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + LEAST_BUGS + LIMIT_INVALID, null);
-		Send_and_expect_Fail(Method.GET, HttpStatus.INTERNAL_SERVER_ERROR,
-				BUGS_CONTROLLER + LEAST_BUGS + LIMIT_WRONG_TYPE, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.I_AM_A_TEAPOT, BUGS_CONTROLLER + LEAST_BUGS + LIMIT_WRONG_TYPE,
+				null);
 	}
 
 	@NoArgsConstructor
@@ -379,6 +379,11 @@ class BugsControllerTests {
 			responceStatus.isNotFound();
 			break;
 		}
+		case I_AM_A_TEAPOT: {
+			responceStatus.is4xxClientError();
+			break;
+		}
+
 		case CONFLICT: {
 			responceStatus.is4xxClientError();
 			break;
