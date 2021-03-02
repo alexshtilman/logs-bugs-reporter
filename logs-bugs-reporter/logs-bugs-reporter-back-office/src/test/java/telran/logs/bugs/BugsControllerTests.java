@@ -1,5 +1,6 @@
 package telran.logs.bugs;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static telran.logs.bugs.api.Constants.ARTIFACTS;
 import static telran.logs.bugs.api.Constants.ASSIGN;
@@ -174,12 +175,21 @@ class BugsControllerTests {
 				.seriousness(Seriousness.BLOCKING).programmerId(-1).build();
 		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
 				.seriousness(Seriousness.BLOCKING).programmerId(42).build();
+		BugAssignDto invalidZeroProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
+				.seriousness(Seriousness.BLOCKING).programmerId(0).build();
 
-		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
-		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidSeriousness);
-		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidProgrammerId);
-		Send_and_expect_Fail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
+		assertAll(POST + BUGS_CONTROLLER + OPEN + ASSIGN,
+				() -> testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class),
+				() -> Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN,
+						invalidDescription),
+				() -> Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN,
+						invalidSeriousness),
+				() -> Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN,
+						invalidProgrammerId),
+				() -> Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN,
+						invalidZeroProgrammer),
+				() -> Send_and_expect_Fail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + OPEN + ASSIGN,
+						nonExistProgrammer));
 	}
 
 	@Test
