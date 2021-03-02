@@ -11,6 +11,8 @@ import static telran.logs.bugs.api.Constants.MOST_BUGS;
 import static telran.logs.bugs.api.Constants.NON_ASSIGNED_BUGS_COUNTS;
 import static telran.logs.bugs.api.Constants.OPEN;
 import static telran.logs.bugs.api.Constants.PROGRAMMERS;
+import static telran.logs.bugs.api.Constants.SERIOSNESS_BUGS_COUNT;
+import static telran.logs.bugs.api.Constants.TYPES_BUGS_COUNT;
 import static telran.logs.bugs.api.Constants.UNCLOSED_DURATION;
 
 import java.time.LocalDate;
@@ -163,22 +165,21 @@ class BugsControllerTests {
 				.description(dto.description).seriousness(dto.seriousness).status(BugStatus.ASSIGNED)
 				.openningMethod(OpenningMethod.MANUAL).programmerId(1).build();
 
-		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
-
 		BugAssignDto invalidDescription = BugAssignDto.builder().dateOpen(LocalDate.now()).description("")
 				.seriousness(Seriousness.BLOCKING).programmerId(1).build();
 
 		BugAssignDto invalidSeriousness = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
 				.seriousness(null).programmerId(1).build();
 		BugAssignDto invalidProgrammerId = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
-				.seriousness(null).programmerId(-1).build();
+				.seriousness(Seriousness.BLOCKING).programmerId(-1).build();
 		BugAssignDto nonExistProgrammer = BugAssignDto.builder().dateOpen(LocalDate.now()).description("Description")
-				.seriousness(null).programmerId(999).build();
+				.seriousness(Seriousness.BLOCKING).programmerId(42).build();
 
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidSeriousness);
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, invalidProgrammerId);
-		testPostIsBadRequest(BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
+		testPostOkAndEqual(BUGS_CONTROLLER + OPEN + ASSIGN, dto, expected, BugResponseDto.class);
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidDescription);
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidSeriousness);
+		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + OPEN + ASSIGN, invalidProgrammerId);
+		Send_and_expect_Fail(Method.POST, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + OPEN + ASSIGN, nonExistProgrammer);
 	}
 
 	@Test
@@ -302,6 +303,29 @@ class BugsControllerTests {
 				null);
 	}
 
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + SERIOSNESS_BUGS_COUNT)
+	void testGetSeriousnessBugCounts() {
+
+		List<SeriousnessBugCount> expected = Arrays.asList(new SeriousnessBugCount(Seriousness.BLOCKING, 3),
+				new SeriousnessBugCount(Seriousness.CRITICAL, 2), new SeriousnessBugCount(Seriousness.MINOR, 1),
+				new SeriousnessBugCount(Seriousness.COSMETIC, 1));
+		testGetOkAndEqual(BUGS_CONTROLLER + SERIOSNESS_BUGS_COUNT, SeriousnessBugCount.class, expected);
+
+	}
+
+	@Test
+	@DisplayName(GET + BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_2)
+	void testGetTypesBugCounts() {
+		List<Seriousness> expected = Arrays.asList(Seriousness.BLOCKING, Seriousness.CRITICAL);
+		testGetOkAndEqual(BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_2, Seriousness.class, expected);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + TYPES_BUGS_COUNT, null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_INVALID,
+				null);
+		Send_and_expect_Fail(Method.GET, HttpStatus.I_AM_A_TEAPOT,
+				BUGS_CONTROLLER + TYPES_BUGS_COUNT + LIMIT_WRONG_TYPE, null);
+	}
+
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@ToString
@@ -318,26 +342,6 @@ class BugsControllerTests {
 		@Override
 		public long getCount() {
 			return count;
-		}
-
-	}
-
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@ToString
-	@EqualsAndHashCode
-	static class SeriousnessBugCountTest implements SeriousnessBugCount {
-		private Seriousness seriousness;
-		private long count;
-
-		@Override
-		public long getCount() {
-			return count;
-		}
-
-		@Override
-		public Seriousness getSeriousness() {
-			return seriousness;
 		}
 
 	}

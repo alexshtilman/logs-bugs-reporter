@@ -4,6 +4,7 @@
 package telran.logs.bugs.services;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -207,9 +208,8 @@ public class BugsReporterImpl implements BugsReporter {
 
 	@Override
 	public List<SeriousnessBugCount> getSeriousnessBugCounts() {
-		List<SeriousnessBugCount> bugs = bugsRepo.getSeriousnessBugCounts();
-		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
-		return bugs;
+		return Arrays.stream(Seriousness.values()).map(s -> new SeriousnessBugCount(s, bugsRepo.countBySeriousness(s)))
+				.sorted((s1, s2) -> Long.compare(s2.getCount(), s1.getCount())).collect(Collectors.toList());
 	}
 
 	@Override
