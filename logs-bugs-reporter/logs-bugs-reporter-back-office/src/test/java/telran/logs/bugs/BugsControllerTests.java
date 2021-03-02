@@ -198,6 +198,10 @@ class BugsControllerTests {
 	void testPutAndAssignBug() {
 		AssignBugData dto = new AssignBugData(4, 1, "assigned!");
 		testPutOk(BUGS_CONTROLLER + ASSIGN, dto);
+
+		Send_and_expect_Fail(Method.PUT, HttpStatus.NOT_FOUND, BUGS_CONTROLLER + ASSIGN,
+				new AssignBugData(999, 1, "assigned!"));
+
 		Send_and_expect_Fail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
 				new AssignBugData(-1, 1, "assigned!"));
 		Send_and_expect_Fail(Method.PUT, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ASSIGN,
@@ -212,7 +216,8 @@ class BugsControllerTests {
 	void testAddArtifact() {
 		ArtifactDto drtifactDto = new ArtifactDto("Artifact №42", 1);
 		testPostOkAndEqual(BUGS_CONTROLLER + ARTIFACTS, drtifactDto, drtifactDto, ArtifactDto.class);
-
+		Send_and_expect_Fail(Method.POST, HttpStatus.CONFLICT, BUGS_CONTROLLER + ARTIFACTS,
+				new ArtifactDto("Artifact №42", 1));
 		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS, new ArtifactDto("", 1));
 		Send_and_expect_Fail(Method.POST, HttpStatus.BAD_REQUEST, BUGS_CONTROLLER + ARTIFACTS,
 				new ArtifactDto("Artifact №42", -1));
