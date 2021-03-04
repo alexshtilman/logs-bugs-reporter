@@ -25,17 +25,17 @@ public class LogsAnalyzerService {
 	@Autowired
 	StreamBridge streamBridge;
 
-	@Value("${app-binding-name:logs-all-out-0}")
-	String allLogs;
+	@Value("${app-binding-name:logs-out-0}")
+	String bindingNameLogs;
 
-	@Value("${app-binding-name-exceptions:logs-only-exception-out-0}")
-	String onlyExceptions;
+	@Value("${app-binding-name-exceptions:exceptions-out-0}")
+	String bindingNameExceptions;
 
 	@Autowired
 	Validator validator;
 
 	@Bean
-	Consumer<LogDto> getDto() {
+	Consumer<LogDto> getAnalyzerBean() {
 		return this::analyzeDto;
 	}
 
@@ -50,10 +50,10 @@ public class LogsAnalyzerService {
 			log.debug("Found validation errors: {}", errors.toString());
 		}
 		if (logDto.logType != LogType.NO_EXCEPTION) {
-			streamBridge.send(onlyExceptions, logDto);
-			log.debug("Has sent data to {}", onlyExceptions);
+			streamBridge.send(bindingNameExceptions, logDto);
+			log.debug("Has sent data to {}", bindingNameExceptions);
 		}
-		streamBridge.send(allLogs, logDto);
-		log.debug("Has sent to {} logDto: {}", allLogs, logDto);
+		streamBridge.send(bindingNameLogs, logDto);
+		log.debug("Has sent to {} logDto: {}", bindingNameLogs, logDto);
 	}
 }
