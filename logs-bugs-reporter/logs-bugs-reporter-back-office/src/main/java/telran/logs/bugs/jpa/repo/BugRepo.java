@@ -33,7 +33,7 @@ public interface BugRepo extends JpaRepository<Bug, Long> {
 	List<EmailBugsCount> groupByEmailAndCount();
 
 	@Query(value = "SELECT programmer.name as name FROM Bug b "
-			+ "GROUP BY programmer ORDER BY count(b) DESC, programmer.name ASC")
+			+ "GROUP BY programmer.name ORDER BY count(b) DESC, programmer.name ASC")
 	List<String> findProgrammersBugsDesc(Pageable pageable);
 
 	@Query(value = "SELECT programmer.name as name FROM Bug b RIGHT JOIN "

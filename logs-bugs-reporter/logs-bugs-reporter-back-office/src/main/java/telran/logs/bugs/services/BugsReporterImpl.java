@@ -4,12 +4,17 @@
 package telran.logs.bugs.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +59,41 @@ public class BugsReporterImpl implements BugsReporter {
 		this.bugsRepo = bugsRepo;
 		this.artifactRepo = artifactRepo;
 		this.programmerRepo = programmerRepo;
+	}
+
+	@Value("${popultae-db:false}")
+	boolean populateEnabled;
+	@Value("${random-names}")
+	String[] randomNames;
+	@Value("${random-artifacts}")
+	String[] randomArtifacts;
+
+	@PostConstruct
+	public void initDb() {
+		log.debug("BubgsReporter is dropping database!");
+		if (populateEnabled) {
+			artifactRepo.deleteAll();
+			bugsRepo.deleteAll();
+
+			programmerRepo.deleteAll();
+
+			List<Programmer> programmers = new ArrayList<>();
+			List<Artifact> artifacts = new ArrayList<>();
+
+			for (int i = 1; i < randomNames.length + 1; i++) {
+				programmers.add(new Programmer(i, randomNames[i - 1], randomNames[i - 1] + i + "@gmail.com"));
+			}
+
+			programmerRepo.saveAll(programmers);
+
+			for (int i = 0; i < randomArtifacts.length; i++) {
+				artifacts.add(new Artifact(randomArtifacts[i], programmers.get(getRandomInt(0, programmers.size()))));
+			}
+
+			artifactRepo.saveAll(artifacts);
+			log.debug("BubgsReporter has created {} progrrammers and {} artifacts!", randomNames.length,
+					randomArtifacts.length);
+		}
 	}
 
 	@Transactional
@@ -191,6 +231,19 @@ public class BugsReporterImpl implements BugsReporter {
 		return names;
 	}
 
+	@Override
+	public List<SeriousnessBugCount> getSeriousnessBugCounts() {
+		return Arrays.stream(Seriousness.values()).map(s -> new SeriousnessBugCount(s, bugsRepo.countBySeriousness(s)))
+				.sorted((s1, s2) -> Long.compare(s2.getCount(), s1.getCount())).collect(Collectors.toList());
+	}
+
+	@Override
+	public List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes) {
+		List<Seriousness> bugs = bugsRepo.getSeriousnessTypesWithMostBugs(PageRequest.of(0, nTypes));
+		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
+		return bugs;
+	}
+
 	private BugResponseDto toBugResponceDto(Bug bug) {
 		Programmer programmer = bug.getProgrammer();
 		long programmerId = 0;
@@ -206,16 +259,7 @@ public class BugsReporterImpl implements BugsReporter {
 		return bugs.stream().map(this::toBugResponceDto).collect(Collectors.toList());
 	}
 
-	@Override
-	public List<SeriousnessBugCount> getSeriousnessBugCounts() {
-		return Arrays.stream(Seriousness.values()).map(s -> new SeriousnessBugCount(s, bugsRepo.countBySeriousness(s)))
-				.sorted((s1, s2) -> Long.compare(s2.getCount(), s1.getCount())).collect(Collectors.toList());
-	}
-
-	@Override
-	public List<Seriousness> getSeriousnessTypesWithMostBugs(int nTypes) {
-		List<Seriousness> bugs = bugsRepo.getSeriousnessTypesWithMostBugs(PageRequest.of(0, nTypes));
-		bugs.forEach(bug -> log.debug(FOUND_BUGS, bug));
-		return bugs;
+	public int getRandomInt(int min, int max) {
+		return ThreadLocalRandom.current().nextInt(max - min) + min;
 	}
 }

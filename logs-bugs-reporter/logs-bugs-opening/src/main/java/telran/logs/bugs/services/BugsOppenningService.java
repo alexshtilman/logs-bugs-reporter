@@ -7,8 +7,6 @@ import java.util.function.Consumer;
 import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +21,6 @@ import telran.logs.bugs.jpa.entities.Bug;
 import telran.logs.bugs.jpa.entities.Programmer;
 import telran.logs.bugs.repositories.ArtifactRepo;
 import telran.logs.bugs.repositories.BugsRepo;
-import telran.logs.bugs.repositories.ProgrammersRepo;
 
 @Service
 @Log4j2
@@ -31,31 +28,21 @@ public class BugsOppenningService {
 
 	ArtifactRepo artifactRepo;
 	BugsRepo bugsRepo;
-	ProgrammersRepo programmersRepo;
-
 	Validator validator;
 
-	StreamBridge streamBridge;
-
-	@Value("${app-binding-name:exceptions-out-0}")
-	String bindingName;
-
 	@Bean
-	Consumer<LogDto> oppenBug() {
+	Consumer<LogDto> getLogDtoCounsumer() {
 		return this::oppenBugMethod;
 	}
 
 	EnumMap<LogType, Seriousness> logType = new EnumMap<>(LogType.class);
 
 	@Autowired
-	public BugsOppenningService(ArtifactRepo artifactRepo, BugsRepo bugsRepo, ProgrammersRepo programmersRepo,
-			Validator validator, StreamBridge streamBridge) {
+	public BugsOppenningService(ArtifactRepo artifactRepo, BugsRepo bugsRepo, Validator validator) {
 		super();
 		this.artifactRepo = artifactRepo;
 		this.bugsRepo = bugsRepo;
-		this.programmersRepo = programmersRepo;
 		this.validator = validator;
-		this.streamBridge = streamBridge;
 		logType.put(LogType.AUTHENTICATION_EXCEPTION, Seriousness.BLOCKING);
 		logType.put(LogType.AUTHORIZATION_EXCEPTION, Seriousness.CRITICAL);
 		logType.put(LogType.SERVER_EXCEPTION, Seriousness.CRITICAL);
