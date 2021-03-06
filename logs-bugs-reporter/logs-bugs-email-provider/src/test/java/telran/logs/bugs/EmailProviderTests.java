@@ -36,6 +36,6 @@ class EmailProviderTests {
 	@Sql("fillTabels.sql")
 	void emailNoExisting() {
 		webClient.get().uri(MAIL_CONTROLLER + "/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
-				.isEqualTo(null);
+				.isEqualTo("");
 	}
 }
