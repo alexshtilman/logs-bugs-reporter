@@ -81,7 +81,8 @@ public class BugsReporterImpl implements BugsReporter {
 			List<Artifact> artifacts = new ArrayList<>();
 
 			for (int i = 1; i < randomNames.length + 1; i++) {
-				programmers.add(new Programmer(i, randomNames[i - 1], randomNames[i - 1] + i + "@gmail.com"));
+				programmers.add(new Programmer(i, randomNames[i - 1],
+						"shtilman.alex+" + randomNames[i - 1] + i + "@gmail.com"));
 			}
 
 			programmerRepo.saveAll(programmers);
