@@ -50,6 +50,8 @@ import telran.logs.bugs.jpa.repo.ProgrammerRepo;
 public class BugsReporterImpl implements BugsReporter {
 
 	private static final String FOUND_BUGS = "found bugs {}";
+	@Value("${account-name:java36.logs+}")
+	String GMAIL_ACCOUNT;
 	BugRepo bugsRepo;
 	ArtifactRepo artifactRepo;
 	ProgrammerRepo programmerRepo;
@@ -82,7 +84,7 @@ public class BugsReporterImpl implements BugsReporter {
 
 			for (int i = 1; i < randomNames.length + 1; i++) {
 				programmers.add(new Programmer(i, randomNames[i - 1],
-						"shtilman.alex+" + randomNames[i - 1] + i + "@gmail.com"));
+						GMAIL_ACCOUNT + randomNames[i - 1] + i + "@gmail.com"));
 			}
 
 			programmerRepo.saveAll(programmers);
