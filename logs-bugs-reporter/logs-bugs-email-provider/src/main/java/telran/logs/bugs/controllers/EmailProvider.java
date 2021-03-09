@@ -30,7 +30,7 @@ public class EmailProvider {
 	@GetMapping(ARTIFACT)
 	public String getEmailFromAtifact(@PathVariable(name = "artifact") String artifact) {
 		Artifact artifactDb = artifactRepo.findById(artifact).orElse(null);
-		log.debug("found artifactDb={}", artifactDb);
+		log.debug("try to found artifact by name {}, and found artifactDb={}", artifact, artifactDb);
 		return artifactDb == null ? "" : artifactDb.getProgrammer().getEmail();
 	}
 }

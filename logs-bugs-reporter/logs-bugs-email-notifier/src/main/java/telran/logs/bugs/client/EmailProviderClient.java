@@ -20,10 +20,15 @@ public class EmailProviderClient {
 	@Value("${app-url-assigner-mail:xxxx}")
 	String urlAssignerMail;
 
-	public String getEmailByArtifact(String artifact) {
-		// TODO communication with sync service for email
+	@Value("${app-url-artifact-mail:xxxx}")
+	String urlArtifactMail;
 
-		return "";
+	public String getEmailByArtifact(String artifact) {
+		ResponseEntity<String> respone = restTemplate.exchange(urlArtifactMail + MAIL_CONTROLLER + "/" + artifact,
+				HttpMethod.GET, null, String.class);
+		String result = respone.getBody();
+		log.debug("got email by artifact {} {}", artifact, result);
+		return result;
 	}
 
 	public String getAssignerMail() {

@@ -47,7 +47,7 @@ public class EmailNotifierService {
 				"Hello, %s%n" + "Exception has been received%n" + "Date: %s%n" + "Exception type: %s%n"
 						+ "Artifact: %s%n" + "Explanation: %s",
 				person, logDto.dateTime, logDto.logType, logDto.artifact, logDto.result);
-
+		log.debug(text);
 		sendMail(email, subject, text);
 
 	}
