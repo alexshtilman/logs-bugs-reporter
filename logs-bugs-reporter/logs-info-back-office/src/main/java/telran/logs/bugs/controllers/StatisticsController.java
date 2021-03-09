@@ -51,6 +51,7 @@ public class StatisticsController {
 	}
 
 	@GetMapping(value = ARTIFACT_AND_COUNT)
+
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
 		return logsInfo.getArtifactOccuresnces();
 	}

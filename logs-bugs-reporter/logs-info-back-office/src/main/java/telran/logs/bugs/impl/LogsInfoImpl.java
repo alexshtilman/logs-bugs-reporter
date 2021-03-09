@@ -1,8 +1,13 @@
 package telran.logs.bugs.impl;
 
+import static telran.logs.bugs.api.Constants.ARTIFACT_AND_COUNT;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Flux;
 import telran.logs.bugs.dto.ArtifactAndCountDto;
 import telran.logs.bugs.dto.LogDocClass;
@@ -14,10 +19,14 @@ import telran.logs.bugs.mongo.doc.LogDoc;
 import telran.logs.bugs.repo.LogRepository;
 
 @Service
+@Log4j2
 public class LogsInfoImpl implements LogsInfo {
 
 	@Autowired
 	LogRepository logs;
+
+	@Autowired
+	CacheManager cacheManager;
 
 	@Override
 	public Flux<LogDto> getAllLogs() {
@@ -40,7 +49,11 @@ public class LogsInfoImpl implements LogsInfo {
 	}
 
 	@Override
+	@Cacheable(value = ARTIFACT_AND_COUNT)
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
+		log.debug("NO CACHE USED!");
+		log.debug(cacheManager.getCache(ARTIFACT_AND_COUNT).get(ARTIFACT_AND_COUNT, ArtifactAndCountDto.class));
+
 		return logs.getArtifactOccuresncesByAggregation();
 
 	}
