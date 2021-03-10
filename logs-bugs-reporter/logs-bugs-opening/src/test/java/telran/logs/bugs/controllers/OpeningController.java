@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.jpa.entities.Artifact;
@@ -35,7 +34,7 @@ public class OpeningController {
 	@Value("${artifacts}")
 	String[] artifacts;
 
-	@GetMapping("/fill")
+	// @GetMapping("/fill")
 	public void init() {
 		log.debug("generating random programmers {}", nProgrammers);
 
