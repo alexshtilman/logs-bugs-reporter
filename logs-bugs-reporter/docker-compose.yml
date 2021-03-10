@@ -1,0 +1,22 @@
+version: "2.1"
+services:
+  config-server:
+    build: logs-configuration-server
+    ports:
+      - 8282:8282
+  email-provider:
+    build: logs-bugs-email-provider
+    ports:
+      - 8877:8877
+
+  assigner-email-provider:
+    build: logs-bugs-assigner-mail-provider
+    ports:
+      - 8083:8083
+
+  assigner-email-notifier:
+    build: logs-bugs-email-notifier
+    ports:
+      - 9191:9191
+    environment:
+      - EMAIL_PASSWORD=icleudxuassxiyhk
