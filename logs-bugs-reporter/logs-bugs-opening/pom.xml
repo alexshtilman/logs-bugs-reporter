@@ -7,7 +7,7 @@
 		<artifactId>logs-bugs-reporter</artifactId>
 		<version>0.0.1</version>
 	</parent>
-	<artifactId>logs-bugs-openning</artifactId>
+	<artifactId>logs-bugs-opening</artifactId>
 	<properties>
 		<spring-cloud.version>2020.0.1</spring-cloud.version>
 	</properties>
@@ -16,7 +16,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-client</artifactId>
@@ -69,7 +72,14 @@
 		</dependencies>
 	</dependencyManagement>
 	
-
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
 	
 	<repositories>
 		<repository>

@@ -77,5 +77,6 @@
 		<module>logs-generator-component</module>
 		<module>logs-bugs-reporter-back-office</module>
 		<module>logs-bugs-exception-handler</module>
+		<module>logs-generator</module>
 	</modules>
 </project>
