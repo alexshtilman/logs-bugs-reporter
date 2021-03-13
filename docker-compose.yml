@@ -1,0 +1,197 @@
+version: "3.4"
+services:
+  # provides configuration for all services (PROFILE_KARAFKA, PROFILE_PG, PROFILE_MONGO, PROFILE_GMAIL)
+  config-server:
+    image: gungam/logs-bugs-reporter_config-server
+    ports:
+      - 8282:8282
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8282/karafka/dev"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      update_config:
+        failure_action: rollback
+        order: start-first
+    networks:
+      - back
+  # provides email if email not found from artifact
+  assigner-email-provider:
+    image: gungam/logs-bugs-reporter_assigner-email-provider
+    ports:
+      - 9292:9292
+    networks:
+      - back
+    environment:
+      - DEFAUL_ASSIGER_EMAIL=${DEFAUL_ASSIGER_EMAIL}
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+  # sorts logs from default topick to logs-validated and exceptions
+  logs-analyzer:
+    image: gungam/logs-bugs-reporter_logs-analyzer
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+
+      - KAFKA_TOPIC_DEFAULT=${KAFKA_TOPIC_DEFAULT}
+      - KAFKA_ANALYZER_GROUP=${KAFKA_ANALYZER_GROUP}
+      - KAFKA_TOPIC_VALIDATED=${KAFKA_TOPIC_VALIDATED}
+      - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
+    networks:
+      - back
+      - front
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+    depends_on:
+      - config-server
+
+  # backoffice
+  reporter-back-office:
+    image: gungam/logs-bugs-reporter_reporter-back-office
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    ports:
+      - 8080:8080
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - PROFILE_PG=${PROFILE_PG}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+    networks:
+      - back
+      - front
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    depends_on:
+      - config-server
+
+  # info-backoffice
+  info-back-office:
+    image: gungam/logs-bugs-reporter_info-back-office
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    ports:
+      - 8081:8081
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - PROFILE_MONGO=${PROFILE_MONGO}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+    depends_on:
+      - config-server
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - back
+      - front
+
+  # shuold not have access to front...
+  email-provider:
+    image: gungam/logs-bugs-reporter_email-provider
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    ports:
+      - 9393:9393
+    depends_on:
+      - config-server
+    networks:
+      - back
+      - front
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - PROFILE_PG=${PROFILE_PG}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+    deploy:
+      placement:
+        constraints: [node.role == worker]
+  # get log from exceptions topic and send it to programmer
+  assigner-email-notifier:
+    image: gungam/logs-bugs-reporter_assigner-email-notifier
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    depends_on:
+      - config-server
+    environment:
+      - EMAIL_LOGIN=${EMAIL_LOGIN}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - LOGS_BUGS_ASSIGNER_MAIL_PROVIDER=${LOGS_BUGS_ASSIGNER_MAIL_PROVIDER}
+      - LOGS_BUGS_EMAIL_PROVIDER=${LOGS_BUGS_EMAIL_PROVIDER}
+
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+
+      - PROFILE_GMAIL=${PROFILE_GMAIL}
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+      - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
+      - KAFKA_EMAIL_NOTIFIIER_GROUP=${KAFKA_EMAIL_NOTIFIIER_GROUP}
+
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+    networks:
+      - back
+  # get dto from topic exceptions and save it to DB
+  opening:
+    image: gungam/logs-bugs-reporter_opening
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT}  java -jar app.jar
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+
+      - PROFILE_PG=${PROFILE_PG}
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+
+      - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
+      - KAFKA_OPENING_GROUP=${KAFKA_OPENING_GROUP}
+    networks:
+      - back
+      - front
+    depends_on:
+      - config-server
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+  populator:
+    image: gungam/logs-bugs-reporter_populator
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT}  java -jar app.jar
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+
+      - PROFILE_MONGO=${PROFILE_MONGO}
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+
+      - KAFKA_TOPIC_VALIDATED=${KAFKA_TOPIC_VALIDATED}
+      - KAFKA_POPULATOR_GROUP=${KAFKA_POPULATOR_GROUP}
+    depends_on:
+      - config-server
+    networks:
+      - back
+      - front
+    deploy:
+      mode: replicated
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+networks:
+  front:
+    driver: overlay
+  back:
+    driver: overlay

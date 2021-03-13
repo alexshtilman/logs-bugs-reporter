@@ -1,5 +1,69 @@
 # home work 71
 
+## Test urls
+
+```text
+http://10.0.0.10:8282/karafka/dev
+http://10.0.0.10:9292/mail/get_assigner_mail
+http://10.0.0.10:9393/mail/class%2010
+http://10.0.0.10:8080/bugs/seriosness_bugs_count
+http://10.0.0.10:8081/statistics/artifact_and_count
+```
+
+## DOCKER SWARM
+
+`docker swarm init --advertise-addr 10.0.0.10` - init manager of swarm on ip 10.0.0.10
+`docker swarm leave --force` - leave swarm
+
+## how to fix ingress issues
+
+origin: `https://stackoverflow.com/questions/59007780/container-running-on-docker-swarm-not-accessible-from-outside`
+
+```bash
+docker network create \
+ --driver overlay \
+ --ingress \
+ --subnet 172.16.0.0/16 \
+ --gateway 172.16.0.1 \
+ ingress
+```
+
+## run portainer
+
+`docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce`
+
+## workaround env variables use of docker-compose instead of secrets
+
+`export $(cat .env) > /dev/null 2>&1; docker stack deploy --compose-file docker-compose.yml ${1:-logs-bugs-reporter}`
+
+## save docker images to personal account at dockerhub
+
+```bash
+docker tag logs-bugs-reporter_populator gungam/logs-bugs-reporter_populator
+docker tag logs-bugs-reporter_opening gungam/logs-bugs-reporter_opening
+docker tag logs-bugs-reporter_assigner-email-notifier gungam/logs-bugs-reporter_assigner-email-notifier
+docker tag logs-bugs-reporter_email-provider gungam/logs-bugs-reporter_email-provider
+docker tag logs-bugs-reporter_info-back-office gungam/logs-bugs-reporter_info-back-office
+docker tag logs-bugs-reporter_reporter-back-office gungam/logs-bugs-reporter_reporter-back-office
+docker tag logs-bugs-reporter_logs-analyzer gungam/logs-bugs-reporter_logs-analyzer
+docker tag logs-bugs-reporter_assigner-email-provider gungam/logs-bugs-reporter_assigner-email-provider
+docker tag logs-bugs-reporter_config-server gungam/logs-bugs-reporter_config-server
+```
+
+```bash
+docker push gungam/logs-bugs-reporter_populator
+docker push gungam/logs-bugs-reporter_opening
+docker push gungam/logs-bugs-reporter_assigner-email-notifier
+docker push gungam/logs-bugs-reporter_email-provider
+docker push gungam/logs-bugs-reporter_info-back-office
+docker push gungam/logs-bugs-reporter_reporter-back-office
+docker push gungam/logs-bugs-reporter_logs-analyzer
+docker push gungam/logs-bugs-reporter_assigner-email-provider
+docker push gungam/logs-bugs-reporter_config-server
+```
+
+## Homework description
+
 1. Fix existing Dockerfile files for the projects of the classwork #71
    - replace openjdk:14.0.1 with openjdk:14.0.2 (14.0.1 has bug with TLS-1.3 authentication we have faced at classwork #71 working with Mongo on the Atlas clouding)
 1. Fix project logs-bugs-email-notifier
