@@ -3,7 +3,6 @@ package telran.logs.bugs.client;
 import static telran.logs.bugs.api.Constants.GET_ASIGNER_EMAIL;
 import static telran.logs.bugs.api.Constants.MAIL_CONTROLLER;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,13 +16,8 @@ public class EmailProviderClient {
 
 	RestTemplate restTemplate = new RestTemplate();
 
-	@Value("${app-url-assigner-mail:xxxx}")
-	String urlAssignerMail;
+	public String getEmailByArtifact(String artifact, String urlArtifactMail) {
 
-	@Value("${app-url-artifact-mail:xxxx}")
-	String urlArtifactMail;
-
-	public String getEmailByArtifact(String artifact) {
 		ResponseEntity<String> respone = restTemplate.exchange(urlArtifactMail + MAIL_CONTROLLER + "/" + artifact,
 				HttpMethod.GET, null, String.class);
 		String result = respone.getBody();
@@ -31,7 +25,7 @@ public class EmailProviderClient {
 		return result;
 	}
 
-	public String getAssignerMail() {
+	public String getAssignerMail(String urlAssignerMail) {
 		ResponseEntity<String> respone = restTemplate.exchange(urlAssignerMail + MAIL_CONTROLLER + GET_ASIGNER_EMAIL,
 				HttpMethod.GET, null, String.class);
 		String result = respone.getBody();

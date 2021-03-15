@@ -78,5 +78,6 @@
 		<module>logs-bugs-reporter-back-office</module>
 		<module>logs-bugs-exception-handler</module>
 		<module>logs-generator</module>
+		<module>logs-discovery-server</module>
 	</modules>
 </project>

@@ -26,14 +26,14 @@ class EmailProviderTests {
 	WebTestClient webClient;
 
 	@Test
-	@Sql("fillTabels.sql")
+	@Sql("classpath:data/fillTabels.sql")
 	void testEmailExist() {
 		webClient.get().uri(MAIL_CONTROLLER + "/LogTypeAndCountDto.class").exchange().expectStatus().isOk()
 				.expectBody(String.class).isEqualTo("Avior@gmail.com");
 	}
 
 	@Test
-	@Sql("fillTabels.sql")
+	@Sql("classpath:data/fillTabels.sql")
 	void emailNoExisting() {
 		webClient.get().uri(MAIL_CONTROLLER + "/artfact1").exchange().expectStatus().isOk().expectBody(String.class)
 				.isEqualTo("");

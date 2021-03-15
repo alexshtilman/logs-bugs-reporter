@@ -1,6 +1,6 @@
 version: "3.4"
 services:
-  # provides configuration for all services (PROFILE_KARAFKA, PROFILE_PG, PROFILE_MONGO, PROFILE_GMAIL)
+  # provides configuration for all services by service-name
   config-server:
     build: logs-configuration-server
     ports:
@@ -12,6 +12,13 @@ services:
       retries: 5
     networks:
       - back
+  discovery-server:
+    build: logs-discovery-server
+    ports:
+      - 8761:8761    
+    networks:
+      - back
+      - front
   # provides email if email not found from artifact     
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
@@ -93,26 +100,24 @@ services:
       - PROFILE_PG=${PROFILE_PG}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}   
   # get log from exceptions topic and send it to programmer  
-  assigner-email-notifier:
+  email-notifier:
     build: logs-bugs-email-notifier
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     depends_on:
       - config-server
     environment:
-      - EMAIL_LOGIN=${EMAIL_LOGIN}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
-      - LOGS_BUGS_ASSIGNER_MAIL_PROVIDER=${LOGS_BUGS_ASSIGNER_MAIL_PROVIDER}
-      - LOGS_BUGS_EMAIL_PROVIDER=${LOGS_BUGS_EMAIL_PROVIDER}
-      
+     
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
       
       - PROFILE_GMAIL=${PROFILE_GMAIL}
       - PROFILE_KARAFKA=${PROFILE_KARAFKA}
-
+      - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
+      - KAFKA_EMAIL_NOTIFIIER_GROUP=${KAFKA_EMAIL_NOTIFIIER_GROUP}
     networks:
       - back
+      - front
   # get dto from topic exceptions and save it to DB     
   opening:
     build: logs-bugs-opening

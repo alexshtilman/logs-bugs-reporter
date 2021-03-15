@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.client.EmailProviderClient;
+import telran.logs.bugs.client.LoadBalancerComponent;
 import telran.logs.bugs.dto.LogDto;
 
 @Service
@@ -24,6 +25,9 @@ public class EmailNotifierService {
 	@Value("${subject:exception}")
 	String subject;
 
+	@Autowired
+	LoadBalancerComponent loadBalancer;
+
 	@Bean
 	Consumer<LogDto> getExceptionsConsumer() {
 		return this::takeLogAndSendMail;
@@ -32,10 +36,10 @@ public class EmailNotifierService {
 	void takeLogAndSendMail(LogDto logDto) {
 		String person = "Programmer";
 
-		String email = emailClient.getEmailByArtifact(logDto.artifact);
+		String email = emailClient.getEmailByArtifact(logDto.artifact, loadBalancer.getBaseUrl("email-provider"));
 		if (email == null || email.isEmpty()) {
 			person = "Opened Bugs Assigner";
-			email = emailClient.getAssignerMail();
+			email = emailClient.getAssignerMail(loadBalancer.getBaseUrl("assigner-email-provider"));
 			if (email == null || email.isEmpty()) {
 				log.error("Email `to` has been received neither from logs-bugs-email-provider "
 						+ "nor from logs-bugs-assigner-mail-provider!");

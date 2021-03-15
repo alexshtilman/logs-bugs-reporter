@@ -46,7 +46,7 @@ class OpenningLogsBugsTest {
 	@Value("${app-binding-name:exceptions-out-0}")
 	String bindingName;
 
-	private static final String FILL_TABELS_SQL = "fillTabels.sql";
+	private static final String FILL_TABELS_SQL = "classpath:data/fillTabels.sql";
 
 	@Test
 	@Sql(FILL_TABELS_SQL)
