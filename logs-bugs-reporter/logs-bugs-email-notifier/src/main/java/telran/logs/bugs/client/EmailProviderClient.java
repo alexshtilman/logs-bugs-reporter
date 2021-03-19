@@ -3,6 +3,7 @@ package telran.logs.bugs.client;
 import static telran.logs.bugs.api.Constants.GET_ASIGNER_EMAIL;
 import static telran.logs.bugs.api.Constants.MAIL_CONTROLLER;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,11 @@ public class EmailProviderClient {
 
 	RestTemplate restTemplate = new RestTemplate();
 
+	@Value("${my-test}")
+	String test;
+
 	public String getEmailByArtifact(String artifact, String urlArtifactMail) {
+		log.debug("{}", test);
 
 		ResponseEntity<String> respone = restTemplate.exchange(urlArtifactMail + MAIL_CONTROLLER + "/" + artifact,
 				HttpMethod.GET, null, String.class);
