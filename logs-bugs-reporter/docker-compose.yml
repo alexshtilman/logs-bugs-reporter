@@ -15,11 +15,28 @@ services:
   discovery-server:
     build: logs-discovery-server
     ports:
-      - 8761:8761    
+      - 8761:8761
     networks:
       - back
       - front
-  # provides email if email not found from artifact     
+  accounting-management:
+    build: logs-accounting-management
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    ports:
+      - 8082:8082
+    networks:
+      - back
+      - front
+    environment:
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
+      - DEFAULT_USER_PASSWORD=${DEFAULT_USER_PASSWORD}
+      
+      - PROFILE_MONGO=${PROFILE_MONGO}
+      
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+  # provides email if email not found from artifact
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
     networks:
@@ -35,9 +52,9 @@ services:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
-      
+
       - PROFILE_KARAFKA=${PROFILE_KARAFKA}
-      
+
       - KAFKA_TOPIC_DEFAULT=${KAFKA_TOPIC_DEFAULT}
       - KAFKA_ANALYZER_GROUP=${KAFKA_ANALYZER_GROUP}
       - KAFKA_TOPIC_VALIDATED=${KAFKA_TOPIC_VALIDATED}
@@ -48,7 +65,7 @@ services:
     depends_on:
       - config-server
 
-  # backoffice         
+  # backoffice
   reporter-back-office:
     build: logs-bugs-reporter-back-office
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
@@ -64,8 +81,8 @@ services:
       - front
     depends_on:
       - config-server
-      
-  # info-backoffice         
+
+  # info-backoffice
   info-back-office:
     build: logs-info-back-office
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
@@ -77,7 +94,7 @@ services:
       - PROFILE_MONGO=${PROFILE_MONGO}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
     depends_on:
-      - config-server   
+      - config-server
     networks:
       - back
       - front
@@ -90,24 +107,23 @@ services:
       - config-server
     networks:
       - back
-      - front   
+      - front
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - PROFILE_PG=${PROFILE_PG}
-      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}   
-  # get log from exceptions topic and send it to programmer  
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+  # get log from exceptions topic and send it to programmer
   email-notifier:
     build: logs-bugs-email-notifier
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     depends_on:
       - config-server
     environment:
-     
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
-      
+
       - PROFILE_GMAIL=${PROFILE_GMAIL}
       - PROFILE_KARAFKA=${PROFILE_KARAFKA}
       - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
@@ -115,7 +131,7 @@ services:
     networks:
       - back
       - front
-  # get dto from topic exceptions and save it to DB     
+  # get dto from topic exceptions and save it to DB
   opening:
     build: logs-bugs-opening
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT}  java -jar app.jar
@@ -123,15 +139,15 @@ services:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
-      
+
       - PROFILE_PG=${PROFILE_PG}
-      - PROFILE_KARAFKA=${PROFILE_KARAFKA}    
-      
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+
       - KAFKA_TOPIC_EXCEPTIONS=${KAFKA_TOPIC_EXCEPTIONS}
       - KAFKA_OPENING_GROUP=${KAFKA_OPENING_GROUP}
     networks:
       - back
-      - front 
+      - front
     depends_on:
       - config-server
   populator:
@@ -141,19 +157,19 @@ services:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
-      
+
       - PROFILE_MONGO=${PROFILE_MONGO}
-      - PROFILE_KARAFKA=${PROFILE_KARAFKA}    
-      
+      - PROFILE_KARAFKA=${PROFILE_KARAFKA}
+
       - KAFKA_TOPIC_VALIDATED=${KAFKA_TOPIC_VALIDATED}
-      - KAFKA_POPULATOR_GROUP=${KAFKA_POPULATOR_GROUP}  
+      - KAFKA_POPULATOR_GROUP=${KAFKA_POPULATOR_GROUP}
     depends_on:
-      - config-server  
+      - config-server
     networks:
-      - back    
+      - back
       - front
-    
+
 networks:
-    front:
-    back:
-      internal: true
+  front:
+  back:
+    internal: true

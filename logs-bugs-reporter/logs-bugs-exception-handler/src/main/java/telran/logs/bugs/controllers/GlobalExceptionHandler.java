@@ -16,6 +16,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import lombok.extern.log4j.Log4j2;
@@ -30,7 +31,8 @@ import telran.logs.bugs.exceptions.NotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	@ExceptionHandler(value = { ConstraintViolationException.class, NumberFormatException.class,
+	@ExceptionHandler(value = { WebExchangeBindException.class, ConstraintViolationException.class,
+			NumberFormatException.class,
 			MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class })
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	String requestFormatHandler(Exception ex) {
