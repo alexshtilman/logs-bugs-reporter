@@ -80,6 +80,5 @@
 		<module>logs-generator</module>
 		<module>logs-discovery-server</module>
 		<module>logs-accounting-management</module>
-		<module>logs-test-common-web</module>
 	</modules>
 </project>
