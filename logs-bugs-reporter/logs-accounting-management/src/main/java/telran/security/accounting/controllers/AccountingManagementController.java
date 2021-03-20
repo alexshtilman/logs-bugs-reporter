@@ -61,7 +61,7 @@ public class AccountingManagementController {
 
 	@PutMapping(UPDATE + PASSWORD)
 	AccountResponse updatePassword(@RequestParam(required = true) @NotEmpty String username,
-			@RequestParam(required = true) @Length(min = 8) String password) {
+			@RequestBody @Valid @Length(min = 8) String password) {
 		AccountResponse responce = managmentService.updatePassword(username, password);
 		log.debug("updatePassword reponce: {}", responce);
 		return responce;

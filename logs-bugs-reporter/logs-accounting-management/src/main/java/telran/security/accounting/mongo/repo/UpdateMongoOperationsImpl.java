@@ -34,6 +34,10 @@ public class UpdateMongoOperationsImpl implements UpdateMongoOperations {
 
 		AccountDoc user = mongoTemplate.findOne(Query.query(Criteria.where("username").is(username)), AccountDoc.class);
 		if (user != null) {
+			long newActivation = System.currentTimeMillis() / 1000l;
+			user.setExpirationTimestamp(
+					user.getExpirationTimestamp() - user.getActivationTimestamp() + newActivation);
+			user.setActivationTimestamp(newActivation);
 			user.setPassword(password);
 			mongoTemplate.save(user);
 		}

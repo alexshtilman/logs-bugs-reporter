@@ -5,7 +5,6 @@ package telran.security.accounting.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -15,12 +14,11 @@ import lombok.ToString;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
 @EqualsAndHashCode
 @ToString
 public class AccountResponse {
-	String username;
-	String password;
-	String[] roles;
-	long expiredTimeStamp; // Expiration timestamp in the seconds (number seconds from 1970-01-01)
+	public String username;
+	public String password;
+	public String[] roles;
+	public long expiredTimeStamp; // Expiration timestamp in the seconds (number seconds from 1970-01-01)
 }
