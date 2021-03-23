@@ -88,5 +88,9 @@ public class AccountingManagementController {
 		log.debug("removeAccount by username: {}", username);
 		managmentService.deleteAccount(username);
 	}
+	/*
+	 * @PostConstruct void init() { AccountRequest admin = new AccountRequest();
+	 * managmentService.addAccount(null); }
+	 */
 
 }

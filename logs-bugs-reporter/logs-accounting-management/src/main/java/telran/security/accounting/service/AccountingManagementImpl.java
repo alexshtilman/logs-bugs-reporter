@@ -3,15 +3,19 @@
  */
 package telran.security.accounting.service;
 
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import telran.logs.bugs.exceptions.DuplicatedException;
 import telran.logs.bugs.exceptions.NotFoundException;
 import telran.security.accounting.dto.AccountRequest;
 import telran.security.accounting.dto.AccountResponse;
 import telran.security.accounting.mongo.documents.AccountDoc;
+import telran.security.accounting.mongo.documents.Role;
 import telran.security.accounting.mongo.repo.AccountRepository;
 
 /**
@@ -21,27 +25,31 @@ import telran.security.accounting.mongo.repo.AccountRepository;
 @Service
 public class AccountingManagementImpl implements AccountingManagement {
 
-
-	/**
-	 * 
-	 */
 	private static final String PROTECTED_PASSWORD = "********";
 
-	private static final String SECURITY_METHOD = "{noop}";
+	private static final String SECURITY_METHOD = "{bcrypt}";
 
 	@Autowired
 	AccountRepository accountRepo;
 
+	@Autowired
+	PasswordEncoder passwordEncoder;
+
 	@Override
 	public AccountResponse addAccount(AccountRequest accountDto) {
-		long expirationTimestamp = (System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(accountDto.expired)) / 1000l;
-		long activationTimestamp = System.currentTimeMillis() / 1000l;
-
-		AccountDoc doc = new AccountDoc(accountDto.username, SECURITY_METHOD + accountDto.password, activationTimestamp,
-				expirationTimestamp,
-				accountDto.roles);
-		accountRepo.save(doc);
-		return new AccountResponse(accountDto.username, SECURITY_METHOD + accountDto.password, accountDto.roles,
+		if (accountRepo.findByUsername(accountDto.username) != null) {
+			throw new DuplicatedException(accountDto.username + " already exists");
+		}
+		long activationTimestamp = System.currentTimeMillis() / 1000;
+		long expirationTimestamp = activationTimestamp + accountDto.expired * 60;
+		List<Role> roles = new ArrayList<>();
+		for (String role : accountDto.roles) {
+			roles.add(new Role(role));
+		}
+		AccountDoc account = new AccountDoc(accountDto.username, getStoredPassword(accountDto.password),
+				activationTimestamp, expirationTimestamp, roles);
+		accountRepo.save(account);
+		return new AccountResponse(account.getUsername(), account.getPassword(), accountDto.roles,
 				expirationTimestamp);
 	}
 
@@ -55,15 +63,28 @@ public class AccountingManagementImpl implements AccountingManagement {
 
 	@Override
 	public AccountResponse getAccount(String username) {
-		return docToResponce(accountRepo.findByUsername(username));
+		return docToResponce(accountRepo.findByUsername(username).block());
 	}
 
 	@Override
 	public AccountResponse updatePassword(String username, String password) {
-		AccountDoc doc = accountRepo.updatePasswordByUserName(username, SECURITY_METHOD + password);
-		if (doc == null) {
-			throw new NotFoundException(username + " not found!");
+
+		AccountDoc account = accountRepo.findByUsername(username).block();
+		if (account == null) {
+			throw new NotFoundException(username + " doesn't exist");
 		}
+		if (samePasswords(password, account.getPassword())) {
+			throw new RuntimeException("the same password");
+		}
+		String storedPassword = getStoredPassword(password);
+		long newActivation = System.currentTimeMillis() / 1000;
+		AccountDoc doc = accountRepo.updatePasswordByUserName(username, storedPassword, newActivation,
+				getNewExpiration(newActivation, account));
+
+		if (doc == null) {
+			throw new RuntimeException("account not updated");
+		}
+
 		return docToResponce(doc);
 	}
 
@@ -73,7 +94,7 @@ public class AccountingManagementImpl implements AccountingManagement {
 		if (doc == null) {
 			throw new NotFoundException(username + " not found!");
 		}
-		doc.setPassword(PROTECTED_PASSWORD);
+
 		return docToResponce(doc);
 	}
 
@@ -83,7 +104,7 @@ public class AccountingManagementImpl implements AccountingManagement {
 		if (doc == null) {
 			throw new NotFoundException(username + " not found!");
 		}
-		doc.setPassword(PROTECTED_PASSWORD);
+
 		return docToResponce(doc);
 	}
 
@@ -92,4 +113,19 @@ public class AccountingManagementImpl implements AccountingManagement {
 				: new AccountResponse(doc.getUsername(), doc.getPassword(), doc.getRoles(),
 						doc.getExpirationTimestamp());
 	}
+
+	private long getNewExpiration(long newActivation, AccountDoc account) {
+		long oldExpiration = account.getExpirationTimestamp();
+		return oldExpiration - account.getActivationTimestamp() + newActivation;
+	}
+
+	private boolean samePasswords(String newPassword, String oldPassword) {
+
+		return passwordEncoder.matches(newPassword, oldPassword);
+	}
+
+	private String getStoredPassword(String password) {
+		return passwordEncoder.encode(password);
+	}
+
 }

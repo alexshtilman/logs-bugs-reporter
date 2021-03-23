@@ -11,7 +11,7 @@ import telran.security.accounting.mongo.documents.AccountDoc;
  */
 public interface UpdateMongoOperations {
 
-	AccountDoc updatePasswordByUserName(String username, String password);
+	AccountDoc updatePasswordByUserName(String username, String password, long newActivation, long newExpiration);
 
 	AccountDoc addRoleByUserName(String username, String role);
 
