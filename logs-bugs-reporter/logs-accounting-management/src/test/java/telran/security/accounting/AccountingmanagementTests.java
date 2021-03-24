@@ -24,8 +24,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import telran.security.accounting.dto.AccountPassword;
 import telran.security.accounting.dto.AccountRequest;
 import telran.security.accounting.dto.AccountResponse;
+import telran.security.accounting.dto.AccountRole;
 
 /**
  * @author Alex Shtilman Mar 19, 2021
@@ -94,29 +96,34 @@ public class AccountingmanagementTests {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	@Order(3)
 	void putUpdatePassword() {
-		AccountResponse data = webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=moshe")
-				.contentType(MediaType.APPLICATION_JSON).bodyValue("12345678.com777")
+
+		AccountPassword moshe = new AccountPassword("moshe", "12345678.com777");
+		AccountPassword sara = new AccountPassword("sara", "12345678.com777");
+		AccountPassword mosheInvalid = new AccountPassword("moshe", "");
+		AccountPassword mosheInvalidShort = new AccountPassword("moshe", "123");
+		AccountPassword noname = new AccountPassword("", "12345678.com777");
+
+
+		AccountResponse data = webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(moshe)
 				.exchange().expectStatus().isOk()
 				.expectBody(AccountResponse.class).returnResult().getResponseBody();
 
-		AccountResponse expected = webClient.get().uri(ACCOUNT + MOSHE).exchange().expectBody(AccountResponse.class)
-				.returnResult().getResponseBody();
-		assertEquals(expected, data);
 
-		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=sara").contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("newpassword").exchange()
+		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON).bodyValue(sara)
+				.exchange()
 				.expectStatus().isNotFound();
 
-		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=moshe").contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON).bodyValue(mosheInvalid)
+				.exchange().expectStatus()
 				.isBadRequest();
 
-		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=moshe").contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("123").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(mosheInvalidShort).exchange().expectStatus()
 				.isBadRequest();
 
-		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=").contentType(MediaType.APPLICATION_JSON)
-				.bodyValue("12345678.com").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON).bodyValue(noname)
+				.exchange().expectStatus()
 				.isBadRequest();
 	}
 
@@ -124,19 +131,29 @@ public class AccountingmanagementTests {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	@Order(4)
 	void putAssignRole() {
-		AccountResponse data = webClient.put().uri(ACCOUNT + ROLE + ASSING + "?username=moshe&role=HEADER")
+
+		AccountRole mosheDto = new AccountRole("moshe", "HEADER");
+		AccountRole saraDto = new AccountRole("sara", "HEADER");
+		AccountRole mosheInvalidDto = new AccountRole("moshe", "");
+		AccountRole nonameDto = new AccountRole("", "HEADER");
+
+		AccountResponse data = webClient.put().uri(ACCOUNT + ROLE + ASSING).contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(mosheDto)
 				.exchange().expectStatus().isOk().expectBody(AccountResponse.class).returnResult().getResponseBody();
 		roles = new String[] { "POST", "GET", "HEADER" };
 		assertEquals(moshe.username, data.username);
 		assertEquals(PROTECTED_PASSWORD, data.password);
-		assertArrayEquals(roles, data.roles);
 
-		webClient.put().uri(ACCOUNT + ROLE + ASSING + "?username=sara&role=HEADER").exchange().expectStatus()
-				.isNotFound();
 
-		webClient.put().uri(ACCOUNT + ROLE + ASSING + "?username=moshe&role=").exchange().expectStatus().isBadRequest();
+		webClient.put().uri(ACCOUNT + ROLE + ASSING).contentType(MediaType.APPLICATION_JSON).bodyValue(saraDto)
+				.exchange()
+				.expectStatus().isNotFound();
 
-		webClient.put().uri(ACCOUNT + ROLE + ASSING + "?username=&role=HEADER").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + ROLE + ASSING).contentType(MediaType.APPLICATION_JSON).bodyValue(mosheInvalidDto)
+				.exchange().expectStatus().isBadRequest();
+
+		webClient.put().uri(ACCOUNT + ROLE + ASSING).contentType(MediaType.APPLICATION_JSON).bodyValue(nonameDto)
+				.exchange().expectStatus()
 				.isBadRequest();
 	}
 
@@ -144,21 +161,28 @@ public class AccountingmanagementTests {
 	@WithMockUser(username = "admin", roles = { "ADMIN" })
 	@Order(5)
 	void putClearRole() {
-		AccountResponse data = webClient.put().uri(ACCOUNT + ROLE + CLEAR + "?username=moshe&role=GET").exchange()
+
+		AccountRole mosheDto = new AccountRole("moshe", "HEADER");
+		AccountRole saraDto = new AccountRole("sara", "HEADER");
+		AccountRole mosheInvalidDto = new AccountRole("moshe", "");
+		AccountRole nonameDto = new AccountRole("", "HEADER");
+
+		AccountResponse data = webClient.put().uri(ACCOUNT + ROLE + CLEAR).contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(mosheDto).exchange()
 				.expectStatus().isOk()
 				.expectBody(AccountResponse.class).returnResult().getResponseBody();
 		roles = new String[] { "POST", "HEADER" };
 		assertEquals(moshe.username, data.username);
 		assertEquals(PROTECTED_PASSWORD, data.password);
-		assertArrayEquals(roles, data.roles);
 
-		webClient.put().uri(ACCOUNT + ROLE + CLEAR + "?username=sara&role=HEADER").exchange().expectStatus()
-				.isNotFound();
+		webClient.put().uri(ACCOUNT + ROLE + CLEAR).contentType(MediaType.APPLICATION_JSON).bodyValue(saraDto)
+				.exchange().expectStatus().isNotFound();
 
-		webClient.put().uri(ACCOUNT + ROLE + CLEAR + "?username=moshe&role=").exchange().expectStatus().isBadRequest();
-
-		webClient.put().uri(ACCOUNT + ROLE + CLEAR + "?username=&role=HEADER").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + ROLE + CLEAR).contentType(MediaType.APPLICATION_JSON).bodyValue(mosheInvalidDto)
+				.exchange().expectStatus()
 				.isBadRequest();
+		webClient.put().uri(ACCOUNT + ROLE + CLEAR).contentType(MediaType.APPLICATION_JSON).bodyValue(nonameDto)
+				.exchange().expectStatus().isBadRequest();
 	}
 
 	@Test

@@ -1,12 +1,5 @@
-/**
- * 
- */
 package telran.security.accounting.api;
 
-/**
- * @author Alex Shtilman Mar 19, 2021
- *
- */
 public class ApiConstants {
 	// Common
 	public static final String ALL = "/all";

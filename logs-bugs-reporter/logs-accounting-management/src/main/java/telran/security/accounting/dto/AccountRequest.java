@@ -1,32 +1,23 @@
-/**
- * 
- */
 package telran.security.accounting.dto;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 
-import org.hibernate.validator.constraints.Length;
-
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-/**
- * @author Alex Shtilman Mar 19, 2021
- *
- */
-@AllArgsConstructor
+
+
 @NoArgsConstructor
-@EqualsAndHashCode
 @ToString
-public class AccountRequest {
-	@NotEmpty
-	public String username;
-	@Length(min = 8)
-	public String password;
-	public String[] roles;
+@EqualsAndHashCode
+public class AccountRequest extends AccountDto {
 	@Min(1)
-	public int expired; // Expired period in minutes (positive number)
+	public int expirationPeriodMinutes; // Expired period in minutes (positive number)
+
+	public AccountRequest(String username, String password, String[] roles, @Min(1) int expirationPeriodMinutes) {
+		super(username, password, roles);
+		this.expirationPeriodMinutes = expirationPeriodMinutes;
+	}
+
 }
