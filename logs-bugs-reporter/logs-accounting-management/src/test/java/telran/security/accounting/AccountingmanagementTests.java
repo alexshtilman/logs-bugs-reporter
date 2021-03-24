@@ -38,10 +38,6 @@ import telran.security.accounting.dto.AccountRole;
 @EnableAutoConfiguration
 @AutoConfigureDataMongo
 public class AccountingmanagementTests {
-
-	/**
-	 * 
-	 */
 	private static final String MOSHE = "/moshe";
 	private static final String PROTECTED_PASSWORD = "********";
 
@@ -67,7 +63,6 @@ public class AccountingmanagementTests {
 				.expectBody(AccountResponse.class).returnResult().getResponseBody();
 
 		assertEquals(data.username, moshe.username);
-		assertEquals(data.password, "{noop}" + moshe.password);
 		assertArrayEquals(data.roles, moshe.roles);
 
 		webClient.post().uri(ACCOUNT + ADD).contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +83,6 @@ public class AccountingmanagementTests {
 		AccountResponse expected = webClient.get().uri(ACCOUNT + MOSHE).exchange().expectBody(AccountResponse.class)
 				.returnResult().getResponseBody();
 		assertEquals(expected.username, moshe.username);
-		assertEquals(expected.password, "{noop}" + moshe.password);
 		assertArrayEquals(expected.roles, moshe.roles);
 	}
 
@@ -194,11 +188,14 @@ public class AccountingmanagementTests {
 		AccountRequest request = new AccountRequest("sara", "12345678.com", roles, 999);
 		webClient.post().uri(ACCOUNT + ADD).contentType(MediaType.APPLICATION_JSON).bodyValue(request).exchange()
 				.expectStatus().isForbidden();
-		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD + "?username=moshe&password=newpassword").exchange()
+		webClient.put().uri(ACCOUNT + UPDATE + PASSWORD).contentType(MediaType.APPLICATION_JSON).bodyValue(request)
+				.exchange()
 				.expectStatus().isForbidden();
-		webClient.put().uri(ACCOUNT + ROLE + ASSING + "?username=moshe&role=HEADER").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + ROLE + ASSING).contentType(MediaType.APPLICATION_JSON).bodyValue(request)
+				.exchange().expectStatus()
 				.isForbidden();
-		webClient.put().uri(ACCOUNT + ROLE + CLEAR + "?username=moshe&role=GET").exchange().expectStatus()
+		webClient.put().uri(ACCOUNT + ROLE + CLEAR).contentType(MediaType.APPLICATION_JSON).bodyValue(request)
+				.exchange().expectStatus()
 				.isForbidden();
 		webClient.delete().uri(ACCOUNT + MOSHE).exchange().expectStatus().isForbidden();
 

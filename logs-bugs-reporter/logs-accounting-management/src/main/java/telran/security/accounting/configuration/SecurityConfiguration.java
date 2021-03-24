@@ -9,6 +9,8 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
@@ -25,11 +27,17 @@ public class SecurityConfiguration {
 	MapReactiveUserDetailsService getMapDetails() {
 		// noop means a plain text
 
-		UserDetails user = new User("user", "{noop}user", AuthorityUtils.createAuthorityList("ROLE_USER"));
-		UserDetails admin = new User("admin", "{noop}admin", AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
+		UserDetails user = new User("user", "{noop}" + passwordUser, AuthorityUtils.createAuthorityList("ROLE_USER"));
+		UserDetails admin = new User("admin", "{noop}" + passwordAdmin,
+				AuthorityUtils.createAuthorityList("ROLE_ADMIN"));
 		UserDetails users[] = { user, admin };
 		return new MapReactiveUserDetailsService(users);
 
+	}
+
+	@Bean
+	PasswordEncoder getPasswordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
 	@Bean
