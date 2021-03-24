@@ -111,4 +111,5 @@ public class AccountingManagementImpl implements AccountingManagement {
 		return toResponseHiddenPassword(account);
 	}
 
+
 }
