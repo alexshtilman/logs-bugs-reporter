@@ -18,10 +18,25 @@ services:
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     ports:
       - 80:9595
+
+  accounting-provider:
+    build: logs-accounting-provider
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    networks:
+      - back
+      - front
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE} 
+      - PROFILE_MONGO=${PROFILE_MONGO}         
   discovery-server:
     build: logs-discovery-server
     networks:
       - back
+      - front
+    ports:
+      - 8761:8761
   # provides email if email not found from artifact
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
