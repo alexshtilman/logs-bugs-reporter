@@ -19,8 +19,8 @@ public class AccountDocument {
 
 	@Id
 	String username;
-	long activationTimestamp;
 	String password;
 	String[] roles;
+	long activationTimestamp;
 	long expirationTimestamp;
 }

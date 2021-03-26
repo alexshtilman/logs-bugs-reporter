@@ -80,5 +80,10 @@
 		<module>logs-generator</module>
 		<module>logs-discovery-server</module>
 		<module>logs-accounting-management</module>
+		<module>logs-bugs-gateway</module>
+		<module>logs-accounting-document</module>
+		<module>logs-accounting-provider</module>
+		<module>logs-client-loadbalancer</module>
+		<module>logs-accounting-dto</module>
 	</modules>
 </project>

@@ -3,8 +3,6 @@ services:
   # provides configuration for all services by service-name
   config-server:
     build: logs-configuration-server
-    ports:
-      - 8282:8282
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8282/karafka/dev"]
       interval: 30s
@@ -12,30 +10,18 @@ services:
       retries: 5
     networks:
       - back
-  discovery-server:
-    build: logs-discovery-server
-    ports:
-      - 8761:8761
+  gateway:
+    build: logs-bugs-gateway
     networks:
       - back
       - front
-  accounting-management:
-    build: logs-accounting-management
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     ports:
-      - 8082:8082
+      - 80:9595
+  discovery-server:
+    build: logs-discovery-server
     networks:
       - back
-      - front
-    environment:
-      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
-      - DEFAULT_USER_PASSWORD=${DEFAULT_USER_PASSWORD}
-      
-      - PROFILE_MONGO=${PROFILE_MONGO}
-      
-      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
-      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
-      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
   # provides email if email not found from artifact
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
@@ -69,8 +55,6 @@ services:
   reporter-back-office:
     build: logs-bugs-reporter-back-office
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
-    ports:
-      - 8080:8080
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -86,8 +70,6 @@ services:
   info-back-office:
     build: logs-info-back-office
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
-    ports:
-      - 8081:8081
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -97,7 +79,6 @@ services:
       - config-server
     networks:
       - back
-      - front
 
   # shuold not have access to front...
   email-provider:

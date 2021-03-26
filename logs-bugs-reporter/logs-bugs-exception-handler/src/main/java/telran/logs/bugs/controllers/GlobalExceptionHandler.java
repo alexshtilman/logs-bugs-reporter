@@ -25,17 +25,17 @@ import telran.logs.bugs.exceptions.DuplicatedException;
 import telran.logs.bugs.exceptions.NotFoundException;
 
 /**
- * @author Alex Shtilman Feb 28, 2021
- *
+ * @author Alex Shtilman Feb 28, 2021 <dependency>
+ *         <groupId>telran.logs.bugs</groupId>
+ *         <artifactId>logs-bugs-exception-handler</artifactId>
+ *         <version>0.0.1</version> </dependency>
  */
 @Log4j2
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(value = { WebExchangeBindException.class, IllegalArgumentException.class,
-			ConstraintViolationException.class,
-			ServerWebInputException.class,
-			NumberFormatException.class,
+			ConstraintViolationException.class, ServerWebInputException.class, NumberFormatException.class,
 			MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class })
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	String requestFormatHandler(Exception ex) {

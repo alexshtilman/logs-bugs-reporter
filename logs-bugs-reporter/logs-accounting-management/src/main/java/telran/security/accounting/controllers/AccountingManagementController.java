@@ -1,13 +1,16 @@
 package telran.security.accounting.controllers;
 
-import static telran.security.accounting.api.ApiConstants.ACCOUNT;
-import static telran.security.accounting.api.ApiConstants.ADD;
-import static telran.security.accounting.api.ApiConstants.ASSING;
-import static telran.security.accounting.api.ApiConstants.CLEAR;
-import static telran.security.accounting.api.ApiConstants.ID;
-import static telran.security.accounting.api.ApiConstants.PASSWORD;
-import static telran.security.accounting.api.ApiConstants.ROLE;
-import static telran.security.accounting.api.ApiConstants.UPDATE;
+import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACTIVATED;
+import static telran.security.accounting.api.Constants.ADD;
+import static telran.security.accounting.api.Constants.ASSIGN;
+import static telran.security.accounting.api.Constants.CLEAR;
+import static telran.security.accounting.api.Constants.ID;
+import static telran.security.accounting.api.Constants.PASSWORD;
+import static telran.security.accounting.api.Constants.ROLE;
+import static telran.security.accounting.api.Constants.UPDATE;
+
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -31,9 +34,9 @@ import telran.security.accounting.dto.AccountRole;
 import telran.security.accounting.service.AccountingManagement;
 
 @RestController
-@Validated
+@RequestMapping(ACCOUNTS)
 @Log4j2
-@RequestMapping(ACCOUNT)
+@Validated
 public class AccountingManagementController {
 	@Autowired
 	AccountingManagement accountingService;
@@ -42,6 +45,13 @@ public class AccountingManagementController {
 	AccountResponse getAccount(@PathVariable(name = "id") @NotEmpty String username) {
 		AccountResponse responce = accountingService.getAccount(username);
 		log.debug("getAccount: {}", responce);
+		return responce;
+	}
+
+	@GetMapping(ACTIVATED)
+	List<AccountResponse> getActivatedAccounts() {
+		List<AccountResponse> responce = accountingService.getActivatedAccounts();
+		log.debug("getActivatedAccounts: {}", responce);
 		return responce;
 	}
 
@@ -54,11 +64,11 @@ public class AccountingManagementController {
 
 	@DeleteMapping(ID)
 	void deleteAccount(@PathVariable(name = "id") @NotEmpty String username) {
-
+		log.debug("deleteAccount: {}", username);
 		accountingService.deleteAccount(username);
 	}
 
-	@PutMapping(ROLE + ASSING)
+	@PutMapping(ROLE + ASSIGN)
 	AccountResponse addRole(@RequestBody @Valid AccountRole accountRole) {
 		AccountResponse responce = accountingService.addRole(accountRole.username, accountRole.role);
 		log.debug("addRole: {}", responce);

@@ -1,21 +1,18 @@
 package telran.security.accounting.repo;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-import telran.security.accounting.dto.AccountResponse;
+
 import telran.security.accounting.mongo.documents.AccountDocument;
 
 
 public class UpdateMongoOperationsImpl implements UpdateMongoOperations {
 	@Autowired
 	MongoTemplate mongoTemplate;
-
 
 	@Override
 	public AccountDocument updatePassword(String username, String newPassword, long newActivation, long newExpiration) {
@@ -52,12 +49,6 @@ public class UpdateMongoOperationsImpl implements UpdateMongoOperations {
 	@Override
 	public AccountDocument removeRole(String username, String role) {
 		return updateRoles(username, role, false);
-	}
-
-	@Override
-	public List<AccountResponse> getActivatedAccounts() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
