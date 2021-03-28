@@ -10,8 +10,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
+import telran.logs.bugs.LoadBalancerComponent;
 import telran.logs.bugs.client.EmailProviderClient;
-import telran.logs.bugs.client.LoadBalancerComponent;
 import telran.logs.bugs.dto.LogDto;
 
 @Service

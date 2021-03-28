@@ -74,16 +74,21 @@
 		<module>logs-bugs-email-notifier</module>
 		<module>logs-bugs-assigner-mail-provider</module>
 		<module>logs-info-back-office</module>
+		
 		<module>logs-generator-component</module>
+		<module>logs-loadbalancer-component</module>
+		
 		<module>logs-bugs-reporter-back-office</module>
 		<module>logs-bugs-exception-handler</module>
 		<module>logs-generator</module>
+
 		<module>logs-discovery-server</module>
 		<module>logs-accounting-management</module>
 		<module>logs-bugs-gateway</module>
 		<module>logs-accounting-document</module>
 		<module>logs-accounting-provider</module>
-		<module>logs-client-loadbalancer</module>
+
 		<module>logs-accounting-dto</module>
+		<module>logs-accounting-integration-app</module>
 	</modules>
 </project>

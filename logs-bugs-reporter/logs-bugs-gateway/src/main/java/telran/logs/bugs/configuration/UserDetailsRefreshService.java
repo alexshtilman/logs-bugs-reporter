@@ -14,8 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import telran.logs.bugs.LoadBalancerComponent;
 import telran.security.accounting.dto.AccountResponse;
 
 /**
@@ -77,15 +76,12 @@ public class UserDetailsRefreshService extends Thread {
 	}
 
 	private AccountResponse[] getAccounts() {
-		HttpHeaders headers = new HttpHeaders();
-		String authToken = getAuthToken();
 
-		headers.add("Authorization", authToken);
-		HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 		String baseUrl = loadBalancer.getBaseUrl(accountingProvier);
+
 		log.debug("accountingProvier: {}{}{}", accountingProvier, ACCOUNTS, ACTIVATED);
 		ResponseEntity<AccountResponse[]> response = restTemplate.exchange(baseUrl + ACCOUNTS + ACTIVATED,
-				HttpMethod.GET, requestEntity, AccountResponse[].class);
+				HttpMethod.GET, null, AccountResponse[].class);
 		AccountResponse[] accounts = response.getBody();
 		log.debug("accounts: {}", Arrays.deepToString(accounts));
 		return accounts;

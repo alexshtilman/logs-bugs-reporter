@@ -10,9 +10,6 @@ import static telran.security.accounting.api.Constants.UPDATE;
 
 import java.util.Base64;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -35,9 +32,9 @@ import telran.security.accounting.dto.AccountRole;
 @TestPropertySource(locations = { "classpath:application-security.properties" })
 
 public class AccountingManagementSecurityTests {
-	private static final @NotEmpty String USER = "user";
-	private static final @Size(min = 8) String USER_PASSWORD = "password";
-	private static final @Size(min = 8) String USER_NEW_PASSWORD = "new_password";
+	private static final String USER = "user";
+	private static final String USER_PASSWORD = "password";
+	private static final String USER_NEW_PASSWORD = "new_password";
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	@Autowired
 	WebTestClient testClient;

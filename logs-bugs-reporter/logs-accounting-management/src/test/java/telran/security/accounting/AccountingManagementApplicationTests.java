@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import telran.security.accounting.dto.AccountPassword;
@@ -36,6 +37,7 @@ import telran.security.accounting.repo.AccountRepository;
 @SpringBootTest
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@TestPropertySource(locations = { "classpath:application.properties" })
 
 class AccountingManagementApplicationTests {
 	private static final String USER_MOSHE = "Moshe";

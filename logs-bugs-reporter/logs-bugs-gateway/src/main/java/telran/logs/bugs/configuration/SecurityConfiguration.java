@@ -23,8 +23,19 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Configuration
 public class SecurityConfiguration {
 
+	public static final String BUGS_CONTROLLER = "/bugs";
+	public static final String ARTIFACTS = "/artifacts";
+	public static final String PROGRAMMERS = "/programmers";
+	public static final String CLOSE = "/close";
+	public static final String ASSIGN = "/assign";
+	public static final String ANY = "**";
+	public static final String OPEN = "/open";
+	public static final String LOGS_CONTROLLER = "/logs";
+	public static final String STATISTICS_CONTROLLER = "/statistics";
+
 	@Autowired
 	UserDetailsRefreshService refreshService;
+
 	@Autowired
 	ConcurrentHashMap<String, UserDetails> users;
 
@@ -36,8 +47,16 @@ public class SecurityConfiguration {
 	@Bean
 	SecurityWebFilterChain securityFiltersChain(ServerHttpSecurity httpSecurity) {
 		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
-				.authorizeExchange().pathMatchers(HttpMethod.GET).hasRole("GETTER").pathMatchers(HttpMethod.POST)
-				.hasRole("POSTER").and().build();
+				.authorizeExchange().pathMatchers(LOGS_CONTROLLER + ANY).hasRole("DEVELOPER")
+				.pathMatchers(STATISTICS_CONTROLLER + ANY).hasRole("DEVELOPER")
+				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + OPEN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
+				.pathMatchers(HttpMethod.POST, OPEN + ASSIGN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
+
+				.pathMatchers(HttpMethod.PUT, BUGS_CONTROLLER + ASSIGN).hasRole("ASSIGNER")
+				.pathMatchers(HttpMethod.PUT, BUGS_CONTROLLER + CLOSE).hasRole("TESTER")
+				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + PROGRAMMERS).hasRole("PROJECT_OWNER")
+				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + ARTIFACTS).hasAnyRole("TEAM_LEAD", "ASSIGNER")
+				.pathMatchers(HttpMethod.GET, BUGS_CONTROLLER + ANY).authenticated().and().build();
 		return securityFiltersChain;
 	}
 

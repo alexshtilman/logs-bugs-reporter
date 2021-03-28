@@ -18,7 +18,18 @@ services:
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     ports:
       - 80:9595
-
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE} 
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka   
+  discovery-server:
+    build: logs-discovery-server
+    networks:
+      - back
+      - front
+    ports:
+      - 8761:8761
   accounting-provider:
     build: logs-accounting-provider
     entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
@@ -29,14 +40,9 @@ services:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE} 
-      - PROFILE_MONGO=${PROFILE_MONGO}         
-  discovery-server:
-    build: logs-discovery-server
-    networks:
-      - back
-      - front
-    ports:
-      - 8761:8761
+      - PROFILE_MONGO=${PROFILE_MONGO}   
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka     
+
   # provides email if email not found from artifact
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
@@ -45,6 +51,22 @@ services:
       - front
     environment:
       - DEFAUL_ASSIGER_EMAIL=${DEFAUL_ASSIGER_EMAIL}
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka 
+  # shuold not have access to front...
+  email-provider:
+    build: logs-bugs-email-provider
+    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+    depends_on:
+      - config-server
+    networks:
+      - back
+      - front
+    environment:
+      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
+      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
+      - PROFILE_PG=${PROFILE_PG}
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka       
   # sorts logs from default topick to logs-validated and exceptions
   logs-analyzer:
     build: logs-analyzer
@@ -94,21 +116,6 @@ services:
       - config-server
     networks:
       - back
-
-  # shuold not have access to front...
-  email-provider:
-    build: logs-bugs-email-provider
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
-    depends_on:
-      - config-server
-    networks:
-      - back
-      - front
-    environment:
-      - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
-      - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
-      - PROFILE_PG=${PROFILE_PG}
-      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
   # get log from exceptions topic and send it to programmer
   email-notifier:
     build: logs-bugs-email-notifier
