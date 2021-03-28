@@ -33,6 +33,9 @@ public class SecurityConfiguration {
 	public static final String LOGS_CONTROLLER = "/logs";
 	public static final String STATISTICS_CONTROLLER = "/statistics";
 
+	public static final String REPORTER_BACK_OFFICE = "reporter-back-office";
+	public static final String INFO_BACK_OFFICE = "info-back-office:8081";
+
 	@Autowired
 	UserDetailsRefreshService refreshService;
 
@@ -47,16 +50,19 @@ public class SecurityConfiguration {
 	@Bean
 	SecurityWebFilterChain securityFiltersChain(ServerHttpSecurity httpSecurity) {
 		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
-				.authorizeExchange().pathMatchers(LOGS_CONTROLLER + ANY).hasRole("DEVELOPER")
-				.pathMatchers(STATISTICS_CONTROLLER + ANY).hasRole("DEVELOPER")
+				.authorizeExchange().pathMatchers(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY).hasRole("DEVELOPER")
+				.pathMatchers(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY).hasRole("DEVELOPER")
 				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + OPEN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
 				.pathMatchers(HttpMethod.POST, OPEN + ASSIGN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
 
-				.pathMatchers(HttpMethod.PUT, BUGS_CONTROLLER + ASSIGN).hasRole("ASSIGNER")
-				.pathMatchers(HttpMethod.PUT, BUGS_CONTROLLER + CLOSE).hasRole("TESTER")
-				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + PROGRAMMERS).hasRole("PROJECT_OWNER")
-				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + ARTIFACTS).hasAnyRole("TEAM_LEAD", "ASSIGNER")
-				.pathMatchers(HttpMethod.GET, BUGS_CONTROLLER + ANY).authenticated().and().build();
+				.pathMatchers(HttpMethod.PUT, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ASSIGN).hasRole("ASSIGNER")
+				.pathMatchers(HttpMethod.PUT, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + CLOSE).hasRole("TESTER")
+				.pathMatchers(HttpMethod.POST, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + PROGRAMMERS)
+				.hasRole("PROJECT_OWNER")
+				.pathMatchers(HttpMethod.POST, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ARTIFACTS)
+				.hasAnyRole("TEAM_LEAD", "ASSIGNER")
+				.pathMatchers(HttpMethod.GET, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ANY).authenticated().and()
+				.build();
 		return securityFiltersChain;
 	}
 

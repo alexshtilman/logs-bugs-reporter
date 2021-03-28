@@ -4,6 +4,11 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+@NoArgsConstructor
+@ToString
 public class AccountResponse extends AccountDto {
 	public AccountResponse(@NotEmpty String username, @Size(min = 8) String password, @NotNull String[] roles,
 			long exprationTimestampSec) {
