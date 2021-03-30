@@ -28,13 +28,13 @@ public class SecurityConfiguration {
 	public static final String PROGRAMMERS = "/programmers";
 	public static final String CLOSE = "/close";
 	public static final String ASSIGN = "/assign";
-	public static final String ANY = "**";
+	public static final String ANY = "/**";
 	public static final String OPEN = "/open";
 	public static final String LOGS_CONTROLLER = "/logs";
 	public static final String STATISTICS_CONTROLLER = "/statistics";
 
-	public static final String REPORTER_BACK_OFFICE = "reporter-back-office";
-	public static final String INFO_BACK_OFFICE = "info-back-office:8081";
+	public static final String REPORTER_BACK_OFFICE = "/reporter-back-office";
+	public static final String INFO_BACK_OFFICE = "/info-back-office";
 
 	@Autowired
 	UserDetailsRefreshService refreshService;
