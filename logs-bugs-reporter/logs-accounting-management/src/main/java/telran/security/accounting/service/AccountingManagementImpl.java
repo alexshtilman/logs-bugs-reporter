@@ -14,37 +14,31 @@ import telran.security.accounting.mongo.documents.AccountDocument;
 import telran.security.accounting.repo.AccountRepository;
 
 @Service
-public class AccountingManagementImpl implements AccountingManagement{
-@Autowired
+public class AccountingManagementImpl implements AccountingManagement {
+	@Autowired
 	AccountRepository accountRepository;
-@Autowired
-PasswordEncoder passwordEncoder;
+	@Autowired
+	PasswordEncoder passwordEncoder;
+
 	@Override
 	public AccountResponse addAccount(AccountRequest accountDto) {
 		if (accountRepository.existsById(accountDto.username)) {
 			throw new RuntimeException(accountDto.username + " already exists");
 		}
-		long activationTimestamp = System.currentTimeMillis() / 1000;
-		AccountDocument account =
-				new AccountDocument(accountDto.username,
-						getStoredPassword(accountDto.password),
-						accountDto.roles,
-						activationTimestamp,
-						activationTimestamp + accountDto.expirationPeriodMinutes * 60);
+		AccountDocument account = new AccountDocument(accountDto);
 		accountRepository.save(account);
-		AccountResponse response = toResponse(account);
-		return response;
+
+		return toResponse(account);
 	}
 
 	private String getStoredPassword(String password) {
-		
-		return  passwordEncoder.encode(password);
+
+		return passwordEncoder.encode(password);
 	}
 
 	private AccountResponse toResponse(AccountDocument account) {
-	
-		return new AccountResponse(account.getUsername(),
-				account.getPassword(), account.getRoles(),
+
+		return new AccountResponse(account.getUsername(), account.getPassword(), account.getRoles(),
 				account.getExpirationTimestamp());
 	}
 
@@ -54,15 +48,14 @@ PasswordEncoder passwordEncoder;
 			throw new RuntimeException(username + " doesn't exist");
 		}
 		accountRepository.deleteById(username);
-		
+
 	}
 
 	@Override
 	public AccountResponse getAccount(String username) {
 		AccountDocument account = accountRepository.findById(username).orElse(null);
-		return account == null ||
-				account.getExpirationTimestamp() < 
-				System.currentTimeMillis() / 1000? null : toResponse(account);
+		return account == null || account.getExpirationTimestamp() < System.currentTimeMillis() / 1000 ? null
+				: toResponse(account);
 	}
 
 	@Override
@@ -76,9 +69,9 @@ PasswordEncoder passwordEncoder;
 		}
 		String storedPassword = getStoredPassword(password);
 		long newActivation = System.currentTimeMillis() / 1000;
-		AccountDocument res = accountRepository.updatePassword(username,
-				storedPassword, newActivation, getNewExpiration(newActivation , account));
-		
+		AccountDocument res = accountRepository.updatePassword(username, storedPassword, newActivation,
+				getNewExpiration(newActivation, account));
+
 		if (res == null) {
 			throw new RuntimeException("account not updated");
 		}
@@ -93,13 +86,11 @@ PasswordEncoder passwordEncoder;
 
 	private long getNewExpiration(long newActivation, AccountDocument account) {
 		long oldExpiration = account.getExpirationTimestamp();
-		return  oldExpiration - account.getActivationTimestamp()
-				+ newActivation;
+		return oldExpiration - account.getActivationTimestamp() + newActivation;
 	}
 
 	private boolean samePasswords(String newPassword, String oldPassword) {
-		boolean res = passwordEncoder.matches(newPassword, oldPassword);
-		return res;
+		return passwordEncoder.matches(newPassword, oldPassword);
 	}
 
 	@Override
@@ -122,16 +113,13 @@ PasswordEncoder passwordEncoder;
 
 	@Override
 	public List<AccountResponse> getActivatedAccounts() {
-		List<AccountDocument> activatedAccounts =
-		accountRepository
-		.findByExpirationTimestampGreaterThan(System.currentTimeMillis() / 1000);
-		return activatedAccounts.isEmpty() ? Collections.emptyList() : 
-			toListAccountResponse(activatedAccounts);
+		List<AccountDocument> activatedAccounts = accountRepository
+				.findByExpirationTimestampGreaterThan(System.currentTimeMillis() / 1000);
+		return activatedAccounts.isEmpty() ? Collections.emptyList() : toListAccountResponse(activatedAccounts);
 	}
 
-	private List<AccountResponse> toListAccountResponse(List<AccountDocument>
-	accounts) {
-		
+	private List<AccountResponse> toListAccountResponse(List<AccountDocument> accounts) {
+
 		return accounts.stream().map(this::toResponse).collect(Collectors.toList());
 	}
 

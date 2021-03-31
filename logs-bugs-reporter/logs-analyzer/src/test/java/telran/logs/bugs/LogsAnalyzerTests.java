@@ -1,6 +1,7 @@
 package telran.logs.bugs;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -38,11 +39,11 @@ class LogsAnalyzerTests {
 	@Autowired
 	OutputDestination consumer;
 
-	@Value("${app-binding-name:logs-all-out-0}")
-	String allLogs;
+	@Value("${app-binding-name:validated-out-0}")
+	String validated;
 
-	@Value("${app-binding-name-exceptions:logs-only-exception-out-0}")
-	String onlyExceptions;
+	@Value("${app-binding-name-exceptions:exception-out-0}")
+	String exceptions;
 
 	List<LogDto> logDtoList = new ArrayList<>();
 	{
@@ -60,9 +61,9 @@ class LogsAnalyzerTests {
 	@Test
 	void testLogs() {
 		logDtoList.forEach(logDto -> input.send(new GenericMessage<LogDto>(logDto)));
-		List<String> resultAllLogs = receiveFromLogs(8, allLogs);
+		List<String> resultAllLogs = receiveFromLogs(8, validated);
 		assertTrue(resultAllLogs.get(0).contains("NO_EXCEPTION"));
-		List<String> resultOnlyExceptions = receiveFromLogs(7, onlyExceptions);
+		List<String> resultOnlyExceptions = receiveFromLogs(7, exceptions);
 		for (String res : resultOnlyExceptions) {
 			assertTrue(res.contains("BAD_REQUEST_EXCEPTION"));
 		}
@@ -79,8 +80,8 @@ class LogsAnalyzerTests {
 			log.debug("Recived from streamBrige {}, message {}", bindingName, json);
 		}
 		// there should no more messages
-		// Message<byte[]> message = consumer.receive(0, bindingName);
-		// assertNull(message);
+		Message<byte[]> message = consumer.receive(0, bindingName);
+		assertNull(message);
 		return result;
 	}
 }

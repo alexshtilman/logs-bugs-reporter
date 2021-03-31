@@ -53,14 +53,14 @@ class EmailNotifierTest {
 	@SneakyThrows
 	@Test
 	void normalFlow() {
-		when(client.getEmailByArtifact(anyString(), "")).thenReturn(EMAIL);
+		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(EMAIL);
 		sendAndAssert(EMAIL, "Programmer");
 	}
 
 	@Test
 	void normalNotAssigned() {
-		when(client.getEmailByArtifact(anyString(), "")).thenReturn(null);
-		when(client.getAssignerMail("")).thenReturn(ASSIGNER_EMAIL);
+		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(null);
+		when(client.getAssignerMail(anyString())).thenReturn(ASSIGNER_EMAIL);
 
 		sendAndAssert(ASSIGNER_EMAIL, "Opened Bugs Assigner");
 	}
@@ -69,8 +69,8 @@ class EmailNotifierTest {
 	@Test
 	void faildNotAssigned() {
 
-		when(client.getEmailByArtifact(anyString(), "")).thenReturn(null);
-		when(client.getAssignerMail("")).thenReturn(null);
+		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(null);
+		when(client.getAssignerMail(anyString())).thenReturn(null);
 
 		LogDto logException = new LogDto(new Date(), LogType.AUTHENTICATION_EXCEPTION, "POISON PILL", 999, "");
 		input.send(new GenericMessage<LogDto>(logException));

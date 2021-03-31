@@ -18,5 +18,10 @@
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>telran.logs.bugs</groupId>
+			<artifactId>logs-accounting-dto</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 	</dependencies>
 </project>
