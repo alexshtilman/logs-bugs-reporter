@@ -54,6 +54,15 @@ class AccountingManagementSecurityTests {
 	/************************************************************/
 	/* Authorization normal */
 	@Test
+	@Order(0)
+	@WithMockUser(roles = { "ADMIN" })
+	void addAdminAccount() {
+		AccountRequest admin = new AccountRequest(adminUsername, adminPassword, new String[] { "ADMIN" }, 99999);
+
+		testClient.post().uri(ACCOUNTS + ADD).bodyValue(admin).exchange().expectStatus().isOk();
+	}
+
+	@Test
 	@Order(1)
 	@WithMockUser(roles = { "ADMIN" })
 	void addAccountAuthorizationNormal() {
