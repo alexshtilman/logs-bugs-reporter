@@ -76,7 +76,7 @@ class AccountingManagementSecurityTests {
 
 	@Test
 	@Order(4)
-	@WithMockUser(roles = { "ADMIN" }, username = "admin", password = "password")
+	@WithMockUser(roles = { "ADMIN" })
 	void updatePasswordAuthorizationNormal() {
 		// FIXME
 		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus().isOk();
