@@ -23,12 +23,10 @@ import org.springframework.web.server.ServerWebInputException;
 import lombok.extern.log4j.Log4j2;
 import telran.logs.bugs.exceptions.DuplicatedException;
 import telran.logs.bugs.exceptions.NotFoundException;
+import telran.logs.bugs.exceptions.NotValidArgumentException;
 
 /**
- * @author Alex Shtilman Feb 28, 2021 <dependency>
- *         <groupId>telran.logs.bugs</groupId>
- *         <artifactId>logs-bugs-exception-handler</artifactId>
- *         <version>0.0.1</version> </dependency>
+ * @author Alex Shtilman Feb 28, 2021
  */
 @Log4j2
 @RestControllerAdvice
@@ -36,9 +34,15 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(value = { WebExchangeBindException.class, IllegalArgumentException.class,
 			ConstraintViolationException.class, ServerWebInputException.class, NumberFormatException.class,
-			MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class })
+			MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class, })
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	String requestFormatHandler(Exception ex) {
+		return processingExceptions(ex);
+	}
+
+	@ExceptionHandler(NotValidArgumentException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	String requestFormatHandler(NotValidArgumentException ex) {
 		return processingExceptions(ex);
 	}
 

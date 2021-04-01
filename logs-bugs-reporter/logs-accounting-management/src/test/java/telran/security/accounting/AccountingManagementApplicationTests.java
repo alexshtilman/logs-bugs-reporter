@@ -49,8 +49,10 @@ class AccountingManagementApplicationTests {
 
 	@Autowired
 	WebTestClient testClient;
+
 	@Autowired
 	PasswordEncoder passwordEncoder;
+
 	@Autowired
 	AccountRepository accountRepository;
 	AccountRequest accountRequestMoshe = new AccountRequest(USER_MOSHE, PASSWORD_MOSHE, ROLES_MOSHE, EXPIRATION_MOSHE);
@@ -110,11 +112,9 @@ class AccountingManagementApplicationTests {
 	@Test
 	@Order(3)
 	void updateSamePassword() {
-		// FIXME should be updated after exception handling to isBadRequest()
-
 		AccountPassword accountPassword = getAccountPassword(PASSWORD_MOSHE);
 		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus()
-				.is5xxServerError();
+				.isBadRequest();
 	}
 
 	@Test

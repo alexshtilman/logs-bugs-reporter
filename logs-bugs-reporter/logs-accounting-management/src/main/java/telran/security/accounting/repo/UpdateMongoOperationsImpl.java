@@ -6,9 +6,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
-
 import telran.security.accounting.mongo.documents.AccountDocument;
-
 
 public class UpdateMongoOperationsImpl implements UpdateMongoOperations {
 	@Autowired
@@ -37,12 +35,12 @@ public class UpdateMongoOperationsImpl implements UpdateMongoOperations {
 
 		query.addCriteria(Criteria.where("username").is(username));
 		Update update = new Update();
-		if(flAdd) {
+		if (flAdd) {
 			update.push("roles", role);
 		} else {
 			update.pull("roles", role);
 		}
-		
+
 		return mongoTemplate.findAndModify(query, update, AccountDocument.class);
 	}
 

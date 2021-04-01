@@ -8,22 +8,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.log4j.Log4j2;
+import telran.logs.bugs.exceptions.DuplicatedException;
+import telran.logs.bugs.exceptions.NotFoundException;
+import telran.logs.bugs.exceptions.NotValidArgumentException;
 import telran.security.accounting.dto.AccountRequest;
 import telran.security.accounting.dto.AccountResponse;
 import telran.security.accounting.mongo.documents.AccountDocument;
 import telran.security.accounting.repo.AccountRepository;
 
 @Service
+@Log4j2
 public class AccountingManagementImpl implements AccountingManagement {
 	@Autowired
 	AccountRepository accountRepository;
+
 	@Autowired
 	PasswordEncoder passwordEncoder;
 
 	@Override
 	public AccountResponse addAccount(AccountRequest accountDto) {
 		if (accountRepository.existsById(accountDto.username)) {
-			throw new RuntimeException(accountDto.username + " already exists");
+			throw new DuplicatedException(accountDto.username + " already exists");
 		}
 		AccountDocument account = new AccountDocument(accountDto);
 		accountRepository.save(account);
@@ -45,7 +51,7 @@ public class AccountingManagementImpl implements AccountingManagement {
 	@Override
 	public void deleteAccount(String username) {
 		if (!accountRepository.existsById(username)) {
-			throw new RuntimeException(username + " doesn't exist");
+			throw new NotFoundException(username + " doesn't exist");
 		}
 		accountRepository.deleteById(username);
 
@@ -61,11 +67,15 @@ public class AccountingManagementImpl implements AccountingManagement {
 	@Override
 	public AccountResponse updatePassword(String username, String password) {
 		AccountDocument account = accountRepository.findById(username).orElse(null);
+
 		if (account == null) {
-			throw new RuntimeException(username + " doesn't exist");
+			log.debug("Account {} doesen't exist", username);
+			throw new NotFoundException(username + " doesn't exist");
 		}
+
 		if (samePasswords(password, account.getPassword())) {
-			throw new RuntimeException("the same password");
+			log.debug("Account {} has the same password", username);
+			throw new NotValidArgumentException("the same password");
 		}
 		String storedPassword = getStoredPassword(password);
 		long newActivation = System.currentTimeMillis() / 1000;
@@ -73,7 +83,8 @@ public class AccountingManagementImpl implements AccountingManagement {
 				getNewExpiration(newActivation, account));
 
 		if (res == null) {
-			throw new RuntimeException("account not updated");
+			log.debug("Account {} not updated", username);
+			throw new NotValidArgumentException("account not updated");
 		}
 		return toResponseHiddenPassword(res);
 	}
@@ -90,14 +101,21 @@ public class AccountingManagementImpl implements AccountingManagement {
 	}
 
 	private boolean samePasswords(String newPassword, String oldPassword) {
-		return passwordEncoder.matches(newPassword, oldPassword);
+
+		boolean result = true;
+		try {
+			result = passwordEncoder.matches(newPassword, oldPassword);
+		} catch (Exception e) {
+			log.debug("passwordEncoder faild beccause: {}", e);
+		}
+		return result;
 	}
 
 	@Override
 	public AccountResponse addRole(String username, String role) {
 		AccountDocument account = accountRepository.addRole(username, role);
 		if (account == null) {
-			throw new RuntimeException(username + " doesn't exist");
+			throw new NotFoundException(username + " doesn't exist");
 		}
 		return toResponseHiddenPassword(account);
 	}
@@ -106,7 +124,7 @@ public class AccountingManagementImpl implements AccountingManagement {
 	public AccountResponse removeRole(String username, String role) {
 		AccountDocument account = accountRepository.removeRole(username, role);
 		if (account == null) {
-			throw new RuntimeException(username + " doesn't exist");
+			throw new NotFoundException(username + " doesn't exist");
 		}
 		return toResponseHiddenPassword(account);
 	}

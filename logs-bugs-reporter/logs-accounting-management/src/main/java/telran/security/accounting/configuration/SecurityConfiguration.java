@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.MapReactiveUserDetailsServi
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
@@ -28,7 +29,11 @@ public class SecurityConfiguration {
 
 	@Bean
 	PasswordEncoder getPasswordEncoder() {
-		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		if (!securityEnable) {
+			return NoOpPasswordEncoder.getInstance();
+		} else {
+			return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		}
 	}
 
 	@Bean

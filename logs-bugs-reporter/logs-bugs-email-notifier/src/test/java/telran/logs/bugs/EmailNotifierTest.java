@@ -41,24 +41,31 @@ class EmailNotifierTest {
 
 	private static final String EMAIL = "moshe@gmail.com";
 	private static final String ASSIGNER_EMAIL = "teamlid@gmail.com";
+	private static final String PROVIDER_ADDRESS = "http://localhost:1234";
 
 	@RegisterExtension
 	static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP)
 			.withConfiguration(GreenMailConfiguration.aConfig().withUser("log", "logs-bugs"));
 	@MockBean
 	EmailProviderClient client;
+
+	@MockBean
+	LoadBalancerComponent loadBalancer;
+
 	@Autowired
 	InputDestination input;
 
 	@SneakyThrows
 	@Test
 	void normalFlow() {
+		when(loadBalancer.getBaseUrl(anyString())).thenReturn(PROVIDER_ADDRESS);
 		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(EMAIL);
 		sendAndAssert(EMAIL, "Programmer");
 	}
 
 	@Test
 	void normalNotAssigned() {
+		when(loadBalancer.getBaseUrl(anyString())).thenReturn(PROVIDER_ADDRESS);
 		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(null);
 		when(client.getAssignerMail(anyString())).thenReturn(ASSIGNER_EMAIL);
 
@@ -68,7 +75,7 @@ class EmailNotifierTest {
 	@SneakyThrows
 	@Test
 	void faildNotAssigned() {
-
+		when(loadBalancer.getBaseUrl(anyString())).thenReturn(PROVIDER_ADDRESS);
 		when(client.getEmailByArtifact(anyString(), anyString())).thenReturn(null);
 		when(client.getAssignerMail(anyString())).thenReturn(null);
 

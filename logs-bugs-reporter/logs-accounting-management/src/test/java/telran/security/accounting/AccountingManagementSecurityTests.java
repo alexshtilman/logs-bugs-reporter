@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -31,7 +32,7 @@ import telran.security.accounting.dto.AccountRole;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestPropertySource(locations = { "classpath:application-security.properties" })
 
-public class AccountingManagementSecurityTests {
+class AccountingManagementSecurityTests {
 	private static final String USER = "user";
 	private static final String USER_PASSWORD = "password";
 	private static final String USER_NEW_PASSWORD = "new_password";
@@ -42,9 +43,13 @@ public class AccountingManagementSecurityTests {
 	String adminUsername;
 	@Value("${app-password-admin}")
 	String adminPassword;
+
 	AccountRequest account = new AccountRequest(USER, USER_PASSWORD, new String[0], 1);
 	AccountPassword accountPassword = new AccountPassword(USER, USER_NEW_PASSWORD);
 	AccountRole accountRole = new AccountRole(USER, "role");
+
+	@Autowired
+	PasswordEncoder passwordEncoder;
 
 	/************************************************************/
 	/* Authorization normal */
@@ -71,8 +76,9 @@ public class AccountingManagementSecurityTests {
 
 	@Test
 	@Order(4)
-	@WithMockUser(roles = { "ADMIN" })
+	@WithMockUser(roles = { "ADMIN" }, username = "admin", password = "password")
 	void updatePasswordAuthorizationNormal() {
+		// FIXME
 		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus().isOk();
 	}
 
