@@ -31,6 +31,7 @@ public class AccountingManagementImpl implements AccountingManagement {
 		if (accountRepository.existsById(accountDto.username)) {
 			throw new DuplicatedException(accountDto.username + " already exists");
 		}
+		accountDto.password = getStoredPassword(accountDto.password);
 		AccountDocument account = new AccountDocument(accountDto);
 		accountRepository.save(account);
 
