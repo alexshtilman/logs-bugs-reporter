@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
-@ToString
+@ToString(callSuper = true)
 public class AccountResponse extends AccountDto {
 	public AccountResponse(@NotEmpty String username, @Size(min = 8) String password, @NotNull String[] roles,
 			long exprationTimestampSec) {

@@ -1,6 +1,6 @@
 package telran.security.accounting;
 
-import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACCOUNTS_CONTROLLER;
 import static telran.security.accounting.api.Constants.ADD;
 import static telran.security.accounting.api.Constants.ASSIGN;
 import static telran.security.accounting.api.Constants.CLEAR;
@@ -59,56 +59,59 @@ class AccountingManagementSecurityTests {
 	void addAdminAccount() {
 		AccountRequest admin = new AccountRequest(adminUsername, adminPassword, new String[] { "ADMIN" }, 99999);
 
-		testClient.post().uri(ACCOUNTS + ADD).bodyValue(admin).exchange().expectStatus().isOk();
+		testClient.post().uri(ACCOUNTS_CONTROLLER + ADD).bodyValue(admin).exchange().expectStatus().isOk();
 	}
 
 	@Test
 	@Order(1)
 	@WithMockUser(roles = { "ADMIN" })
 	void addAccountAuthorizationNormal() {
-		testClient.post().uri(ACCOUNTS + ADD).bodyValue(account).exchange().expectStatus().isOk();
+		testClient.post().uri(ACCOUNTS_CONTROLLER + ADD).bodyValue(account).exchange().expectStatus().isOk();
 	}
 
 	@Test
 	@Order(2)
 	@WithMockUser(roles = { "USER" })
 	void getAccountAuthorizationUserNormal() {
-		testClient.get().uri(ACCOUNTS + "/user").exchange().expectStatus().isOk();
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/user").exchange().expectStatus().isOk();
 	}
 
 	@Test
 	@Order(3)
 	@WithMockUser(roles = { "ADMIN" })
 	void getAccountAuthorizationAdminNormal() {
-		testClient.get().uri(ACCOUNTS + "/user").exchange().expectStatus().isOk();
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/user").exchange().expectStatus().isOk();
 	}
 
 	@Test
 	@Order(4)
 	@WithMockUser(roles = { "ADMIN" })
 	void updatePasswordAuthorizationNormal() {
-		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus().isOk();
+		testClient.put().uri(ACCOUNTS_CONTROLLER + UPDATE + PASSWORD).bodyValue(accountPassword).exchange()
+				.expectStatus().isOk();
 	}
 
 	@Test
 	@Order(5)
 	@WithMockUser(roles = { "ADMIN" })
 	void addRoleAuthorizationNormal() {
-		testClient.put().uri(ACCOUNTS + ROLE + ASSIGN).bodyValue(accountRole).exchange().expectStatus().isOk();
+		testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + ASSIGN).bodyValue(accountRole).exchange().expectStatus()
+				.isOk();
 	}
 
 	@Test
 	@Order(6)
 	@WithMockUser(roles = { "ADMIN" })
 	void removeRoleAuthorizationNormal() {
-		testClient.put().uri(ACCOUNTS + ROLE + CLEAR).bodyValue(accountRole).exchange().expectStatus().isOk();
+		testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + CLEAR).bodyValue(accountRole).exchange().expectStatus()
+				.isOk();
 	}
 
 	@Test
 	@Order(7)
 	@WithMockUser(roles = { "ADMIN" })
 	void deleteAccountAuthorizationNormal() {
-		testClient.delete().uri(ACCOUNTS + "/user").exchange().expectStatus().isOk();
+		testClient.delete().uri(ACCOUNTS_CONTROLLER + "/user").exchange().expectStatus().isOk();
 	}
 
 	/* Authorization error */
@@ -116,43 +119,45 @@ class AccountingManagementSecurityTests {
 	@Order(8)
 	@WithMockUser(roles = { "USER" })
 	void addAccountAuthorizationError() {
-		testClient.post().uri(ACCOUNTS + ADD).bodyValue(account).exchange().expectStatus().isEqualTo(403);
+		testClient.post().uri(ACCOUNTS_CONTROLLER + ADD).bodyValue(account).exchange().expectStatus().isEqualTo(403);
 	}
 
 	@Test
 	@Order(9)
 	@WithMockUser(roles = { "ABC" })
 	void getAccountAuthorizationUserError() {
-		testClient.get().uri(ACCOUNTS + "/user").exchange().expectStatus().isEqualTo(403);
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/user").exchange().expectStatus().isEqualTo(403);
 	}
 
 	@Test
 	@Order(10)
 	@WithMockUser(roles = { "USER" })
 	void updatePasswordAuthorizationError() {
-		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus()
-				.isEqualTo(403);
+		testClient.put().uri(ACCOUNTS_CONTROLLER + UPDATE + PASSWORD).bodyValue(accountPassword).exchange()
+				.expectStatus().isEqualTo(403);
 	}
 
 	@Test
 	@Order(11)
 	@WithMockUser(roles = { "USER" })
 	void addRoleAuthorizationError() {
-		testClient.put().uri(ACCOUNTS + ROLE + ASSIGN).bodyValue(accountRole).exchange().expectStatus().isEqualTo(403);
+		testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + ASSIGN).bodyValue(accountRole).exchange().expectStatus()
+				.isEqualTo(403);
 	}
 
 	@Test
 	@Order(12)
 	@WithMockUser(roles = { "USER" })
 	void removeRoleAuthorizationError() {
-		testClient.put().uri(ACCOUNTS + ROLE + CLEAR).bodyValue(accountRole).exchange().expectStatus().isEqualTo(403);
+		testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + CLEAR).bodyValue(accountRole).exchange().expectStatus()
+				.isEqualTo(403);
 	}
 
 	@Test
 	@Order(13)
 	@WithMockUser(roles = { "USER" })
 	void deleteAccountAuthorizationError() {
-		testClient.delete().uri(ACCOUNTS + "/user").exchange().expectStatus().isEqualTo(403);
+		testClient.delete().uri(ACCOUNTS_CONTROLLER + "/user").exchange().expectStatus().isEqualTo(403);
 	}
 
 	@Test
@@ -160,8 +165,8 @@ class AccountingManagementSecurityTests {
 	void getAccountAuthNormal() {
 		String authToken = "Basic "
 				+ Base64.getEncoder().encodeToString((adminUsername + ":" + adminPassword).getBytes());
-		testClient.get().uri(ACCOUNTS + "/user").header(AUTHORIZATION_HEADER, authToken).exchange().expectStatus()
-				.isOk();
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/user").header(AUTHORIZATION_HEADER, authToken).exchange()
+				.expectStatus().isOk();
 	}
 
 	@Test
@@ -169,8 +174,8 @@ class AccountingManagementSecurityTests {
 	void getAccountAuthWrong() {
 		String authTokenWrong = "Basic "
 				+ Base64.getEncoder().encodeToString((adminUsername + ":" + "abcdefrrrr").getBytes());
-		testClient.get().uri(ACCOUNTS + "/user").header(AUTHORIZATION_HEADER, authTokenWrong).exchange().expectStatus()
-				.isEqualTo(401);
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/user").header(AUTHORIZATION_HEADER, authTokenWrong).exchange()
+				.expectStatus().isEqualTo(401);
 	}
 
 }

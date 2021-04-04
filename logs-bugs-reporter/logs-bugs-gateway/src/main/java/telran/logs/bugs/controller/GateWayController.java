@@ -3,12 +3,7 @@
  */
 package telran.logs.bugs.controller;
 
-import java.util.HashMap;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.webflux.ProxyExchange;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -20,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Mono;
+import telran.logs.bugs.service.GateWayService;
 
 /**
  * @author Alex Shtilman Mar 25, 2021
@@ -28,70 +24,47 @@ import reactor.core.publisher.Mono;
 @RestController
 @Log4j2
 public class GateWayController {
-	@Value("${allowed-services:reporter-back-office:8080,info-back-office:8081}")
-	List<String> allowedServices;
+	private static final String SERVICE_NOT_FOUND = "service not found";
 
-	@Value("${app-localhost:false}")
-	boolean isLocalhost;
-
-	HashMap<String, String> serviceToUrl;
+	@Autowired
+	GateWayService gateWayService;
 
 	@PostMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyPostRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = getPorxiedUri(request);
+		String uri = gateWayService.getPorxiedUri(request);
 		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body("service not found".getBytes()));
+			log.debug("Service {} not found!", request);
+			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
 		}
 		return proxy.uri(uri).post();
 	}
 
 	@GetMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyGetRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = getPorxiedUri(request);
+		String uri = gateWayService.getPorxiedUri(request);
 		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body("service not found".getBytes()));
+			log.debug("Service {} not found!", request);
+			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
 		}
 		return proxy.uri(uri).get();
 	}
 
 	@PutMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyPutRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = getPorxiedUri(request);
+		String uri = gateWayService.getPorxiedUri(request);
 		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body("service not found".getBytes()));
+			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
 		}
 		return proxy.uri(uri).put();
 	}
 
 	@DeleteMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyDeleteRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = getPorxiedUri(request);
+		String uri = gateWayService.getPorxiedUri(request);
 		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body("service not found".getBytes()));
+			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
 		}
 		return proxy.uri(uri).delete();
 	}
 
-	private String getPorxiedUri(ServerHttpRequest request) {
-		String uri = request.getURI().toString();
-		String serviceName = uri.split("/+")[2];
-		log.debug("getUrl: {} ", serviceName);
-		String endpoint = serviceToUrl.get(serviceName);
-		if (endpoint != null) {
-			int indService = uri.indexOf(serviceName) + serviceName.length();
-			endpoint += uri.substring(indService);
-			log.debug("result uri: {}", endpoint);
-		}
-		return endpoint;
-	}
-
-	@PostConstruct
-	void fillServiceToUrl() {
-		serviceToUrl = new HashMap<>();
-		allowedServices.forEach(service -> {
-			String[] token = service.split(":");
-			serviceToUrl.put(token[0], String.format("http://%s:%s", isLocalhost ? "localhost" : token[0], token[1]));
-		});
-		log.debug("allowedServices : {}", allowedServices);
-	}
 }

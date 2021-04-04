@@ -3,6 +3,21 @@
  */
 package telran.logs.bugs.configuration;
 
+import static telran.logs.bugs.api.Constants.ARTIFACTS;
+import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
+import static telran.logs.bugs.api.Constants.CLOSE;
+import static telran.logs.bugs.api.Constants.OPEN;
+import static telran.logs.bugs.api.Constants.PROGRAMMERS;
+import static telran.logs.bugs.configuration.Constants.ANY;
+import static telran.logs.bugs.configuration.Constants.ASSIGNER;
+import static telran.logs.bugs.configuration.Constants.DEVELOPER;
+import static telran.logs.bugs.configuration.Constants.INFO_BACK_OFFICE;
+import static telran.logs.bugs.configuration.Constants.PROJECT_OWNER;
+import static telran.logs.bugs.configuration.Constants.REPORTER_BACK_OFFICE;
+import static telran.logs.bugs.configuration.Constants.TEAM_LEAD;
+import static telran.logs.bugs.configuration.Constants.TESTER;
+import static telran.security.accounting.api.Constants.ASSIGN;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
@@ -16,25 +31,14 @@ import org.springframework.security.core.userdetails.MapReactiveUserDetailsServi
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
+import telran.logs.bugs.service.UserDetailsRefreshService;
+
 /**
  * @author Alex Shtilman Mar 27, 2021
  *
  */
 @Configuration
 public class SecurityConfiguration {
-
-	public static final String BUGS_CONTROLLER = "/bugs";
-	public static final String ARTIFACTS = "/artifacts";
-	public static final String PROGRAMMERS = "/programmers";
-	public static final String CLOSE = "/close";
-	public static final String ASSIGN = "/assign";
-	public static final String ANY = "/**";
-	public static final String OPEN = "/open";
-	public static final String LOGS_CONTROLLER = "/logs";
-	public static final String STATISTICS_CONTROLLER = "/statistics";
-
-	public static final String REPORTER_BACK_OFFICE = "/reporter-back-office";
-	public static final String INFO_BACK_OFFICE = "/info-back-office";
 
 	@Autowired
 	UserDetailsRefreshService refreshService;
@@ -49,26 +53,22 @@ public class SecurityConfiguration {
 
 	@Bean
 	SecurityWebFilterChain securityFiltersChain(ServerHttpSecurity httpSecurity) {
-		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
-				.authorizeExchange().pathMatchers(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY).hasRole("DEVELOPER")
-				.pathMatchers(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY).hasRole("DEVELOPER")
-				.pathMatchers(HttpMethod.POST, BUGS_CONTROLLER + OPEN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
-				.pathMatchers(HttpMethod.POST, OPEN + ASSIGN).hasAnyRole("TESTER", "ASSIGNER", "DEVELOPER")
+		String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
 
-				.pathMatchers(HttpMethod.PUT, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ASSIGN).hasRole("ASSIGNER")
-				.pathMatchers(HttpMethod.PUT, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + CLOSE).hasRole("TESTER")
-				.pathMatchers(HttpMethod.POST, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + PROGRAMMERS)
-				.hasRole("PROJECT_OWNER")
-				.pathMatchers(HttpMethod.POST, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ARTIFACTS)
-				.hasAnyRole("TEAM_LEAD", "ASSIGNER")
-				.pathMatchers(HttpMethod.GET, REPORTER_BACK_OFFICE + BUGS_CONTROLLER + ANY).authenticated().and()
-				.build();
+		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
+				.authorizeExchange().pathMatchers(INFO_BACK_OFFICE + ANY).hasRole(DEVELOPER)
+				.pathMatchers(HttpMethod.POST, BUGS + OPEN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
+				.pathMatchers(HttpMethod.POST, BUGS + OPEN + ASSIGN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
+				.pathMatchers(HttpMethod.PUT, BUGS + ASSIGN).hasRole(ASSIGNER)
+				.pathMatchers(HttpMethod.PUT, BUGS + CLOSE).hasRole(TESTER)
+				.pathMatchers(HttpMethod.POST, BUGS + PROGRAMMERS).hasRole(PROJECT_OWNER)
+				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER)
+				.pathMatchers(HttpMethod.GET, BUGS + ANY).authenticated().and().build();
 		return securityFiltersChain;
 	}
 
 	@PostConstruct
 	void updateMapUserDetails() throws InterruptedException {
 		refreshService.start();
-
 	}
 }

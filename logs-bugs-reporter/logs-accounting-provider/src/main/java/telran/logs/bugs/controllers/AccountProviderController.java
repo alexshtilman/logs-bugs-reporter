@@ -3,7 +3,7 @@
  */
 package telran.logs.bugs.controllers;
 
-import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACCOUNTS_CONTROLLER;
 import static telran.security.accounting.api.Constants.ACTIVATED;
 
 import java.util.Collections;
@@ -28,7 +28,7 @@ public class AccountProviderController {
 	@Autowired
 	AccountRepository accountRepository;
 
-	@RequestMapping(ACCOUNTS + ACTIVATED)
+	@RequestMapping(ACCOUNTS_CONTROLLER + ACTIVATED)
 	public List<AccountResponse> getActivatedAccounts() {
 		List<AccountDocument> activatedAccounts = accountRepository
 				.findByExpirationTimestampGreaterThan(System.currentTimeMillis() / 1000);

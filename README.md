@@ -1,55 +1,36 @@
-# home work 73
+# home work 75
 
-1. Write back-end service accounting-management with three layers (Controller-Service-Data)
-   1. Package telran.security.accounting.dto (consider using Inheritance)
-      1. AccountRequest comprising of the following public fields
-         - Username (not empty string)
-         - Password (string with minimal 8 symbols)
-         - Roles (array of the strings, possible empty)
-         - Expired period in minutes (positive number)
-      1. AccountResponse comprising of the following public fields
-         - Username
-         - Password
-         - Roles
-         - Expiration timestamp in the seconds (number seconds from 1970-01-01)
-   1. Package telran.security.accounting.api
-      - ApiConstants interface with the constants for controller end point methods
-   1. Package telran.security.accounting.mongo.documents
-      1. AccountDoc (annotated by @Document)
-         - Username as a document ID (@Id)
-         - Password
-         - Activation timestamp in the seconds (number seconds from 1970-01-01)
-         - Roles
-         - Expiration timestamp in the seconds (number seconds from 1970-01-01)
-   1. Package telran.security.accounting.mongo.repo
-      1. UpdateMongoOperations interface containing operations for updating accounts
-      1. AccountRepository interface extending two interfaces: MongoRepository and UpdateMongoOperations
-      1. UpdateMongoOperationsImpl – class implementing interface UpdateMongoOperations for implementation all updating operations using MongoTemplate class (we have done it for aggregation framework, now you should find out how to perform any Mongo update requests using MongoTemplate)
-   1. Package telran.security.accounting.service
-      1. AccountingManagement – interface containing of the following methods
-         - AccoutResponse addAccount(AccountRequest accountDto); method that adds new account. It returns the data of the added account. The returned password should contain concatenation of {noop} and the password value. The same concatenation is saved in Mongo DB. It throws RuntimeException exception with a proper message in the case the account with the given username already exists
-         - void deleteAccount(String username); removes account containing the given username. It throws RuntimeException exception with a proper message in the case the account with the given username doesn’t exist
-         - AccountResponse getAccount(String username); returns account data or null if an account doesn’t exist. It doesn’t throw an exception
-         - AccountResponse updatePassword(String username, String password); updates password and set new expiration timestamp (old expiration timestamp – activation timestamp + old expiration timestamp). It returns the data of the updated account. The returned password should contain concatenation of {noop} and the password value. In the cases account doesn’t exist or the new password is the same as the old one the method should throw the RuntimeException with a proper message
-         - AccountResponse addRole(String username, String role); adds new role. It returns the data of the updated account. The returned password should 8 asterisks. In the cases account doesn’t exist the method should throw the RuntimeException with a proper message
-         - AccountResponse removeRole(String username, String role); remove existing role. It returns the data of the updated account. The returned password should 8 asterisks. In the case either account doesn’t exist the method should throw the RuntimeException with a proper message.
-      1. AccountingManagementImpl – class implementing the interface AccountingManagement
-   1. Package telran.security.accounting.controllers
-      1. AccountingManagementController class containing the following end point methods
-         - GET request for getting account
-         - POST request for adding account
-         - PUT request for updating password
-         - PUT request for adding new role
-         - PUT request for removing existing role
-         - DELETE request for removing account
-   1. Package telran.security.accounting
-      - AccountingmanagementAppl class containing method main and annotation @SpringBootApplication
-1. Additional requirements
-   1. Security
-      - Introduce two users: one with role USER and other with role ADMIN
-      - User with role ADMIN may do everything but user with role USER may only get account data
-      - Passwords for these users should be kept in the environment variables
-      - There should be possibility to disable any security for testing purposes. Consider configuration property with enabling by default. Only in the application.properties file in src/test/resourses the value should match disabling of security. Consider security configuration rule permitting all requests without any authentication/authorization
-1. Unit Test
-   1. Run unit test involving all three layers through the controller end-point methods as we have done in the previous projects.
-   1. The security should be disabled during unit tests by setting false in the proper configuration property in the application.property file of the src/test/resources (only for testing purposes)
+1. Write new micro-service logs-bugs-accounts-provider
+   1. The service should work with the MongoDB Database containing the accounts from AccountingManagement application we have developed on the previous lessons. (AccountingManagement is a standalone application that is not included in the micro-services landscape.
+   1. The service performs only one action that is retrieving all non-expired accounts from Database
+   1. The service should register itself on the Eureka discovery server. That will allow using a client side load balancer
+   1. By mapping a REST GET request an end-point method should return a list of all activated accounts
+   1. Write JUnit test for testing the activated accounts provisioning
+1. Completing logs-bugs-gateway service
+   1. The service should be a part of the Microservices landscape
+   1. The service should have two configurations for two profiles dev and docker
+      - Configuration for dev implies using of the localhost
+      - Configuration for docker implies using the proper names of the micro-services network
+   1. The service should run proxy functionality to logs-bugs-reporter-back-office and logs-info-back-office services
+   1. The service should involve Spring security with the following configurations (Note: Security relates only access from outside the micro-services landscape. The access and any actions inside the micro-services landscape are not secured. The landscape has single point of outside access in the gateway)
+      1. All accounts should be retrieved from the logs-bugs-accounts-provider
+      - The accounts data in the logs-bugs-gateway service should be retrieved periodically in the configurable interval
+      1. Access to the information about all logs should be permitted only for role DEVELOPER
+      1. Opening bugs, as with assignment as well as without, should be permitted for the roles TESTER, ASSIGNER, and DEVELOPER
+      1. Assignment after opening bugs should be permitted only for role ASSIGNER
+      1. Closing bugs should be permitted only for role TESTER
+      1. Adding programmer should be permitted only for role PROJECT_OWNER
+      1. Adding artifact should be permitted for roles TEAM_LEAD and ASSIGNER
+      1. Getting any information about bugs should be permitted for any authenticated user
+   1. Write Junit test only for security (Note: the proxy functionality is tested only in the integration tests)
+      1. For testing authorization, you may use @WithMockUser annotation
+      1. For testing authentication, you should mock the UserDetailsRefreshService bean. It will be some challenge for you.
+1. Docker Solution
+   1. Add Docker containers data for logs-bugs-gateway and logs-bugs-accounts-provider
+   1. Only container for logs-bugs-gateway should open access from outside. So all ports data should be taken out from other services
+1. Integration Test
+   1. Launch AccountingManagement application
+   1. Using postman, add several accounts with different roles
+   1. Start docker-compose and make sure that all services have started
+   1. Launch logs-provider application
+   1. Using postman, run several requests to both logs-bugs-reporter-back-office (bugs-reporter-back service) and logs-info-back-office (logs-back service) applications

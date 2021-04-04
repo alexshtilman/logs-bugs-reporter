@@ -6,7 +6,7 @@ public class Constants {
 	public static final String ALL = "/all";
 	public static final String ID = "/{id}";
 
-	public static final String ACCOUNTS = "/accounts";
+	public static final String ACCOUNTS_CONTROLLER = "/accounts";
 	public static final String ADD = "/add";
 	public static final String UPDATE = "/update";
 	public static final String PASSWORD = "/password";

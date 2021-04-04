@@ -25,6 +25,11 @@
 			<artifactId>logs-accounting-dto</artifactId>
 			<version>0.0.1</version>
 		</dependency>
+				<dependency>
+			<groupId>telran.logs.bugs</groupId>
+			<artifactId>logs-bugs-dto</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 		<dependency>
 			<groupId>telran.logs.bugs</groupId>
 			<artifactId>logs-loadbalancer-component</artifactId>

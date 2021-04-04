@@ -1,6 +1,6 @@
 package telran.security.accounting.controllers;
 
-import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACCOUNTS_CONTROLLER;
 import static telran.security.accounting.api.Constants.ACTIVATED;
 import static telran.security.accounting.api.Constants.ADD;
 import static telran.security.accounting.api.Constants.ASSIGN;
@@ -34,7 +34,7 @@ import telran.security.accounting.dto.AccountRole;
 import telran.security.accounting.service.AccountingManagement;
 
 @RestController
-@RequestMapping(ACCOUNTS)
+@RequestMapping(ACCOUNTS_CONTROLLER)
 @Log4j2
 @Validated
 public class AccountingManagementController {

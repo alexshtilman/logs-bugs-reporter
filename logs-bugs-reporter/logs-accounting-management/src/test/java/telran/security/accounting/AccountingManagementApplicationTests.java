@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACCOUNTS_CONTROLLER;
 import static telran.security.accounting.api.Constants.ACTIVATED;
 import static telran.security.accounting.api.Constants.ADD;
 import static telran.security.accounting.api.Constants.ASSIGN;
@@ -72,7 +72,7 @@ class AccountingManagementApplicationTests {
 
 	@Order(1)
 	void addAccount() {
-		testClient.post().uri(ACCOUNTS + ADD).bodyValue(accountRequestMoshe).exchange().expectStatus().isOk()
+		testClient.post().uri(ACCOUNTS_CONTROLLER + ADD).bodyValue(accountRequestMoshe).exchange().expectStatus().isOk()
 				.expectBody(AccountResponse.class).isEqualTo(expectedMoshe);
 
 	}
@@ -87,7 +87,7 @@ class AccountingManagementApplicationTests {
 	}
 
 	private AccountResponse getMosheAccount() {
-		return testClient.get().uri(ACCOUNTS + "/Moshe").exchange().expectStatus().isOk()
+		return testClient.get().uri(ACCOUNTS_CONTROLLER + "/Moshe").exchange().expectStatus().isOk()
 				.returnResult(AccountResponse.class).getResponseBody().blockFirst();
 	}
 
@@ -95,8 +95,9 @@ class AccountingManagementApplicationTests {
 	@Order(4)
 	void updatePassword() {
 		AccountPassword accountPassword = getAccountPassword(PASSWORD_MOSHE + "new");
-		AccountResponse response = testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword)
-				.exchange().expectStatus().isOk().returnResult(AccountResponse.class).getResponseBody().blockFirst();
+		AccountResponse response = testClient.put().uri(ACCOUNTS_CONTROLLER + UPDATE + PASSWORD)
+				.bodyValue(accountPassword).exchange().expectStatus().isOk().returnResult(AccountResponse.class)
+				.getResponseBody().blockFirst();
 		AccountResponse responseUpdated = getMosheAccount();
 		assertEquals(ASTERICS8, response.password);
 		assertTrue(passwordEncoder.matches(PASSWORD_MOSHE + "new", responseUpdated.password));
@@ -113,16 +114,16 @@ class AccountingManagementApplicationTests {
 	@Order(3)
 	void updateSamePassword() {
 		AccountPassword accountPassword = getAccountPassword(PASSWORD_MOSHE);
-		testClient.put().uri(ACCOUNTS + UPDATE + PASSWORD).bodyValue(accountPassword).exchange().expectStatus()
-				.isBadRequest();
+		testClient.put().uri(ACCOUNTS_CONTROLLER + UPDATE + PASSWORD).bodyValue(accountPassword).exchange()
+				.expectStatus().isBadRequest();
 	}
 
 	@Test
 	@Order(5)
 	void addRole() {
 		AccountRole accountRole = getAccountRole("STAT");
-		expectedResponseRoleRemove = testClient.put().uri(ACCOUNTS + ROLE + ASSIGN).bodyValue(accountRole).exchange()
-				.expectStatus().isOk().returnResult(AccountResponse.class).getResponseBody().blockFirst();
+		expectedResponseRoleRemove = testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + ASSIGN).bodyValue(accountRole)
+				.exchange().expectStatus().isOk().returnResult(AccountResponse.class).getResponseBody().blockFirst();
 		assertEquals(expectedResponseRoleRemove, expectedMoshe);
 		assertEquals(ASTERICS8, expectedResponseRoleRemove.password);
 		AccountResponse response = getMosheAccount();
@@ -134,8 +135,8 @@ class AccountingManagementApplicationTests {
 	@Order(6)
 	void removeRole() {
 		AccountRole accountRole = getAccountRole("STAT");
-		AccountResponse response = testClient.put().uri(ACCOUNTS + ROLE + CLEAR).bodyValue(accountRole).exchange()
-				.expectStatus().isOk().returnResult(AccountResponse.class).getResponseBody().blockFirst();
+		AccountResponse response = testClient.put().uri(ACCOUNTS_CONTROLLER + ROLE + CLEAR).bodyValue(accountRole)
+				.exchange().expectStatus().isOk().returnResult(AccountResponse.class).getResponseBody().blockFirst();
 
 		assertEquals(ASTERICS8, response.password);
 		response = getMosheAccount();
@@ -146,7 +147,7 @@ class AccountingManagementApplicationTests {
 	@Test
 	@Order(7)
 	void removeAccount() {
-		testClient.delete().uri(ACCOUNTS + "/" + USER_MOSHE).exchange().expectStatus().isOk();
+		testClient.delete().uri(ACCOUNTS_CONTROLLER + "/" + USER_MOSHE).exchange().expectStatus().isOk();
 		assertNull(accountRepository.findById(USER_MOSHE).orElse(null));
 	}
 
@@ -154,14 +155,14 @@ class AccountingManagementApplicationTests {
 	@Order(8)
 	void getActivatedAccounts() {
 		accountRepository.saveAll(Arrays.asList(activated1, activated2, expired1));
-		testClient.get().uri(ACCOUNTS + ACTIVATED).exchange().expectStatus().isOk()
+		testClient.get().uri(ACCOUNTS_CONTROLLER + ACTIVATED).exchange().expectStatus().isOk()
 				.expectBodyList(AccountResponse.class).isEqualTo(getExpectedAccounts());
 	}
 
 	@Test
 	@Order(9)
 	void getExpiredAccount() {
-		testClient.get().uri(ACCOUNTS + "/" + EXPIRED).exchange().expectStatus().isOk()
+		testClient.get().uri(ACCOUNTS_CONTROLLER + "/" + EXPIRED).exchange().expectStatus().isOk()
 				.expectBody(AccountResponse.class).isEqualTo(null);
 	}
 

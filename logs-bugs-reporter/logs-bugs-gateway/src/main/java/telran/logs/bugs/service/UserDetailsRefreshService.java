@@ -1,9 +1,9 @@
 /**
  * 
  */
-package telran.logs.bugs.configuration;
+package telran.logs.bugs.service;
 
-import static telran.security.accounting.api.Constants.ACCOUNTS;
+import static telran.security.accounting.api.Constants.ACCOUNTS_CONTROLLER;
 import static telran.security.accounting.api.Constants.ACTIVATED;
 
 import java.util.Arrays;
@@ -76,19 +76,21 @@ public class UserDetailsRefreshService extends Thread {
 	}
 
 	private AccountResponse[] getAccounts() {
-
-		String baseUrl = loadBalancer.getBaseUrl(accountingProvier);
-
-		log.debug("accountingProvier: {}{}{}", accountingProvier, ACCOUNTS, ACTIVATED);
-		ResponseEntity<AccountResponse[]> response = restTemplate.exchange(baseUrl + ACCOUNTS + ACTIVATED,
-				HttpMethod.GET, null, AccountResponse[].class);
-		AccountResponse[] accounts = response.getBody();
-		log.debug("accounts: {}", Arrays.deepToString(accounts));
+		AccountResponse[] accounts = {};
+		try {
+			String baseUrl = loadBalancer.getBaseUrl(accountingProvier);
+			log.debug("accountingProvier: {}{}{}{}", baseUrl, accountingProvier, ACCOUNTS_CONTROLLER, ACTIVATED);
+			ResponseEntity<AccountResponse[]> response = restTemplate
+					.exchange(baseUrl + ACCOUNTS_CONTROLLER + ACTIVATED, HttpMethod.GET, null, AccountResponse[].class);
+			accounts = response.getBody();
+			log.debug("accounts: {}", Arrays.deepToString(accounts));
+		} catch (Exception e) {
+			log.debug("can not fetch accounts from lb: {}", e.getMessage());
+		}
 		return accounts;
 	}
 
 	private void fillUsers(AccountResponse[] accounts) {
-
 		Arrays.stream(accounts).map(a -> new User(a.username, a.password, getAuthorities(a)))
 				.forEach(ud -> users.put(ud.getUsername(), ud));
 
