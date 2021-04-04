@@ -65,8 +65,10 @@ public class UserDetailsRefreshService extends Thread {
 	@SneakyThrows
 	public void run() {
 		while (true) {
+			System.err.println("!!!");
 			fillUserDetails();
 			Thread.sleep(timeout);
+
 		}
 	}
 
@@ -86,6 +88,7 @@ public class UserDetailsRefreshService extends Thread {
 			log.debug("accounts: {}", Arrays.deepToString(accounts));
 		} catch (Exception e) {
 			log.debug("can not fetch accounts from lb: {}", e.getMessage());
+			users.forEach((user, details) -> System.out.println(details.getUsername()));
 		}
 		return accounts;
 	}

@@ -62,13 +62,12 @@ public class SecurityConfiguration {
 				.pathMatchers(HttpMethod.PUT, BUGS + ASSIGN).hasRole(ASSIGNER)
 				.pathMatchers(HttpMethod.PUT, BUGS + CLOSE).hasRole(TESTER)
 				.pathMatchers(HttpMethod.POST, BUGS + PROGRAMMERS).hasRole(PROJECT_OWNER)
-				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER)
-				.pathMatchers(HttpMethod.GET, BUGS + ANY).authenticated().and().build();
+				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER).and().build();
 		return securityFiltersChain;
 	}
 
 	@PostConstruct
 	void updateMapUserDetails() throws InterruptedException {
-		refreshService.start();
+		refreshService.run();
 	}
 }

@@ -1,29 +1,29 @@
 
 package telran.logs.bugs;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
-import static telran.logs.bugs.api.Constants.SERIOSNESS_BUGS_COUNT;
 import static telran.logs.bugs.configuration.Constants.REPORTER_BACK_OFFICE;
 
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import lombok.SneakyThrows;
@@ -34,22 +34,19 @@ import telran.logs.bugs.service.UserDetailsRefreshService;
  * @author Alex Shtilman Apr 2, 2021
  *
  */
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = { "spring.cloud.config.enabled=false" })
+@SpringBootTest(properties = { "spring.cloud.config.enabled=false" })
 
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(Lifecycle.PER_CLASS)
 @Log4j2
 class GatewayAuthenticationTests {
-	private static final String ACCOUTING_PROVIDER_ADDRESS = "reporter-back-office:8080";
+
+	private static final String ANY_QUERY = "/any_query?any_param=123";
+	private static final String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
 
 	@Autowired
 	WebTestClient testClient;
-
-	@Value("${app-username-admin}")
-	String adminUsername;
-	@Value("${app-password-admin}")
-	String adminPassword;
 
 	@MockBean
 	UserDetailsRefreshService userService;
@@ -57,16 +54,44 @@ class GatewayAuthenticationTests {
 	@MockBean
 	ConcurrentHashMap<String, UserDetails> users;
 
-	@Test
-	@WithMockUser(username = "developer", password = "developer1234.com")
+	@BeforeAll
 	@SneakyThrows
-	void perforDevelpersQuerys() {
+	void init() {
+		doAnswer(invocation -> {
+			users.put("developer", new User("developer", "{noop}developer123456789.com",
+					AuthorityUtils.createAuthorityList(new String[] { "DEVELOPER" })));
+			users.put("assigner", new User("assigner", "{noop}assigner123456789.com",
+					AuthorityUtils.createAuthorityList(new String[] { "ASSIGNER" })));
+			users.put("tester", new User("tester", "{noop}tester123456789.com",
+					AuthorityUtils.createAuthorityList(new String[] { "TESTER" })));
+			users.put("product-owner", new User("product-owner", "{noop}product-owner123456789.com",
+					AuthorityUtils.createAuthorityList(new String[] { "PRODUCT_OWNER" })));
+			users.put("team-leader", new User("team-leader", "{noop}team-leader123456789.com",
+					AuthorityUtils.createAuthorityList(new String[] { "TEAM_LEADER" })));
+			return null;
+		}).when(userService).run();
+		userService.run();
 
-		when(users.get(anyString())).thenReturn(new User("developer", "developer1234.com",
-				AuthorityUtils.createAuthorityList(new String[] { "DEVELOPER" })));
-
-		testClient.get().uri(REPORTER_BACK_OFFICE + BUGS_CONTROLLER + SERIOSNESS_BUGS_COUNT).exchange().expectStatus()
-				.isNotFound();
 	}
 
+	@Test
+	@Order(2)
+	void performAllowedForAllAuthorizedUsers() {
+		List<String> users = new ArrayList<>();
+		users.add(getAuthorizationTocken("developer", "developer123456789.com"));
+		users.add(getAuthorizationTocken("assigner", "assigner123456789.com"));
+		users.add(getAuthorizationTocken("tester", "tester123456789.com"));
+		users.add(getAuthorizationTocken("product-owner", "product-owner123456789.com"));
+		users.add(getAuthorizationTocken("team-leader", "team-leader123456789.com"));
+
+		users.forEach(user -> {
+			testClient.get().uri(BUGS + ANY_QUERY).header("Authorization", user).exchange().expectStatus().isNotFound();
+		});
+
+	}
+
+	private static String getAuthorizationTocken(String username, String password) {
+		String rowText = username + ":" + password;
+		return "Basic " + Base64.getEncoder().encodeToString(rowText.getBytes());
+	}
 }
