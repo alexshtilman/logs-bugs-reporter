@@ -45,7 +45,7 @@ import telran.logs.bugs.service.UserDetailsRefreshService;
  * @author Alex Shtilman Apr 2, 2021
  *
  */
-@SpringBootTest(properties = { "spring.cloud.config.enabled=false" })
+@SpringBootTest(properties = { "spring.cloud.config.enabled=false", "app-security-basic:true" })
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class GatewayAuthorizationTests {

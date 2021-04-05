@@ -26,10 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 
 import telran.logs.bugs.service.UserDetailsRefreshService;
 
@@ -41,10 +45,14 @@ import telran.logs.bugs.service.UserDetailsRefreshService;
 public class SecurityConfiguration {
 
 	@Autowired
+	ConcurrentHashMap<String, UserDetails> users;
+	@Autowired
 	UserDetailsRefreshService refreshService;
 
 	@Autowired
-	ConcurrentHashMap<String, UserDetails> users;
+	ServerSecurityContextRepository securityContext;
+	@Autowired
+	ReactiveAuthenticationManager authenticatior;
 
 	@Bean
 	MapReactiveUserDetailsService getMapDetails() {
@@ -57,11 +65,17 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
+	PasswordEncoder getPasswordEncoder() {
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+
+	@Bean
 	SecurityWebFilterChain securityFiltersChain(ServerHttpSecurity httpSecurity) {
 		String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
-
-		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
-				.authorizeExchange().pathMatchers(HttpMethod.GET, INFO_BACK_OFFICE + ANY).hasRole(DEVELOPER)
+		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().disable().cors()
+				.disable().authenticationManager(authenticatior).securityContextRepository(securityContext)
+				.authorizeExchange().pathMatchers("/login").permitAll()
+				.pathMatchers(HttpMethod.GET, INFO_BACK_OFFICE + ANY).hasRole(DEVELOPER)
 				.pathMatchers(HttpMethod.POST, BUGS + OPEN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
 				.pathMatchers(HttpMethod.POST, BUGS + OPEN + ASSIGN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
 				.pathMatchers(HttpMethod.PUT, BUGS + ASSIGN).hasRole(ASSIGNER)
@@ -69,6 +83,7 @@ public class SecurityConfiguration {
 				.pathMatchers(HttpMethod.POST, BUGS + PROGRAMMERS).hasRole(PROJECT_OWNER)
 				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER).anyExchange()
 				.authenticated().and().build();
+
 		return securityFiltersChain;
 	}
 
