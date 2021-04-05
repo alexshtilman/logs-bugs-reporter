@@ -5,6 +5,7 @@ package telran.logs.bugs.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.webflux.ProxyExchange;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,40 +32,22 @@ public class GateWayController {
 
 	@PostMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyPostRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = gateWayService.getPorxiedUri(request);
-		if (uri == null) {
-			log.debug("Service {} not found!", request);
-			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
-		}
-		return proxy.uri(uri).post();
+		return gateWayService.proxyRun(proxy, request, HttpMethod.POST);
 	}
 
 	@GetMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyGetRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = gateWayService.getPorxiedUri(request);
-		if (uri == null) {
-			log.debug("Service {} not found!", request);
-			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
-		}
-		return proxy.uri(uri).get();
+		return gateWayService.proxyRun(proxy, request, HttpMethod.GET);
 	}
 
 	@PutMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyPutRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = gateWayService.getPorxiedUri(request);
-		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
-		}
-		return proxy.uri(uri).put();
+		return gateWayService.proxyRun(proxy, request, HttpMethod.PUT);
 	}
 
 	@DeleteMapping("/**")
 	public Mono<ResponseEntity<byte[]>> proxyDeleteRequests(ProxyExchange<byte[]> proxy, ServerHttpRequest request) {
-		String uri = gateWayService.getPorxiedUri(request);
-		if (uri == null) {
-			return Mono.just(ResponseEntity.status(404).body(SERVICE_NOT_FOUND.getBytes()));
-		}
-		return proxy.uri(uri).delete();
+		return gateWayService.proxyRun(proxy, request, HttpMethod.DELETE);
 	}
 
 }

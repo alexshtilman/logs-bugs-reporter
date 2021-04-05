@@ -1,7 +1,9 @@
 
 package telran.logs.bugs;
 
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
 import static telran.logs.bugs.configuration.Constants.REPORTER_BACK_OFFICE;
 
@@ -10,35 +12,34 @@ import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.client.RestTemplate;
 
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Mono;
+import telran.logs.bugs.service.GateWayService;
 import telran.logs.bugs.service.UserDetailsRefreshService;
 
 /**
  * @author Alex Shtilman Apr 2, 2021
  *
  */
-@SpringBootTest(properties = { "spring.cloud.config.enabled=false" })
-
+@SpringBootTest
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(Lifecycle.PER_CLASS)
 @Log4j2
 class GatewayAuthenticationTests {
 
@@ -54,28 +55,32 @@ class GatewayAuthenticationTests {
 	@MockBean
 	ConcurrentHashMap<String, UserDetails> users;
 
-	@BeforeAll
-	@SneakyThrows
+	@MockBean
+	RestTemplate mockRestTemplate;
+
+	@MockBean
+	GateWayService gateWayService;
+
+	@BeforeEach
 	void init() {
-		doAnswer(invocation -> {
-			users.put("developer", new User("developer", "{noop}developer123456789.com",
-					AuthorityUtils.createAuthorityList(new String[] { "DEVELOPER" })));
-			users.put("assigner", new User("assigner", "{noop}assigner123456789.com",
-					AuthorityUtils.createAuthorityList(new String[] { "ASSIGNER" })));
-			users.put("tester", new User("tester", "{noop}tester123456789.com",
-					AuthorityUtils.createAuthorityList(new String[] { "TESTER" })));
-			users.put("product-owner", new User("product-owner", "{noop}product-owner123456789.com",
-					AuthorityUtils.createAuthorityList(new String[] { "PRODUCT_OWNER" })));
-			users.put("team-leader", new User("team-leader", "{noop}team-leader123456789.com",
-					AuthorityUtils.createAuthorityList(new String[] { "TEAM_LEADER" })));
-			return null;
-		}).when(userService).run();
-		userService.run();
+		doNothing().when(userService).start();
+		when(gateWayService.proxyRun(any(), any(), any(HttpMethod.class)))
+				.thenReturn(Mono.just(ResponseEntity.ok("ok".getBytes())));
+
+		users.putIfAbsent("developer", new User("developer", "{noop}developer123456789.com",
+				AuthorityUtils.createAuthorityList("ROLE_DEVELOPER")));
+		users.putIfAbsent("assigner", new User("assigner", "{noop}assigner123456789.com",
+				AuthorityUtils.createAuthorityList("ROLE_ASSIGNER")));
+		users.putIfAbsent("tester",
+				new User("tester", "{noop}tester123456789.com", AuthorityUtils.createAuthorityList("ROLE_TESTER")));
+		users.putIfAbsent("product-owner", new User("product-owner", "{noop}product-owner123456789.com",
+				AuthorityUtils.createAuthorityList("ROLE_PRODUCT_OWNER")));
+		users.putIfAbsent("team-leader", new User("team-leader", "{noop}team-leader123456789.com",
+				AuthorityUtils.createAuthorityList("ROLE_TEAM_LEADER")));
 
 	}
 
 	@Test
-	@Order(2)
 	void performAllowedForAllAuthorizedUsers() {
 		List<String> users = new ArrayList<>();
 		users.add(getAuthorizationTocken("developer", "developer123456789.com"));
@@ -85,7 +90,7 @@ class GatewayAuthenticationTests {
 		users.add(getAuthorizationTocken("team-leader", "team-leader123456789.com"));
 
 		users.forEach(user -> {
-			testClient.get().uri(BUGS + ANY_QUERY).header("Authorization", user).exchange().expectStatus().isNotFound();
+			testClient.get().uri(BUGS + ANY_QUERY).header("Authorization", user).exchange().expectStatus().isOk();
 		});
 
 	}

@@ -9,10 +9,14 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.webflux.ProxyExchange;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 
 import lombok.extern.log4j.Log4j2;
+import reactor.core.publisher.Mono;
 
 /**
  * @author Alex Shtilman Apr 2, 2021
@@ -28,6 +32,33 @@ public class GateWayService {
 	boolean isLocalhost;
 
 	HashMap<String, String> serviceToUrl;
+
+	private Mono<ResponseEntity<byte[]>> proxyPerform(ProxyExchange<byte[]> proxy, String proxiedUri,
+			HttpMethod method) {
+		ProxyExchange<byte[]> proxyExchange = proxy.uri(proxiedUri);
+		switch (method) {
+		case POST:
+			return proxyExchange.post();
+		case GET:
+			return proxyExchange.get();
+		case PUT:
+			return proxyExchange.put();
+		case DELETE:
+			return proxyExchange.delete();
+
+		default:
+			return Mono.just(ResponseEntity.status(500).body("unsupported proxy operation".getBytes()));
+		}
+	}
+
+	public Mono<ResponseEntity<byte[]>> proxyRun(ProxyExchange<byte[]> proxy, ServerHttpRequest request,
+			HttpMethod method) {
+		String proxiedUri = getPorxiedUri(request);
+		if (proxiedUri == null) {
+			return Mono.just(ResponseEntity.status(404).body("Service not found".getBytes()));
+		}
+		return proxyPerform(proxy, proxiedUri, method);
+	}
 
 	public String getPorxiedUri(ServerHttpRequest request) {
 		String uri = request.getURI().toString();
