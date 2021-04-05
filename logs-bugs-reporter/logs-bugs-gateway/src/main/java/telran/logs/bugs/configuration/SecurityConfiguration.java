@@ -56,13 +56,14 @@ public class SecurityConfiguration {
 		String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
 
 		SecurityWebFilterChain securityFiltersChain = httpSecurity.csrf().disable().httpBasic().and()
-				.authorizeExchange().pathMatchers(INFO_BACK_OFFICE + ANY).hasRole(DEVELOPER)
+				.authorizeExchange().pathMatchers(HttpMethod.GET, INFO_BACK_OFFICE + ANY).hasRole(DEVELOPER)
 				.pathMatchers(HttpMethod.POST, BUGS + OPEN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
 				.pathMatchers(HttpMethod.POST, BUGS + OPEN + ASSIGN).hasAnyRole(TESTER, ASSIGNER, DEVELOPER)
 				.pathMatchers(HttpMethod.PUT, BUGS + ASSIGN).hasRole(ASSIGNER)
 				.pathMatchers(HttpMethod.PUT, BUGS + CLOSE).hasRole(TESTER)
 				.pathMatchers(HttpMethod.POST, BUGS + PROGRAMMERS).hasRole(PROJECT_OWNER)
-				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER).and().build();
+				.pathMatchers(HttpMethod.POST, BUGS + ARTIFACTS).hasAnyRole(TEAM_LEAD, ASSIGNER).anyExchange()
+				.authenticated().and().build();
 		return securityFiltersChain;
 	}
 
