@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Mono;
 import telran.logs.bugs.service.GateWayService;
 
@@ -23,9 +22,7 @@ import telran.logs.bugs.service.GateWayService;
  *
  */
 @RestController
-@Log4j2
 public class GateWayController {
-	private static final String SERVICE_NOT_FOUND = "service not found";
 
 	@Autowired
 	GateWayService gateWayService;

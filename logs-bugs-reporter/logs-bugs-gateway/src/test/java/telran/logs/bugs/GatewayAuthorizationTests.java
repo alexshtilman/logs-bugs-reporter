@@ -23,8 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -50,7 +48,6 @@ import telran.logs.bugs.service.UserDetailsRefreshService;
 @SpringBootTest(properties = { "spring.cloud.config.enabled=false" })
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@TestInstance(Lifecycle.PER_CLASS)
 class GatewayAuthorizationTests {
 
 	private static final String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;

@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -56,19 +55,12 @@ public class UserDetailsRefreshService extends Thread {
 	@Autowired
 	LoadBalancerComponent loadBalancer;
 
-	@Bean
-	ConcurrentHashMap<String, UserDetails> getUsersMap() {
-		return new ConcurrentHashMap<>();
-	}
-
 	@Override
 	@SneakyThrows
 	public void run() {
 		while (true) {
-			System.err.println("!!!");
 			fillUserDetails();
 			Thread.sleep(timeout);
-
 		}
 	}
 

@@ -52,6 +52,11 @@ public class SecurityConfiguration {
 	}
 
 	@Bean
+	ConcurrentHashMap<String, UserDetails> getUsersMap() {
+		return new ConcurrentHashMap<>();
+	}
+
+	@Bean
 	SecurityWebFilterChain securityFiltersChain(ServerHttpSecurity httpSecurity) {
 		String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
 
