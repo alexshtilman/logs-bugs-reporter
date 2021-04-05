@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import static telran.logs.bugs.api.Constants.ARTIFACTS;
 import static telran.logs.bugs.api.Constants.BUGS_CONTROLLER;
 import static telran.logs.bugs.api.Constants.CLOSE;
+import static telran.logs.bugs.api.Constants.EMAIL_BUGS_COUNTS;
 import static telran.logs.bugs.api.Constants.LOGS_CONTROLLER;
 import static telran.logs.bugs.api.Constants.OPEN;
 import static telran.logs.bugs.api.Constants.PROGRAMMERS;
@@ -28,7 +29,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -47,14 +47,13 @@ import telran.logs.bugs.service.UserDetailsRefreshService;
  * @author Alex Shtilman Apr 2, 2021
  *
  */
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = { "spring.cloud.config.enabled=false" })
+@SpringBootTest(properties = { "spring.cloud.config.enabled=false" })
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(Lifecycle.PER_CLASS)
 class GatewayAuthorizationTests {
 
 	private static final String BUGS = REPORTER_BACK_OFFICE + BUGS_CONTROLLER;
-	private static final String ANY_QUERY = "/any_query?any_param=123";
 
 	@Autowired
 	WebTestClient testClient;
@@ -65,7 +64,7 @@ class GatewayAuthorizationTests {
 	@MockBean
 	UserDetailsRefreshService userService;
 
-	@MockBean
+	@Autowired
 	ConcurrentHashMap<String, UserDetails> users;
 
 	@BeforeEach
@@ -96,7 +95,8 @@ class GatewayAuthorizationTests {
 		users.add(getAuthorizationTocken("team-leader", "team-leader123456789.com"));
 
 		users.forEach(user -> {
-			testClient.get().uri(BUGS + ANY_QUERY).header("Authorization", user).exchange().expectStatus().isOk();
+			testClient.get().uri(BUGS + EMAIL_BUGS_COUNTS).header("Authorization", user).exchange().expectStatus()
+					.isOk();
 		});
 
 	}
@@ -170,9 +170,10 @@ class GatewayAuthorizationTests {
 
 	@Test
 	void unauthUser() {
-		testClient.get().uri(BUGS + ANY_QUERY).exchange().expectStatus().isUnauthorized();
-		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY_QUERY).exchange().expectStatus().isUnauthorized();
-		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY_QUERY).exchange().expectStatus()
+		testClient.get().uri(BUGS + EMAIL_BUGS_COUNTS).exchange().expectStatus().isUnauthorized();
+		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
+				.isUnauthorized();
+		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
 				.isUnauthorized();
 		addArtifact().isUnauthorized();
 		closeBug().isUnauthorized();
@@ -185,9 +186,10 @@ class GatewayAuthorizationTests {
 	@Test
 	@WithMockUser(username = "authorizeduser")
 	void authorizedUser() {
-		testClient.get().uri(BUGS + ANY_QUERY).exchange().expectStatus().isOk();
-		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY_QUERY).exchange().expectStatus().isForbidden();
-		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY_QUERY).exchange().expectStatus()
+		testClient.get().uri(BUGS + EMAIL_BUGS_COUNTS).exchange().expectStatus().isOk();
+		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
+				.isForbidden();
+		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
 				.isForbidden();
 		addArtifact().isForbidden();
 		closeBug().isForbidden();
@@ -203,16 +205,18 @@ class GatewayAuthorizationTests {
 	}
 
 	public void commonGetRequests() {
-		testClient.get().uri(BUGS + ANY_QUERY).exchange().expectStatus().isOk();
-		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY_QUERY).exchange().expectStatus().isForbidden();
-		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY_QUERY).exchange().expectStatus()
+		testClient.get().uri(BUGS + EMAIL_BUGS_COUNTS).exchange().expectStatus().isOk();
+		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
+				.isForbidden();
+		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
 				.isForbidden();
 	}
 
 	public void retriveInformationAboutLogs() {
-		testClient.get().uri(BUGS + ANY_QUERY).exchange().expectStatus().isOk();
-		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + ANY_QUERY).exchange().expectStatus().isOk();
-		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + ANY_QUERY).exchange().expectStatus().isOk();
+		testClient.get().uri(BUGS + EMAIL_BUGS_COUNTS).exchange().expectStatus().isOk();
+		testClient.get().uri(INFO_BACK_OFFICE + LOGS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus().isOk();
+		testClient.get().uri(INFO_BACK_OFFICE + STATISTICS_CONTROLLER + EMAIL_BUGS_COUNTS).exchange().expectStatus()
+				.isOk();
 	}
 
 	public StatusAssertions assignBug() {

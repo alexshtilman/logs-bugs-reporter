@@ -69,6 +69,6 @@ public class SecurityConfiguration {
 
 	@PostConstruct
 	void updateMapUserDetails() throws InterruptedException {
-		refreshService.run();
+		refreshService.start();
 	}
 }
