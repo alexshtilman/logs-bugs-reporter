@@ -5,6 +5,7 @@ services:
     build: logs-configuration-server
     networks:
       - back
+      - front
   gateway:
     build: logs-bugs-gateway
     networks:
@@ -59,7 +60,6 @@ services:
   # sorts logs from default topick to logs-validated and exceptions
   logs-analyzer:
     build: logs-analyzer
-
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -76,7 +76,6 @@ services:
       - front
     depends_on:
       - config-server
-
   # backoffice
   reporter-back-office:
     build: logs-bugs-reporter-back-office
@@ -90,7 +89,6 @@ services:
       - front
     depends_on:
       - config-server
-
   # info-backoffice
   info-back-office:
     build: logs-info-back-office
@@ -138,6 +136,7 @@ services:
       - front
     depends_on:
       - config-server
+  # get's data from kaffka and save's to postgress
   populator:
     build: logs-db-populator
     environment:
@@ -150,12 +149,9 @@ services:
 
       - KAFKA_TOPIC_VALIDATED=${KAFKA_TOPIC_VALIDATED}
       - KAFKA_POPULATOR_GROUP=${KAFKA_POPULATOR_GROUP}
-    depends_on:
-      - config-server
     networks:
       - back
       - front
-
 networks:
   front:
   back:
