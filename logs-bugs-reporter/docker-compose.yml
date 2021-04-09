@@ -3,11 +3,6 @@ services:
   # provides configuration for all services by service-name
   config-server:
     build: logs-configuration-server
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://0.0.0.0:8282/karafka/dev"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     networks:
       - back
   gateway:
@@ -15,14 +10,13 @@ services:
     networks:
       - back
       - front
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     ports:
       - 80:9595
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
-      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE} 
-      - DEFAULT_ZONE=http://discovery-service:8761/eureka   
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka
   discovery-server:
     build: logs-discovery-server
     networks:
@@ -30,17 +24,15 @@ services:
       - front
   accounting-provider:
     build: logs-accounting-provider
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     networks:
       - back
       - front
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
-      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE} 
-      - PROFILE_MONGO=${PROFILE_MONGO}   
-      - DEFAULT_ZONE=http://discovery-service:8761/eureka     
-
+      - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
+      - PROFILE_MONGO=${PROFILE_MONGO}
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka
   # provides email if email not found from artifact
   assigner-email-provider:
     build: logs-bugs-assigner-mail-provider
@@ -49,11 +41,10 @@ services:
       - front
     environment:
       - DEFAUL_ASSIGER_EMAIL=${DEFAUL_ASSIGER_EMAIL}
-      - DEFAULT_ZONE=http://discovery-service:8761/eureka 
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka
   # shuold not have access to front...
   email-provider:
     build: logs-bugs-email-provider
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     depends_on:
       - config-server
     networks:
@@ -64,11 +55,11 @@ services:
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
       - PROFILE_PG=${PROFILE_PG}
       - CONFIG_SERVER_PROFILE=${CONFIG_SERVER_PROFILE}
-      - DEFAULT_ZONE=http://discovery-service:8761/eureka       
+      - DEFAULT_ZONE=http://discovery-service:8761/eureka
   # sorts logs from default topick to logs-validated and exceptions
   logs-analyzer:
     build: logs-analyzer
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
+
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -89,7 +80,6 @@ services:
   # backoffice
   reporter-back-office:
     build: logs-bugs-reporter-back-office
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -104,7 +94,6 @@ services:
   # info-backoffice
   info-back-office:
     build: logs-info-back-office
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -117,7 +106,6 @@ services:
   # get log from exceptions topic and send it to programmer
   email-notifier:
     build: logs-bugs-email-notifier
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT} java -jar app.jar
     depends_on:
       - config-server
     environment:
@@ -135,7 +123,6 @@ services:
   # get dto from topic exceptions and save it to DB
   opening:
     build: logs-bugs-opening
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT}  java -jar app.jar
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}
@@ -153,7 +140,6 @@ services:
       - config-server
   populator:
     build: logs-db-populator
-    entrypoint: ./docker-entrypoint.sh ${CONFIG_SERVER_IP} ${CONFIG_SERVER_PORT}  java -jar app.jar
     environment:
       - CONFIG_SERVER_IP=${CONFIG_SERVER_IP}
       - CONFIG_SERVER_PORT=${CONFIG_SERVER_PORT}

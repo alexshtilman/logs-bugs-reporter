@@ -10,6 +10,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import lombok.extern.log4j.Log4j2;
 import reactor.core.publisher.Mono;
 
 /**
@@ -17,6 +21,7 @@ import reactor.core.publisher.Mono;
  *
  */
 @Component
+@Log4j2
 public class AuthenticationCustomManager implements ReactiveAuthenticationManager {
 
 	@Autowired
@@ -25,7 +30,20 @@ public class AuthenticationCustomManager implements ReactiveAuthenticationManage
 	@Override
 	public Mono<Authentication> authenticate(Authentication authentication) {
 		String authTocken = authentication.getCredentials().toString();
-		String[] roles = jwtUtilService.validateToken(authTocken);
+
+		String[] roles = {};
+		try {
+			roles = jwtUtilService.validateToken(authTocken);
+		} catch (MalformedJwtException e) {
+			log.debug("incorrect tocken!");
+			return Mono.empty();
+		} catch (ExpiredJwtException e) {
+			log.debug("expired tocken!");
+			return Mono.empty();
+		} catch (SignatureException e) {
+			log.debug("wrong signature!");
+			return Mono.empty();
+		}
 		UsernamePasswordAuthenticationToken tokenObj = new UsernamePasswordAuthenticationToken(null, null,
 				AuthorityUtils.createAuthorityList(roles));
 		return Mono.just(tokenObj);
