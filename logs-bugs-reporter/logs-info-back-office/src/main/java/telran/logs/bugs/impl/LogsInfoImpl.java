@@ -52,6 +52,7 @@ public class LogsInfoImpl implements LogsInfo {
 	@Cacheable(value = ARTIFACT_AND_COUNT)
 	public Flux<ArtifactAndCountDto> getArtifactOccuresnces() {
 		log.debug("NO CACHE USED!");
+		// FIXME TO DO FIND HOW TO WORK WITH CHAHE!
 		log.debug(cacheManager.getCache(ARTIFACT_AND_COUNT).get(ARTIFACT_AND_COUNT, ArtifactAndCountDto.class));
 
 		return logs.getArtifactOccuresncesByAggregation();
