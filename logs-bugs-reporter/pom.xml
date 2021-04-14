@@ -90,5 +90,8 @@
 
 		<module>logs-accounting-dto</module>
 		<module>logs-accounting-integration-app</module>
+		<module>logger-aspect</module>
+		<module>logging-component</module>
+		<module>sanity-app</module>
 	</modules>
 </project>
