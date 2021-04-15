@@ -3,21 +3,25 @@
  */
 package telran.aop;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 import java.rmi.ServerException;
 import java.util.Date;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
+import org.springframework.aop.framework.AopProxy;
+import org.springframework.aop.framework.DefaultAopProxyFactory;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,8 +29,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import telran.logs.bugs.dto.LogDto;
 import telran.logs.bugs.dto.LogType;
@@ -41,7 +43,26 @@ import telran.logs.bugs.exceptions.NotFoundException;
 @AutoConfigureMockMvc
 @WebMvcTest(LoggerAspectTest.TestController.class)
 @ContextConfiguration(classes = { LoggerAspectTest.TestController.class })
+@TestInstance(Lifecycle.PER_CLASS)
 class LoggerAspectTest {
+
+	private final LoggerAspect aspect = new LoggerAspect();
+	private TestController controllerProxy;
+
+	@MockBean
+	LoggingComponent loggingComponent;
+
+	@BeforeAll
+	public void setUp() {
+		AspectJProxyFactory aspectJProxyFactory = new AspectJProxyFactory(new TestController());
+		aspectJProxyFactory.addAspect(aspect);
+
+		DefaultAopProxyFactory proxyFactory = new DefaultAopProxyFactory();
+		AopProxy aopProxy = proxyFactory.createAopProxy(aspectJProxyFactory);
+
+		controllerProxy = (TestController) aopProxy.getProxy();
+		doNothing().when(loggingComponent).sendLog(any());
+	}
 
 	public static @RestController class TestController {
 		static LogDto logDtoExp = new LogDto(new Date(), LogType.NO_EXCEPTION, "artifact", 0, "");
@@ -88,21 +109,11 @@ class LoggerAspectTest {
 
 	}
 
-	@Autowired
-	MockMvc mock;
-
-	ObjectMapper mapper = new ObjectMapper();
-
-	public void postDtoWithResponceCode(int responceCode) throws Exception {
-		assertEquals(responceCode,
-				mock.perform(post("/post").contentType(MediaType.APPLICATION_JSON)
-						.content(mapper.writeValueAsString(TestController.logDtoExp))).andReturn().getResponse()
-						.getStatus());
-	}
-
 	@Test
 	void testNormal() throws Exception {
-		postDtoWithResponceCode(200);
+		String result = controllerProxy.putExceptionObject(new LogDto());
+		System.out.println(result);
+		// assertThat(result, is("ok"));
 	}
 
 }
