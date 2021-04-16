@@ -4,7 +4,7 @@
 package telran.aop;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import java.rmi.ServerException;
 import java.util.Date;
@@ -17,9 +17,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
 import org.springframework.aop.framework.AopProxy;
 import org.springframework.aop.framework.DefaultAopProxyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.stream.binder.test.OutputDestination;
+import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
+import org.springframework.cloud.stream.function.StreamBridge;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,14 +49,24 @@ import telran.logs.bugs.exceptions.NotFoundException;
 @AutoConfigureMockMvc
 @WebMvcTest(LoggerAspectTest.TestController.class)
 @ContextConfiguration(classes = { LoggerAspectTest.TestController.class })
+@Import({ TestChannelBinderConfiguration.class, LoggingComponentConfig.class })
 @TestInstance(Lifecycle.PER_CLASS)
 class LoggerAspectTest {
 
 	private final LoggerAspect aspect = new LoggerAspect();
 	private TestController controllerProxy;
 
-	@MockBean
+	@Value("${app-binding-name}")
+	String bindingName;
+
+	@Autowired
 	LoggingComponent loggingComponent;
+
+	@Autowired
+	OutputDestination consumer;
+
+	@MockBean
+	StreamBridge brige;
 
 	@BeforeAll
 	public void setUp() {
@@ -61,7 +77,7 @@ class LoggerAspectTest {
 		AopProxy aopProxy = proxyFactory.createAopProxy(aspectJProxyFactory);
 
 		controllerProxy = (TestController) aopProxy.getProxy();
-		doNothing().when(loggingComponent).sendLog(any());
+		when(brige.send(any(), any())).thenReturn(true);
 	}
 
 	public static @RestController class TestController {
