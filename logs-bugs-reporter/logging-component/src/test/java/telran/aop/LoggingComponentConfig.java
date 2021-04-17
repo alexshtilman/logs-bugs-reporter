@@ -14,8 +14,7 @@ import org.springframework.context.annotation.Bean;
 public class LoggingComponentConfig {
 
 	@Bean
-	public LoggingComponent loggingComponent() {
-		return new LoggingComponent();
+	public LoggingComponentImpl loggingComponent() {
+		return new LoggingComponentImpl();
 	}
-
 }
